@@ -10,7 +10,7 @@ So far it was only tested with löve Windows build.
 
 ## Example
 
-```
+```lua
 require "imgui"
 
 local showTestWindow = false
