@@ -1,11 +1,13 @@
 # LOVE-IMGUI
 
 [imgui](https://github.com/ocornut/imgui) module for the [löve](https://love2d.org/) game engine including lua bindings based on this [project](https://github.com/patrickriordan/imgui_lua_bindings).
+
 It uses imgui 1.50 WIP and supports 250 functions (48 unsupported), and is based on the latest löve sources.
 
 ## Getting Started
 
 Merge the content of this repository with the löve source repository and build löve as usual.
+
 So far it was only tested with löve Windows build.
 
 ## Example
