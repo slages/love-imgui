@@ -210,8 +210,6 @@ bool    Init()
 	SDL_VERSION(&wmInfo.version);
 	SDL_GetWindowWMInfo(window, &wmInfo);
 	io.ImeWindowHandle = wmInfo.info.win.window;
-#else
-	(void)window;
 #endif
 
 	return true;

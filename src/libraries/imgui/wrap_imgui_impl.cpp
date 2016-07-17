@@ -421,7 +421,7 @@ static void ImEndStack(int type) { \
 #define POP_END_STACK(type)
 #endif
 
-#include "imgui/imgui_iterator.cpp"
+#include "imgui/imgui_iterator.h"
 
 
 static const struct luaL_Reg imguilib[] = {
@@ -534,7 +534,7 @@ static const struct luaL_Reg imguilib[] = {
 #undef POP_END_STACK
 #define POP_END_STACK(type)
 
-#include "imgui/imgui_iterator.cpp"
+#include "imgui/imgui_iterator.h"
   { "ShutDown", w_ShutDown },
   { "NewFrame", w_NewFrame },
   { "MouseMoved", w_MouseMoved },
