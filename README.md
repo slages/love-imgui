@@ -26,7 +26,6 @@ local textValue = "text"
 --
 -- LOVE callbacks
 --
-
 function love.load(arg)
 end
 
@@ -67,8 +66,8 @@ function love.draw()
     end
     
     if showAnotherWindow then
-        imgui.SetNextWindowPos(50, 50, ImGuiSetCond_FirstUseEver)
-        status, showAnotherWindow = imgui.Begin("Another Window", true, ImGuiWindowFlags_AlwaysAutoResize);
+        imgui.SetNextWindowPos(50, 50, "FirstUseEver")
+        status, showAnotherWindow = imgui.Begin("Another Window", true, { "AlwaysAutoResize", "NoTitleBar" });
         imgui.Text("Hello");
         -- Input text
         status, textValue = imgui.InputTextMultiline("InputText", textValue, 200, 300, 200);

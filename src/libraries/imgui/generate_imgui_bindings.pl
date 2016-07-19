@@ -188,9 +188,9 @@ while ($line = <STDIN>) {
        #These are ints
        my $name = $2;
         if ($3 =~ m/^ = 0$/) {
-          push(@before, "OPTIONAL_INT_ARG($name, 0)");
+          push(@before, "OPTIONAL_ENUM_ARG($name, 0)");
         } else {
-          push(@before, "INT_ARG($name)");
+          push(@before, "ENUM_ARG($name)");
         }
         push(@funcArgs, $name);
         #int with default value or not
