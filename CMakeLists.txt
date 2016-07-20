@@ -76,13 +76,15 @@ if(MEGA)
 	# LOVE_INCLUDE_DIRS contains the search directories for #include. It's mostly
 	# not needed for MEGA builds, since almost all the libraries (except LuaJIT)
 	# are CMake targets, causing include paths to be added automatically.
-	set(LOVE_INCLUDE_DIRS ../${MEGA_SDL2}/include)
+	set(LOVE_INCLUDE_DIRS)
 
 	if(APPLE)
 		# Some files do #include <SDL2/SDL.h>, but building with megasource
 		# requires #include <SDL.h>.
 		add_definitions(-DLOVE_MACOSX_SDL_DIRECT_INCLUDE)
 	endif ()
+	# imgui module needs to include SDL2
+	set(SDL2_INCLUDE_DIR ../${MEGA_SDL2}/include)
 
 	# SDL2 links with some DirectX libraries, and we apparently also
 	# pull those libraries in for linkage because we link with SDL2.
@@ -1188,7 +1190,7 @@ set(LOVE_SRC_3P_IMGUI
 )
 
 add_library(love_3p_imgui ${LOVE_SRC_3P_IMGUI})
-target_include_directories(love_3p_imgui PUBLIC ${LOVE_INCLUDE_DIRS})
+target_include_directories(love_3p_imgui PUBLIC ${SDL2_INCLUDE_DIR})
 
 #
 # enet
