@@ -6,7 +6,7 @@ It uses imgui 1.50 WIP and supports 250 functions (48 unsupported), and is based
 
 ## Getting Started
 
-Just build the project, and copy the generated dynamic module into the LÖVE application data folder (for instance "C:\Users\<user>\AppData\Roaming\LOVE" on Windows).
+Just build the project, and copy the generated dynamic module into the LÖVE application data folder (for instance "C:\Users\<user>\AppData\Roaming\LOVE" on Windows or ~/.local/shared/love on Linux).
 
 So far it was only tested with löve Windows and Linux builds.
 
