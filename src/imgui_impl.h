@@ -8,6 +8,7 @@
 
 typedef union SDL_Event SDL_Event;
 
+bool Init(const char *path);
 void ShutDown();
 void NewFrame();
 // Inputs

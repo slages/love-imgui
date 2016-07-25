@@ -18,14 +18,14 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#include "imgui/imgui_impl.h"
-#include "imgui/libimgui/imgui.h"
-#include "imgui/wrap_imgui_impl.h"
-
+#include "libimgui/imgui.h"
+#include "imgui_impl.h"
+#include "wrap_imgui_impl.h"
 
 /*
 ** Love implentation functions
 */
+static bool g_inited = false;
 
 static int w_ShutDown(lua_State *L)
 {
@@ -35,6 +35,14 @@ static int w_ShutDown(lua_State *L)
 
 static int w_NewFrame(lua_State *L)
 {
+	if (!g_inited)
+	{
+		luaL_dostring(L, "love.filesystem.createDirectory(love.filesystem.getSaveDirectory()) return love.filesystem.getSaveDirectory()");
+		size_t size;
+		const char *path = luaL_checklstring(L, 1, &size);
+		Init(path);
+		g_inited = true;
+	}
 	NewFrame();
 	return 0;
 }
@@ -461,7 +469,7 @@ static void ImEndStack(int type) { \
 #define POP_END_STACK(type)
 #endif
 
-#include "imgui/imgui_iterator.h"
+#include "imgui_iterator.h"
 
 
 static const struct luaL_Reg imguilib[] = {
@@ -578,7 +586,7 @@ static const struct luaL_Reg imguilib[] = {
 #undef POP_END_STACK
 #define POP_END_STACK(type)
 
-#include "imgui/imgui_iterator.h"
+#include "imgui_iterator.h"
   { "ShutDown", w_ShutDown },
   { "NewFrame", w_NewFrame },
   { "MouseMoved", w_MouseMoved },
@@ -603,7 +611,7 @@ extern "C" {
   lua_pushnumber(L, val); \
   lua_settable(L, -3);
 
-extern "C" int luaopen_imgui(lua_State *L)
+extern "C" LOVE_IMGUI_EXPORT int loveopen_imgui(lua_State *L)
 {
 	// Enums not handled by iterator yet
 	lua_newtable(L);
