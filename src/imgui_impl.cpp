@@ -6,6 +6,7 @@
 // If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
+#include <stdint.h>
 #include "glad/gladfuncs.hpp"
 
 // SDL
@@ -21,7 +22,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <iostream>
+//#include <iostream>
 
 using namespace glad;
 
