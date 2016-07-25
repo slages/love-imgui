@@ -611,7 +611,7 @@ extern "C" {
   lua_pushnumber(L, val); \
   lua_settable(L, -3);
 
-extern "C" LOVE_IMGUI_EXPORT int loveopen_imgui(lua_State *L)
+extern "C" LOVE_IMGUI_EXPORT int luaopen_imgui(lua_State *L)
 {
 	// Enums not handled by iterator yet
 	lua_newtable(L);
