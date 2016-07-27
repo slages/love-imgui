@@ -37,10 +37,7 @@ static int w_NewFrame(lua_State *L)
 {
 	if (!g_inited)
 	{
-		luaL_dostring(L, "love.filesystem.createDirectory(love.filesystem.getSaveDirectory()) return love.filesystem.getSaveDirectory()");
-		size_t size;
-		const char *path = luaL_checklstring(L, 1, &size);
-		Init(path);
+		Init(L);
 		g_inited = true;
 	}
 	NewFrame();

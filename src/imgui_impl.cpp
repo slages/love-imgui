@@ -1,14 +1,3 @@
-// ImGui SDL2 binding with OpenGL3
-// In this binding, ImTextureID is used to store an OpenGL 'GLuint' texture identifier. Read the FAQ about ImTextureID in imgui.cpp.
-
-// You can copy and use unmodified imgui_impl_* files in your project. See main.cpp for an example of using this.
-// If you use this binding you'll need to call 4 functions: ImGui_ImplXXXX_Init(), ImGui_ImplXXXX_NewFrame(), ImGui::Render() and ImGui_ImplXXXX_Shutdown().
-// If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
-// https://github.com/ocornut/imgui
-
-#include <stdint.h>
-#include "glad/gladfuncs.hpp"
-
 // SDL
 #include <SDL.h>
 #include <SDL_syswm.h>
@@ -24,17 +13,14 @@
 #include <map>
 //#include <iostream>
 
-using namespace glad;
-
 // Data
 static double       g_Time = 0.0f;
 static bool         g_MousePressed[3] = { false, false, false };
 static float        g_MouseWheel = 0.0f;
-static GLuint       g_FontTexture = 0;
 static int			g_window = -1;
 static std::string	g_iniPath;
-static bool			g_gladInit = false;
 static std::map<std::string, int>	g_keyMap;
+static lua_State	*g_L;
 
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // If text or lines are blurry when integrating ImGui in your engine:
@@ -49,100 +35,88 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
 		return;
 	draw_data->ScaleClipRects(io.DisplayFramebufferScale);
 
-	// Disable current program and vertex attributes
-	GLint last_program = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
-	std::vector<GLint> enabledAttribs;
-	if (glGetError() == 0)
-	{
-		GLint attribsCount = 0;
-		glGetProgramiv(last_program, GL_ACTIVE_ATTRIBUTES, &attribsCount);
-		for (GLint i = 0; i < attribsCount; i++)
-		{
-			GLint enabled;
-			glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled);
-			if (glGetError() == 0 && enabled > 0)
-			{
-				enabledAttribs.push_back(i);
-				glDisableVertexAttribArray(i);
-			}
-		}
-	}
-	glUseProgram(0);
-
-	// We are using the OpenGL fixed pipeline to make the example code simpler to read!
-	// Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled, vertex/texcoord/color pointers.
-	GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
-	glPushAttrib(GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT | GL_TRANSFORM_BIT);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_SCISSOR_TEST);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnable(GL_TEXTURE_2D);
-
-	// Setup viewport, orthographic projection matrix
-	glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, -1.0f, +1.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
+	lua_getglobal(g_L, "imgui");
 	// Render command lists
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 	for (int n = 0; n < draw_data->CmdListsCount; n++)
 	{
 		const ImDrawList* cmd_list = draw_data->CmdLists[n];
-		const unsigned char* vtx_buffer = (const unsigned char*)&cmd_list->VtxBuffer.front();
-		const ImDrawIdx* idx_buffer = &cmd_list->IdxBuffer.front();
-		glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, pos)));
-		glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, uv)));
-		glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, col)));
 
+		lua_newtable(g_L);
+		for (int i = 1; i <= cmd_list->VtxBuffer.size(); i++)
+		{
+			lua_pushnumber(g_L, i);
+			lua_newtable(g_L);
+
+			lua_pushnumber(g_L, 1);
+			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].pos.x);
+			lua_rawset(g_L, -3);
+			lua_pushnumber(g_L, 2);
+			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].pos.y);
+			lua_rawset(g_L, -3);
+
+			lua_pushnumber(g_L, 3);
+			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].uv.x);
+			lua_rawset(g_L, -3);
+			lua_pushnumber(g_L, 4);
+			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].uv.y);
+			lua_rawset(g_L, -3);
+
+			lua_pushnumber(g_L, 5);
+			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[0]);
+			lua_rawset(g_L, -3);
+			lua_pushnumber(g_L, 6);
+			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[1]);
+			lua_rawset(g_L, -3);
+			lua_pushnumber(g_L, 7);
+			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[2]);
+			lua_rawset(g_L, -3);
+			lua_pushnumber(g_L, 8);
+			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[3]);
+			lua_rawset(g_L, -3);
+
+			lua_rawset(g_L, -3);
+		}
+		lua_setfield(g_L, -2, "vertices");
+
+		lua_newtable(g_L);
+		for (int i = 1; i <= cmd_list->IdxBuffer.size(); i++)
+		{
+			lua_pushnumber(g_L, i);
+			lua_pushnumber(g_L, cmd_list->IdxBuffer[i - 1] + 1);
+			lua_rawset(g_L, -3);
+		}
+		lua_setfield(g_L, -2, "idx");
+
+		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertices, \"triangles\") imgui.renderMesh:setTexture(imgui.textureObject) imgui.renderMesh:setVertexMap(imgui.idx)");
+
+		int position = 1;
 		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
 		{
 			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-			if (pcmd->UserCallback)
-			{
-				pcmd->UserCallback(cmd_list, pcmd);
-			}
-			else
-			{
-				glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
-				glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
-				glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer);
-			}
-			idx_buffer += pcmd->ElemCount;
+			lua_pushnumber(g_L, pcmd->ElemCount);
+			lua_setfield(g_L, -2, "vertexCount");
+			lua_pushnumber(g_L, position);
+			lua_setfield(g_L, -2, "vertexPosition");
+			position += pcmd->ElemCount;
+
+			lua_pushnumber(g_L, (int)pcmd->ClipRect.x);
+			lua_setfield(g_L, -2, "clipX");
+			lua_pushnumber(g_L, (int)(pcmd->ClipRect.y));
+			lua_setfield(g_L, -2, "clipY");
+			lua_pushnumber(g_L, (int)(pcmd->ClipRect.z - pcmd->ClipRect.x));
+			lua_setfield(g_L, -2, "clipWidth");
+			lua_pushnumber(g_L, (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+			lua_setfield(g_L, -2, "clipHeight");
+
+			luaL_dostring(g_L, "\
+				love.graphics.setScissor(imgui.clipX, imgui.clipY, imgui.clipWidth, imgui.clipHeight) \
+				imgui.renderMesh:setDrawRange(imgui.vertexPosition, imgui.vertexPosition + imgui.vertexCount - 1) \
+				love.graphics.draw(imgui.renderMesh) \
+			");
 		}
 	}
-#undef OFFSETOF
-
-	// Restore modified state
-	glDisableClientState(GL_COLOR_ARRAY);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glBindTexture(GL_TEXTURE_2D, (GLuint)last_texture);
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glPopAttrib();
-	glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
-	// Enable back the current program
-	for (std::vector<GLint>::iterator it = enabledAttribs.begin(); it != enabledAttribs.end(); ++it)
-	{
-		glEnableVertexAttribArray(*it);
-		if (*it == 2)
-			glVertexAttrib4f(2, 1.0f, 1.0f, 1.0f, 1.0f);
-	}
-	glUseProgram((GLuint)last_program);
+	luaL_dostring(g_L, "love.graphics.setScissor()");
+	lua_pop(g_L, 1);
 }
 
 static const char* ImGui_ImplSdl_GetClipboardText()
@@ -159,55 +133,29 @@ static void ImGui_ImplSdl_SetClipboardText(const char* text)
 // Public part
 //
 
-bool CreateDeviceObjects()
+bool    Init(lua_State *L)
 {
-	// Init glad
-	if (!g_gladInit)
-	{
-		if (!gladLoadGLLoader(SDL_GL_GetProcAddress))
-		{
-			//std::cout << "Failed to initialize OpenGL context" << std::endl;
-			return false;
-		}
-	}
-	g_gladInit = true;
-
-	// Build texture atlas
 	ImGuiIO& io = ImGui::GetIO();
+
+	// LUA state
+	g_L = L;
+
+	// Create the texture object
 	unsigned char* pixels;
 	int width, height;
-	io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height);
+	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+	
+	lua_getglobal(L, "imgui");
+	lua_pushnumber(L, width);
+	lua_setfield(L, -2, "textureWidth");
+	lua_pushnumber(L, height);
+	lua_setfield(L, -2, "textureHeight");
+	lua_pushlstring(L, (char *)pixels, width * height * 4);
+	lua_setfield(L, -2, "texturePixels");
+	luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.newImageData(imgui.textureWidth, imgui.textureHeight, imgui.texturePixels))");
+	lua_pop(L, 1);
 
-	// Upload texture to graphics system
-	GLint last_texture;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	glGenTextures(1, &g_FontTexture);
-	glBindTexture(GL_TEXTURE_2D, g_FontTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, width, height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
-
-	// Store our identifier
-	io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
-
-	// Restore state
-	glBindTexture(GL_TEXTURE_2D, last_texture);
-
-	return true;
-}
-
-void    InvalidateDeviceObjects()
-{
-	if (g_FontTexture)
-	{
-		glDeleteTextures(1, &g_FontTexture);
-		ImGui::GetIO().Fonts->TexID = 0;
-		g_FontTexture = 0;
-	}
-}
-
-bool    Init(const char *path)
-{
+	// Key map
 	g_keyMap["tab"] = 1;
 	g_keyMap["left"] = 2;
 	g_keyMap["right"] = 3;
@@ -228,7 +176,6 @@ bool    Init(const char *path)
 	g_keyMap["y"] = 18;
 	g_keyMap["z"] = 19;
 
-	ImGuiIO& io = ImGui::GetIO();
 	io.KeyMap[ImGuiKey_Tab] = g_keyMap["tab"];                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 	io.KeyMap[ImGuiKey_LeftArrow] = g_keyMap["left"];
 	io.KeyMap[ImGuiKey_RightArrow] = g_keyMap["right"];
@@ -253,6 +200,9 @@ bool    Init(const char *path)
 	io.SetClipboardTextFn = ImGui_ImplSdl_SetClipboardText;
 	io.GetClipboardTextFn = ImGui_ImplSdl_GetClipboardText;
 
+	luaL_dostring(L, "love.filesystem.createDirectory(love.filesystem.getSaveDirectory()) return love.filesystem.getSaveDirectory()");
+	size_t size;
+	const char *path = luaL_checklstring(L, 1, &size);
 	g_iniPath = std::string(path) + std::string("/imgui.ini");
 	io.IniFilename = g_iniPath.c_str();
 	return true;
@@ -260,7 +210,6 @@ bool    Init(const char *path)
 
 void ShutDown()
 {
-	InvalidateDeviceObjects();
 	ImGui::Shutdown();
 }
 
@@ -274,7 +223,6 @@ void NewFrame()
 
 	if (SDL_GetWindowID(window) != g_window)
 	{
-		InvalidateDeviceObjects();
 		if (g_window == -1)
 		{
 #ifdef _WIN32
@@ -286,9 +234,6 @@ void NewFrame()
 		}
 		g_window = SDL_GetWindowID(window);
 	}
-
-	if (!g_FontTexture)
-		CreateDeviceObjects();
 
 	// Setup display size (every frame to accommodate for window resizing)
 	int w, h;
