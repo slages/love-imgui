@@ -42,43 +42,6 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
 		const ImDrawList* cmd_list = draw_data->CmdLists[n];
 
 		lua_newtable(g_L);
-		for (int i = 1; i <= cmd_list->VtxBuffer.size(); i++)
-		{
-			lua_pushnumber(g_L, i);
-			lua_newtable(g_L);
-
-			lua_pushnumber(g_L, 1);
-			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].pos.x);
-			lua_rawset(g_L, -3);
-			lua_pushnumber(g_L, 2);
-			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].pos.y);
-			lua_rawset(g_L, -3);
-
-			lua_pushnumber(g_L, 3);
-			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].uv.x);
-			lua_rawset(g_L, -3);
-			lua_pushnumber(g_L, 4);
-			lua_pushnumber(g_L, cmd_list->VtxBuffer[i - 1].uv.y);
-			lua_rawset(g_L, -3);
-
-			lua_pushnumber(g_L, 5);
-			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[0]);
-			lua_rawset(g_L, -3);
-			lua_pushnumber(g_L, 6);
-			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[1]);
-			lua_rawset(g_L, -3);
-			lua_pushnumber(g_L, 7);
-			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[2]);
-			lua_rawset(g_L, -3);
-			lua_pushnumber(g_L, 8);
-			lua_pushnumber(g_L, ((const unsigned char *)&cmd_list->VtxBuffer[i - 1].col)[3]);
-			lua_rawset(g_L, -3);
-
-			lua_rawset(g_L, -3);
-		}
-		lua_setfield(g_L, -2, "vertices");
-
-		lua_newtable(g_L);
 		for (int i = 1; i <= cmd_list->IdxBuffer.size(); i++)
 		{
 			lua_pushnumber(g_L, i);
@@ -87,7 +50,12 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
 		}
 		lua_setfield(g_L, -2, "idx");
 
-		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertices, \"triangles\") imgui.renderMesh:setTexture(imgui.textureObject) imgui.renderMesh:setVertexMap(imgui.idx)");
+		lua_pushlstring(g_L, (char *)&cmd_list->VtxBuffer.front(), cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
+		lua_setfield(g_L, -2, "verticesData");
+		lua_pushnumber(g_L, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
+		lua_setfield(g_L, -2, "verticesSize");
+
+		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, imgui.verticesData), \"triangles\") imgui.renderMesh:setTexture(imgui.textureObject) imgui.renderMesh:setVertexMap(imgui.idx)");
 
 		int position = 1;
 		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
@@ -152,7 +120,8 @@ bool    Init(lua_State *L)
 	lua_setfield(L, -2, "textureHeight");
 	lua_pushlstring(L, (char *)pixels, width * height * 4);
 	lua_setfield(L, -2, "texturePixels");
-	luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.newImageData(imgui.textureWidth, imgui.textureHeight, imgui.texturePixels))");
+	luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.newImageData(imgui.textureWidth, imgui.textureHeight, imgui.texturePixels))\
+					  imgui.vertexformat = { {\"VertexPosition\", \"float\", 2}, {\"VertexTexCoord\", \"float\", 2}, {\"VertexColor\", \"byte\", 4} }");
 	lua_pop(L, 1);
 
 	// Key map
