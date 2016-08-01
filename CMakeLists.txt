@@ -9,9 +9,6 @@ SET(LIB_NAME imgui)
 
 ADD_LIBRARY(${LIB_NAME}
     MODULE
-    src/glad/glad.cpp
-    src/glad/glad.hpp
-    src/glad/gladfuncs.hpp
     src/libimgui/imconfig.h
 	src/libimgui/imgui.cpp
 	src/libimgui/imgui.h
