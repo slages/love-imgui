@@ -1,0 +1,33 @@
+# Sets the following variables:
+#
+#  LOVE_FOUND
+#  LOVE_INCLUDE_DIR
+#  LOVE_LIBRARY
+
+set(LOVE_SEARCH_PATHS
+	$ENV{LOVE_DIR}
+)
+
+find_path(LOVE_COMMON_INCLUDE_DIR
+	NAMES image
+	PATH_SUFFIXES src/modules
+	PATHS ${LOVE_SEARCH_PATHS})
+
+find_path(LOVE_MODULE_INCLUDE_DIR
+	NAMES common
+	PATH_SUFFIXES src
+	PATHS ${LOVE_SEARCH_PATHS})
+
+find_library(LOVE_LIBRARY
+	NAMES love
+	PATH_SUFFIXES src/.libs
+	PATHS ${LOVE_SEARCH_PATHS})
+
+set(LOVE_INCLUDE_DIR
+	${LOVE_COMMON_INCLUDE_DIR}
+	${LOVE_MODULE_INCLUDE_DIR})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(LOVE DEFAULT_MSG LOVE_LIBRARY LOVE_INCLUDE_DIR)
+
+mark_as_advanced(LOVE_INCLUDE_DIR LOVE_LIBRARY)
