@@ -1,7 +1,9 @@
-// SDL
-#include <SDL.h>
-#include <SDL_syswm.h>
-#include <SDL_video.h>
+// LOVE
+#include <common/runtime.h>
+#include <modules/mouse/Mouse.h>
+#include <modules/timer/Timer.h>
+#include <modules/system/System.h>
+#include <modules/window/sdl/Window.h>
 
 // IMGUI
 #include "imgui_impl.h"
@@ -21,6 +23,15 @@ static int			g_window = -1;
 static std::string	g_iniPath;
 static std::map<std::string, int>	g_keyMap;
 static lua_State	*g_L;
+
+#define getLoveSystem() \
+	(love::Module::getInstance<love::system::System>(love::Module::M_SYSTEM))
+#define getLoveWindow() \
+	(love::Module::getInstance<love::window::sdl::Window>(love::Module::M_WINDOW))
+#define getLoveTimer() \
+	(love::Module::getInstance<love::timer::Timer>(love::Module::M_TIMER))
+#define getLoveMouse() \
+	(love::Module::getInstance<love::mouse::Mouse>(love::Module::M_MOUSE))
 
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // If text or lines are blurry when integrating ImGui in your engine:
@@ -89,14 +100,16 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
 	lua_pop(g_L, 1);
 }
 
-static const char* ImGui_ImplSdl_GetClipboardText()
+static const char* ImGui_GetClipboardText()
 {
-	return SDL_GetClipboardText();
+	auto system = getLoveSystem();
+	return strdup(system->getClipboardText().c_str());
 }
 
-static void ImGui_ImplSdl_SetClipboardText(const char* text)
+static void ImGui_SetClipboardText(const char* text)
 {
-	SDL_SetClipboardText(text);
+	auto system = getLoveSystem();
+	system->setClipboardText(text);
 }
 
 //
@@ -114,7 +127,7 @@ bool    Init(lua_State *L)
 	unsigned char* pixels;
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-	
+
 	lua_getglobal(L, "imgui");
 	lua_pushnumber(L, width);
 	lua_setfield(L, -2, "textureWidth");
@@ -168,8 +181,8 @@ bool    Init(lua_State *L)
 	io.KeyMap[ImGuiKey_Z] = g_keyMap["z"];
 
 	io.RenderDrawListsFn = ImGui_ImplSdl_RenderDrawLists;   // Alternatively you can set this to NULL and call ImGui::GetDrawData() after ImGui::Render() to get the same ImDrawData pointer.
-	io.SetClipboardTextFn = ImGui_ImplSdl_SetClipboardText;
-	io.GetClipboardTextFn = ImGui_ImplSdl_GetClipboardText;
+	io.SetClipboardTextFn = ImGui_SetClipboardText;
+	io.GetClipboardTextFn = ImGui_GetClipboardText;
 
 	luaL_dostring(L, "love.filesystem.createDirectory(love.filesystem.getSaveDirectory()) return love.filesystem.getSaveDirectory()");
 	size_t size;
@@ -186,36 +199,23 @@ void ShutDown()
 
 void NewFrame()
 {
-	SDL_Window *window = SDL_GL_GetCurrentWindow();
+	auto window = getLoveWindow();
 	if (!window)
 		return;
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	if (SDL_GetWindowID(window) != g_window)
-	{
-		if (g_window == -1)
-		{
-#ifdef _WIN32
-			SDL_SysWMinfo wmInfo;
-			SDL_VERSION(&wmInfo.version);
-			SDL_GetWindowWMInfo(window, &wmInfo);
-			io.ImeWindowHandle = wmInfo.info.win.window;
-#endif
-		}
-		g_window = SDL_GetWindowID(window);
-	}
-
 	// Setup display size (every frame to accommodate for window resizing)
+	love::window::WindowSettings settings;
 	int w, h;
 	int display_w, display_h;
-	SDL_GetWindowSize(window, &w, &h);
-	SDL_GL_GetDrawableSize(window, &display_w, &display_h);
+	window->getWindow(w, h, settings);
+	window->getPixelDimensions(display_w, display_h);
 	io.DisplaySize = ImVec2((float)w, (float)h);
 	io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 
-	// Setup time step
-	Uint32	time = SDL_GetTicks();
+	// Setup time ste
+	Uint32	time = getLoveTimer()->getTime();
 	double current_time = time / 1000.0;
 	io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f / 60.0f);
 	g_Time = current_time;
@@ -228,7 +228,7 @@ void NewFrame()
 	g_MouseWheel = 0.0f;
 
 	// Hide OS mouse cursor if ImGui is drawing it
-	SDL_ShowCursor(io.MouseDrawCursor ? 0 : 1);
+	getLoveMouse()->setVisible(io.MouseDrawCursor ? 0 : 1);
 
 	// Start the frame
 	ImGui::NewFrame();
@@ -239,13 +239,11 @@ void NewFrame()
 //
 void MouseMoved(int x, int y)
 {
-	SDL_Window *window = SDL_GL_GetCurrentWindow();
+	auto window = getLoveWindow();
 	if (window)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		int mx, my;
-		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_FOCUS)
+		if (window->hasFocus())
 			io.MousePos = ImVec2((float)x, (float)y);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
 		else
 			io.MousePos = ImVec2(-1, -1);
@@ -281,10 +279,14 @@ void KeyPressed(const char *key)
 		k = "return";
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeysDown[g_keyMap[k]] = true;
-	io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-	io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-	io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-	io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+	if ((k == "lshift" || k == "rshift"))
+		io.KeyShift = true;
+	else if ((k == "rctrl" || k == "lctrl"))
+		io.KeyCtrl = true;
+	else if ((k == "lalt" || k == "ralt"))
+		io.KeyAlt = true;
+	else if ((k == "rgui" || k == "lgui"))
+		io.KeySuper = true;
 }
 
 void KeyReleased(const char *key)
@@ -294,10 +296,14 @@ void KeyReleased(const char *key)
 		k = "return";
 	ImGuiIO& io = ImGui::GetIO();
 	io.KeysDown[g_keyMap[k.c_str()]] = false;
-	io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-	io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-	io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-	io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+	if ((k == "lshift" || k == "rshift"))
+		io.KeyShift = false;
+	else if ((k == "rctrl" || k == "lctrl"))
+		io.KeyCtrl = false;
+	else if ((k == "lalt" || k == "ralt"))
+		io.KeyAlt = false;
+	else if ((k == "rgui" || k == "lgui"))
+		io.KeySuper = false;
 }
 
 void TextInput(const char *text)
