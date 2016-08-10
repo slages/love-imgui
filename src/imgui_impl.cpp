@@ -1,8 +1,3 @@
-// SDL
-#include <SDL.h>
-#include <SDL_syswm.h>
-#include <SDL_video.h>
-
 // IMGUI
 #include "imgui_impl.h"
 #include "libimgui/imgui.h"
@@ -14,18 +9,17 @@
 //#include <iostream>
 
 // Data
-static double       g_Time = 0.0f;
-static bool         g_MousePressed[3] = { false, false, false };
-static float        g_MouseWheel = 0.0f;
-static int			g_window = -1;
-static std::string	g_iniPath;
+static double						g_Time = 0.0f;
+static bool							g_MousePressed[3] = { false, false, false };
+static float						g_MouseWheel = 0.0f;
+static std::string					g_iniPath;
 static std::map<std::string, int>	g_keyMap;
-static lua_State	*g_L;
+static lua_State					*g_L;
 
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // If text or lines are blurry when integrating ImGui in your engine:
 // - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
-void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
+void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 {
 	// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
 	ImGuiIO& io = ImGui::GetIO();
@@ -89,14 +83,19 @@ void ImGui_ImplSdl_RenderDrawLists(ImDrawData* draw_data)
 	lua_pop(g_L, 1);
 }
 
-static const char* ImGui_ImplSdl_GetClipboardText()
+static const char* ImGui_Impl_GetClipboardText()
 {
-	return SDL_GetClipboardText();
+	luaL_dostring(g_L, "return love.system.getClipboardText()");
+	return luaL_checkstring(g_L, 0);
 }
 
-static void ImGui_ImplSdl_SetClipboardText(const char* text)
+static void ImGui_Impl_SetClipboardText(const char* text)
 {
-	SDL_SetClipboardText(text);
+	lua_getglobal(g_L, "imgui");
+	lua_pushstring(g_L, text);
+	lua_setfield(g_L, -2, "clipboardText");
+	luaL_dostring(g_L, "love.system.setClipboardText(imgui.clipboardText)");
+	lua_pop(g_L, 1);
 }
 
 //
@@ -167,13 +166,12 @@ bool    Init(lua_State *L)
 	io.KeyMap[ImGuiKey_Y] = g_keyMap["y"];
 	io.KeyMap[ImGuiKey_Z] = g_keyMap["z"];
 
-	io.RenderDrawListsFn = ImGui_ImplSdl_RenderDrawLists;   // Alternatively you can set this to NULL and call ImGui::GetDrawData() after ImGui::Render() to get the same ImDrawData pointer.
-	io.SetClipboardTextFn = ImGui_ImplSdl_SetClipboardText;
-	io.GetClipboardTextFn = ImGui_ImplSdl_GetClipboardText;
+	io.RenderDrawListsFn = ImGui_Impl_RenderDrawLists;   // Alternatively you can set this to NULL and call ImGui::GetDrawData() after ImGui::Render() to get the same ImDrawData pointer.
+	io.SetClipboardTextFn = ImGui_Impl_SetClipboardText;
+	io.GetClipboardTextFn = ImGui_Impl_GetClipboardText;
 
 	luaL_dostring(L, "love.filesystem.createDirectory(love.filesystem.getSaveDirectory()) return love.filesystem.getSaveDirectory()");
-	size_t size;
-	const char *path = luaL_checklstring(L, 1, &size);
+	const char *path = luaL_checkstring(L, 1);
 	g_iniPath = std::string(path) + std::string("/imgui.ini");
 	io.IniFilename = g_iniPath.c_str();
 	return true;
@@ -186,39 +184,24 @@ void ShutDown()
 
 void NewFrame()
 {
-	SDL_Window *window = SDL_GL_GetCurrentWindow();
-	if (!window)
-		return;
-
 	ImGuiIO& io = ImGui::GetIO();
 
-	if (SDL_GetWindowID(window) != g_window)
-	{
-		if (g_window == -1)
-		{
-#ifdef _WIN32
-			SDL_SysWMinfo wmInfo;
-			SDL_VERSION(&wmInfo.version);
-			SDL_GetWindowWMInfo(window, &wmInfo);
-			io.ImeWindowHandle = wmInfo.info.win.window;
-#endif
-		}
-		g_window = SDL_GetWindowID(window);
-	}
-
 	// Setup display size (every frame to accommodate for window resizing)
-	int w, h;
-	int display_w, display_h;
-	SDL_GetWindowSize(window, &w, &h);
-	SDL_GL_GetDrawableSize(window, &display_w, &display_h);
-	io.DisplaySize = ImVec2((float)w, (float)h);
-	io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+	luaL_dostring(g_L, "return love.graphics.getWidth()");
+	float w = luaL_checknumber(g_L, 0);
+	luaL_dostring(g_L, "return love.graphics.getHeight()");
+	float h = luaL_checknumber(g_L, 0);
+	//int display_w, display_h;
+	// SDL_GL_GetDrawableSize(window, &display_w, &display_h);
+	io.DisplaySize = ImVec2(w, h);
+	// io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 	// Setup time step
-	Uint32	time = SDL_GetTicks();
-	double current_time = time / 1000.0;
-	io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f / 60.0f);
-	g_Time = current_time;
+	luaL_dostring(g_L, "return love.graphics.getTime()");
+	float time = luaL_checknumber(g_L, 0);
+	io.DeltaTime = g_Time > 0.0 ? (float)(time - g_Time) : (float)(1.0f / 60.0f);
+	g_Time = time;
 
 	// Setup input
 	io.MouseDown[0] = g_MousePressed[0];
@@ -228,7 +211,11 @@ void NewFrame()
 	g_MouseWheel = 0.0f;
 
 	// Hide OS mouse cursor if ImGui is drawing it
-	SDL_ShowCursor(io.MouseDrawCursor ? 0 : 1);
+	lua_getglobal(g_L, "imgui");
+	lua_pushboolean(g_L, (int)io.MouseDrawCursor);
+	lua_setfield(g_L, -2, "mouseDrawCursor");
+	luaL_dostring(g_L, "love.mouse.setVisible(not imgui.mouseDrawCursor)");
+	lua_pop(g_L, 1);
 
 	// Start the frame
 	ImGui::NewFrame();
@@ -239,13 +226,12 @@ void NewFrame()
 //
 void MouseMoved(int x, int y)
 {
-	SDL_Window *window = SDL_GL_GetCurrentWindow();
-	if (window)
+	if (g_L)
 	{
 		ImGuiIO& io = ImGui::GetIO();
-		int mx, my;
-		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_FOCUS)
+		luaL_dostring(g_L, "return love.window.hasMouseFocus()");
+		int focus = lua_toboolean(g_L, 3);
+		if (focus > 0)
 			io.MousePos = ImVec2((float)x, (float)y);   // Mouse position, in pixels (set to -1,-1 if no mouse / on another screen, etc.)
 		else
 			io.MousePos = ImVec2(-1, -1);
@@ -276,28 +262,50 @@ void WheelMoved(int y)
 
 void KeyPressed(const char *key)
 {
-	std::string k(key);
-	if (k == "kpenter")
-		k = "return";
-	ImGuiIO& io = ImGui::GetIO();
-	io.KeysDown[g_keyMap[k]] = true;
-	io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-	io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-	io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-	io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+	if (g_L)
+	{
+		std::string k(key);
+		if (k == "kpenter")
+			k = "return";
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[g_keyMap[k]] = true;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('rshift') or love.keyboard.isDown('lshift'))");
+		bool down = lua_toboolean(g_L, 2) > 0;
+		io.KeyShift = down;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('rctrl') or love.keyboard.isDown('lctrl'))");
+		down = lua_toboolean(g_L, 3) > 0;
+		io.KeyCtrl = down;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))");
+		down = lua_toboolean(g_L, 4) > 0;
+		io.KeyAlt = down;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('rgui') or love.keyboard.isDown('lgui'))");
+		down = lua_toboolean(g_L, 5) > 0;
+		io.KeySuper = down;
+	}
 }
 
 void KeyReleased(const char *key)
 {
-	std::string k(key);
-	if (k == "kpenter")
-		k = "return";
-	ImGuiIO& io = ImGui::GetIO();
-	io.KeysDown[g_keyMap[k.c_str()]] = false;
-	io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-	io.KeyCtrl = ((SDL_GetModState() & KMOD_CTRL) != 0);
-	io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
-	io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
+	if (g_L)
+	{
+		std::string k(key);
+		if (k == "kpenter")
+			k = "return";
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[g_keyMap[k.c_str()]] = false;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('rshift') or love.keyboard.isDown('lshift'))");
+		bool down = lua_toboolean(g_L, 2) > 0;
+		io.KeyShift = down;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('rctrl') or love.keyboard.isDown('lctrl'))");
+		down = lua_toboolean(g_L, 3) > 0;
+		io.KeyCtrl = down;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('ralt') or love.keyboard.isDown('lalt'))");
+		down = lua_toboolean(g_L, 4) > 0;
+		io.KeyAlt = down;
+		luaL_dostring(g_L, "return (love.keyboard.isDown('rgui') or love.keyboard.isDown('lgui'))");
+		down = lua_toboolean(g_L, 5) > 0;
+		io.KeySuper = down;
+	}
 }
 
 void TextInput(const char *text)
