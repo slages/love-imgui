@@ -2,7 +2,7 @@
 
 [imgui](https://github.com/ocornut/imgui) module for the [LÖVE](https://love2d.org/) game engine including lua bindings based on this [project](https://github.com/patrickriordan/imgui_lua_bindings).
 
-It uses imgui 1.50 WIP and supports 250 functions (48 unsupported), and is based on the latest LÖVE sources (it should work with the latest released version).
+It uses imgui 1.50 WIP and supports 252 functions (46 unsupported), and is based on the latest LÖVE sources (it should work with the latest released version).
 
 ## Getting Started
 
