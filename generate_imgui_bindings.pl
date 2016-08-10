@@ -132,6 +132,11 @@ while ($line = <STDIN>) {
         push(@before, "FLOAT_POINTER_ARG($name)");
         push(@funcArgs, $name);
         push(@after, "END_FLOAT_POINTER($name)");
+      # const float * x
+      } elsif ($args[$i] =~ m/^ *const float *\* *([^ =\[]*)$/) {
+        my $name = $1;
+        push(@before, "FLOAT_ARRAY_ARG($name)");
+        push(@funcArgs, $name);
         #float a or float a = number
       } elsif ($args[$i] =~ m/^ *float *([^ =\[]*)( *= *[^ ]*|)$/) {
         my $name = $1;
@@ -165,9 +170,9 @@ while ($line = <STDIN>) {
         push(@before, "LABEL_ARRAY_ARG($name)");
         push(@funcArgs, $name);
       #const ImVec2& size with or without default value of ImVec(0,0)
-      } elsif ($args[$i] =~ m/^ *const ImVec2& ([^ ]*) *(= * ImVec2 .* .*|) *$/) {
-        my $name = $1;
-        if ($2 =~ m/^= * ImVec2 (.*) (.*)$/) {
+      } elsif ($args[$i] =~ m/^ *(const)? ImVec2&? ([^ ]*) *(= * ImVec2 .* .*|) *$/) {
+        my $name = $2;
+        if ($3 =~ m/^= * ImVec2 (.*) (.*)$/) {
           push(@before, "OPTIONAL_IM_VEC_2_ARG($name, $1, $2)");
         } else {
           push(@before, "IM_VEC_2_ARG($name)");
