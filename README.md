@@ -8,7 +8,7 @@ It uses imgui 1.50 WIP and supports 252 functions (46 unsupported), and is based
 
 Just build the project, and copy the generated dynamic module next to your love executable or into the LÖVE application data folder (for instance "C:/Users/<user>/AppData/Roaming/LOVE" on Windows or ~/.local/shared/love on Linux).
 
-So far it was only tested on Windows and Linux, and pre-built binaries are provided in the [releases](https://github.com/slages/love-imgui/releases) page.
+Pre-built binaries are provided in the [releases](https://github.com/slages/love-imgui/releases) page.
 
 ## Example
 
