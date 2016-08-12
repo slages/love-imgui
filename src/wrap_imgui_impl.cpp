@@ -19,6 +19,7 @@
 **/
 
 #include "libimgui/imgui.h"
+#include "libimgui/imgui_dock.h"
 #include "imgui_impl.h"
 #include "wrap_imgui_impl.h"
 
@@ -479,7 +480,7 @@ static void ImEndStack(int type) { \
 #endif
 
 #include "imgui_iterator.h"
-
+#include "imgui_iterator_dock.h"
 
 static const struct luaL_Reg imguilib[] = {
 #undef IMGUI_FUNCTION
@@ -598,6 +599,8 @@ static const struct luaL_Reg imguilib[] = {
 #define POP_END_STACK(type)
 
 #include "imgui_iterator.h"
+#include "imgui_iterator_dock.h"
+
   { "ShutDown", w_ShutDown },
   { "NewFrame", w_NewFrame },
   { "MouseMoved", w_MouseMoved },
@@ -733,6 +736,15 @@ extern "C" LOVE_IMGUI_EXPORT int luaopen_imgui(lua_State *L)
 	WRAP_ENUM(L, ItemInnerSpacing, ImGuiStyleVar_ItemInnerSpacing);
 	WRAP_ENUM(L, IndentSpacing, ImGuiStyleVar_IndentSpacing);
 	WRAP_ENUM(L, GrabMinSize, ImGuiStyleVar_GrabMinSize);
+
+	// Docks
+	WRAP_ENUM(L, Left, ImGuiDockSlot_Left);
+	WRAP_ENUM(L, Right, ImGuiDockSlot_Right);
+	WRAP_ENUM(L, Top, ImGuiDockSlot_Top);
+	WRAP_ENUM(L, Bottom, ImGuiDockSlot_Bottom);
+	WRAP_ENUM(L, Tab, ImGuiDockSlot_Tab);
+	WRAP_ENUM(L, Float, ImGuiDockSlot_Float);
+	WRAP_ENUM(L, None, ImGuiDockSlot_None);
 
 	luaL_openlib(L, "imgui", imguilib, 1);
 	return 1;

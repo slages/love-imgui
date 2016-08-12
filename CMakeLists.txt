@@ -13,6 +13,8 @@ ADD_LIBRARY(${LIB_NAME}
 	src/libimgui/imgui_draw.cpp
 	src/libimgui/imgui_demo.cpp
 	src/libimgui/imgui_internal.h
+	src/libimgui/imgui_dock.cpp
+	src/libimgui/imgui_dock.h
 	src/libimgui/stb_rect_pack.h
 	src/libimgui/stb_textedit.h
 	src/libimgui/stb_truetype.h
@@ -21,6 +23,7 @@ ADD_LIBRARY(${LIB_NAME}
 	src/imgui_impl.h
 	src/wrap_imgui_impl.h
 	src/imgui_iterator.h
+	src/imgui_iterator_dock.h
 )
 
 TARGET_INCLUDE_DIRECTORIES(${LIB_NAME}
