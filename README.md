@@ -4,14 +4,17 @@
 
 It uses imgui 1.50 WIP and supports 252 functions (46 unsupported), and is based on the latest LÖVE sources (it should work with the latest released version).
 
+It also includes the docks extension by @adcox (https://github.com/adcox/imgui).
+
 ## Getting Started
 
 Just build the project, and copy the generated dynamic module next to your love executable or into the LÖVE application data folder (for instance "C:/Users/<user>/AppData/Roaming/LOVE" on Windows or ~/.local/shared/love on Linux).
 
 Pre-built binaries are provided in the [releases](https://github.com/slages/love-imgui/releases) page.
 
-## Example
+## Examples
 
+Simple integration:
 ```lua
 require "imgui"
 
@@ -137,8 +140,80 @@ function love.wheelmoved(x, y)
         -- Pass event to the game
     end
 end
-
 ```
+
+Docks:
+```lua
+require "imgui"
+
+--
+-- LOVE callbacks
+--
+function love.load(arg)
+end
+
+function love.update(dt)
+    imgui.NewFrame()
+end
+
+function love.draw()
+    imgui.SetNextWindowPos(0, 0)
+    imgui.SetNextWindowSize(love.graphics.getWidth(), love.graphics.getHeight())
+    if imgui.Begin("DockArea", nil, { "NoTitleBar", "NoResize", "NoMove" }) then
+        imgui.BeginDockspace()
+
+        -- Create 10 docks
+        for i = 1, 10 do
+            if imgui.BeginDock("dock_"..i) then
+                imgui.Text("Hello, dock "..i.."!");
+            end
+            imgui.EndDock()
+        end
+
+        imgui.EndDockspace()
+    end
+    imgui.End()
+
+    love.graphics.clear(100, 100, 100, 255)
+    imgui.Render();
+end
+
+function love.quit()
+    imgui.ShutDown();
+end
+
+--
+-- User inputs
+--
+function love.textinput(t)
+    imgui.TextInput(t)
+    if not imgui.GetWantCaptureKeyboard() then
+        -- Pass event to the game
+    end
+end
+
+function love.keypressed(key)
+    imgui.KeyPressed(key)
+    if not imgui.GetWantCaptureKeyboard() then
+        -- Pass event to the game
+    end
+end
+
+function love.keyreleased(key)
+    imgui.KeyReleased(key)
+    if not imgui.GetWantCaptureKeyboard() then
+        -- Pass event to the game
+    end
+end
+
+function love.mousemoved(x, y)
+    imgui.MouseMoved(x, y)
+    if not imgui.GetWantCaptureMouse() then
+        -- Pass event to the game
+    end
+end
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
