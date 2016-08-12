@@ -159,7 +159,7 @@ end
 function love.draw()
     imgui.SetNextWindowPos(0, 0)
     imgui.SetNextWindowSize(love.graphics.getWidth(), love.graphics.getHeight())
-    if imgui.Begin("DockArea", nil, { "NoTitleBar", "NoResize", "NoMove" }) then
+    if imgui.Begin("DockArea", nil, { "NoTitleBar", "NoResize", "NoMove", "NoBringToFrontOnFocus" }) then
         imgui.BeginDockspace()
 
         -- Create 10 docks
