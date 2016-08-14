@@ -9,7 +9,6 @@
 //#include <iostream>
 
 // Data
-static double						g_Time = 0.0f;
 static bool							g_MousePressed[3] = { false, false, false };
 static float						g_MouseWheel = 0.0f;
 static std::string					g_iniPath;
@@ -198,10 +197,9 @@ void NewFrame()
 	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
 
 	// Setup time step
-	luaL_dostring(g_L, "return love.graphics.getTime()");
-	float time = luaL_checknumber(g_L, 0);
-	io.DeltaTime = g_Time > 0.0 ? (float)(time - g_Time) : (float)(1.0f / 60.0f);
-	g_Time = time;
+	luaL_dostring(g_L, "return love.timer.getDelta()");
+	double time = luaL_checknumber(g_L, 0);
+	io.DeltaTime = (float)time;
 
 	// Setup input
 	io.MouseDown[0] = g_MousePressed[0];
