@@ -212,6 +212,27 @@ function love.mousemoved(x, y)
         -- Pass event to the game
     end
 end
+
+function love.mousepressed(x, y, button)
+    imgui.MousePressed(button)
+    if not imgui.GetWantCaptureMouse() then
+        -- Pass event to the game
+    end
+end
+
+function love.mousereleased(x, y, button)
+    imgui.MouseReleased(button)
+    if not imgui.GetWantCaptureMouse() then
+        -- Pass event to the game
+    end
+end
+
+function love.wheelmoved(x, y)
+    imgui.WheelMoved(y)
+    if not imgui.GetWantCaptureMouse() then
+        -- Pass event to the game
+    end
+end
 ```
 
 ## License
