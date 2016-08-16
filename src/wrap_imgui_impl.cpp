@@ -23,10 +23,14 @@
 #include "imgui_impl.h"
 #include "wrap_imgui_impl.h"
 
+#include <vector>
+#include <cstring>
+
 /*
 ** Love implentation functions
 */
 static bool g_inited = false;
+static int	g_textures[250]; // Should be enough
 
 static int w_ShutDown(lua_State *L)
 {
@@ -122,14 +126,23 @@ static int w_GetWantTextInput(lua_State *L)
 ** Wrapped functions
 */
 
-#include <vector>
-#include <cstring>
-
 #define IMGUI_FUNCTION(name) \
 static int impl_##name(lua_State *L) { \
   int max_args = lua_gettop(L); \
   int arg = 1; \
   int stackval = 0;
+
+#define TEXTURE_ARG(name) \
+	lua_getglobal(L, "imgui"); \
+	lua_pushvalue(L, arg++); \
+	lua_setfield(L, -2, "textureID"); \
+	luaL_dostring(L, "imgui.textures = imgui.textures or {}\
+					  table.insert(imgui.textures, imgui.textureID)\
+					  return #imgui.textures"); \
+	lua_pop(L, 1); \
+	int index = luaL_checkint(L, 0);\
+	g_textures[index - 1] = index; \
+	void *name = &g_textures[index - 1]; \
 
 #define OPTIONAL_LABEL_ARG(name, value) \
   const char* name; \
@@ -489,6 +502,8 @@ static const struct luaL_Reg imguilib[] = {
 	// we can get the function names
 #undef DEFAULT_ARG
 #define DEFAULT_ARG(type, name, value)
+#undef TEXTURE_ARG
+#define TEXTURE_ARG(name)
 #undef OPTIONAL_LABEL_ARG
 #define OPTIONAL_LABEL_ARG(name, value)
 #undef LABEL_ARG

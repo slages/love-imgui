@@ -255,6 +255,11 @@ while ($line = <STDIN>) {
         push(@before, "INT_ARRAY$2_ARG($name)");
         push(@funcArgs, $name);
         push(@after, "END_INT_ARRAY$2($name)");
+      # ImTextureID
+      } elsif ($args[$i] =~ m/^ *ImTextureID ([^ =\[]*) *$/) {
+        my $name = $1;
+        push(@before, "TEXTURE_ARG($name)");
+        push(@funcArgs, $name);
       } elsif ($args[$i] =~ m/^ *(.*) (.*) = (.*)$/) {
         my $type = $1;
         my $name = $2;

@@ -71,6 +71,15 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 			lua_pushnumber(g_L, (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 			lua_setfield(g_L, -2, "clipHeight");
 
+			if (pcmd->TextureId == NULL)
+				luaL_dostring(g_L, "imgui.renderMesh:setTexture(imgui.textureObject)");
+			else
+			{
+				lua_pushnumber(g_L, ((int*)pcmd->TextureId)[0]);
+				lua_setfield(g_L, -2, "currentTexture");
+				luaL_dostring(g_L, "imgui.renderMesh:setTexture(imgui.textures[imgui.currentTexture])");
+			}
+
 			luaL_dostring(g_L, "\
 				love.graphics.setScissor(imgui.clipX, imgui.clipY, imgui.clipWidth, imgui.clipHeight) \
 				imgui.renderMesh:setDrawRange(imgui.vertexPosition, imgui.vertexPosition + imgui.vertexCount - 1) \
@@ -169,6 +178,8 @@ bool    Init(lua_State *L)
 	io.SetClipboardTextFn = ImGui_Impl_SetClipboardText;
 	io.GetClipboardTextFn = ImGui_Impl_GetClipboardText;
 
+	io.Fonts->TexID = NULL;
+
 	luaL_dostring(L, "love.filesystem.createDirectory(love.filesystem.getSaveDirectory()) return love.filesystem.getSaveDirectory()");
 	const char *path = luaL_checkstring(L, 1);
 	g_iniPath = std::string(path) + std::string("/imgui.ini");
@@ -213,6 +224,9 @@ void NewFrame()
 	lua_pushboolean(g_L, (int)io.MouseDrawCursor);
 	lua_setfield(g_L, -2, "mouseDrawCursor");
 	luaL_dostring(g_L, "love.mouse.setVisible(not imgui.mouseDrawCursor)");
+
+	// Init lua data
+	luaL_dostring(g_L, "imgui.textures = nil");
 	lua_pop(g_L, 1);
 
 	// Start the frame
