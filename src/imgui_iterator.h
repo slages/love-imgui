@@ -1620,7 +1620,11 @@ CALL_FUNCTION(GetFrameCount, int)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
 //    IMGUI_API const char*   GetStyleColName(ImGuiCol idx);
-// Unsupported return type const
+IMGUI_FUNCTION(GetStyleColName)
+ENUM_ARG(idx)
+CALL_FUNCTION(GetStyleColName, const char*, idx)
+PUSH_STRING(ret)
+END_IMGUI_FUNC
 //    IMGUI_API ImVec2        CalcItemRectClosestPoint(const ImVec2& pos, bool on_edge = false, float outward = +0.0f);   // utility to find the closest point the last item bounding rectangle edge. useful to visually link items
 IMGUI_FUNCTION(CalcItemRectClosestPoint)
 IM_VEC_2_ARG(pos)
@@ -1810,14 +1814,20 @@ END_IMGUI_FUNC
 //    IMGUI_API void          MemFree(void* ptr);
 // Unsupported arg type void* ptr
 //    IMGUI_API const char*   GetClipboardText();
-// Unsupported return type const
+IMGUI_FUNCTION(GetClipboardText)
+CALL_FUNCTION(GetClipboardText, const char*)
+PUSH_STRING(ret)
+END_IMGUI_FUNC
 //    IMGUI_API void          SetClipboardText(const char* text);
 IMGUI_FUNCTION(SetClipboardText)
 LABEL_ARG(text)
 CALL_FUNCTION_NO_RET(SetClipboardText, text)
 END_IMGUI_FUNC
 //    IMGUI_API const char*   GetVersion();
-// Unsupported return type const
+IMGUI_FUNCTION(GetVersion)
+CALL_FUNCTION(GetVersion, const char*)
+PUSH_STRING(ret)
+END_IMGUI_FUNC
 //    IMGUI_API ImGuiContext* CreateContext(void* (*malloc_fn)(size_t) = NULL, void (*free_fn)(void*) = NULL);
 // Unsupported return type ImGuiContext*
 //    IMGUI_API void          DestroyContext(ImGuiContext* ctx);

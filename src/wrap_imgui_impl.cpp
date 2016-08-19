@@ -445,6 +445,10 @@ static int impl_##name(lua_State *L) { \
   lua_pushnumber(L, name); \
   stackval++;
 
+#define PUSH_STRING(name) \
+  lua_pushstring(L, name); \
+  stackval++;
+
 #define PUSH_BOOL(name) \
   lua_pushboolean(L, (int) name); \
   stackval++;
@@ -596,6 +600,8 @@ static const struct luaL_Reg imguilib[] = {
 #define PUSH_NUMBER(name)
 #undef PUSH_BOOL
 #define PUSH_BOOL(name)
+#undef PUSH_STRING
+#define PUSH_STRING(name)
 #undef END_BOOL_POINTER
 #define END_BOOL_POINTER(name)
 #undef END_IMGUI_FUNC

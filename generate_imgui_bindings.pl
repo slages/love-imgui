@@ -57,7 +57,7 @@ while ($line = <STDIN>) {
   $line =~ s/ImVec4\(([^,]*),([^,]*),([^,]*),([^\)]*)\)/ImVec4 $1 $2 $3 $4/g;
   #delete this so it's eaiser for regexes
   $line =~ s/ IM_PRINTFARGS\(.\);/;/g;
-  if ($line =~ m/ *IMGUI_API *([^ ]+) *([^\(]+)\(([^\;]*)\);/) {
+  if ($line =~ m/ *IMGUI_API *(const char*\*|[^ ]+) *([^\(]+)\(([^\;]*)\);/) {
     print "//" . $line;
     # this will be set to 0 if something is not supported yet
     my $shouldPrint = 1;
@@ -111,6 +111,10 @@ while ($line = <STDIN>) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "int");
       push(@after, "PUSH_NUMBER(ret)");
+    } elsif ($1 =~ /^const char*\*$/) {
+      $callMacro = "CALL_FUNCTION";
+      push(@funcArgs, "const char*");
+      push(@after, "PUSH_STRING(ret)");
     } else {
       print "// Unsupported return type $1\n";
       $shouldPrint = 0;
