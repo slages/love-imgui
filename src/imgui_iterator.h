@@ -1190,7 +1190,7 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNodeEx(const char* label, ImGuiTreeNodeFlags flags = 0);
 IMGUI_FUNCTION(TreeNodeEx)
 LABEL_ARG(label)
-DEFAULT_ARG(ImGuiTreeNodeFlags, flags, 0)
+OPTIONAL_ENUM_ARG(flags, 0)
 CALL_FUNCTION(TreeNodeEx, bool, label, flags)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC

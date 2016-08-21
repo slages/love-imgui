@@ -758,6 +758,17 @@ extern "C" LOVE_IMGUI_EXPORT int luaopen_imgui(lua_State *L)
 	WRAP_ENUM(L, IndentSpacing, ImGuiStyleVar_IndentSpacing);
 	WRAP_ENUM(L, GrabMinSize, ImGuiStyleVar_GrabMinSize);
 
+	WRAP_ENUM(L, Selected, ImGuiTreeNodeFlags_Selected);
+	WRAP_ENUM(L, Framed, ImGuiTreeNodeFlags_Framed);
+	WRAP_ENUM(L, AllowOverlapMode, ImGuiTreeNodeFlags_AllowOverlapMode);
+	WRAP_ENUM(L, NoTreePushOnOpen, ImGuiTreeNodeFlags_NoTreePushOnOpen);
+	WRAP_ENUM(L, NoAutoOpenOnLog, ImGuiTreeNodeFlags_NoAutoOpenOnLog);
+	WRAP_ENUM(L, DefaultOpen, ImGuiTreeNodeFlags_DefaultOpen);
+	WRAP_ENUM(L, OpenOnDoubleClick, ImGuiTreeNodeFlags_OpenOnDoubleClick);
+	WRAP_ENUM(L, OpenOnArrow, ImGuiTreeNodeFlags_OpenOnArrow);
+	WRAP_ENUM(L, Leaf, ImGuiTreeNodeFlags_Leaf);
+	WRAP_ENUM(L, Bullet, ImGuiTreeNodeFlags_Bullet);
+
 	// Docks
 	WRAP_ENUM(L, Left, ImGuiDockSlot_Left);
 	WRAP_ENUM(L, Right, ImGuiDockSlot_Right);
