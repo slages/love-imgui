@@ -44,7 +44,7 @@ PUSH_BOOL(ret)
 END_BOOL_POINTER(p_open)
 END_IMGUI_FUNC
 //    IMGUI_API bool          Begin(const char* name, bool* p_open, const ImVec2& size_on_first_use, float bg_alpha = -1.0f, ImGuiWindowFlags flags = 0); // OBSOLETE. this is the older/longer API. the extra parameters aren't very relevant. call SetNextWindowSize() instead if you want to set a window size. For regular windows, 'size_on_first_use' only applies to the first time EVER the window is created and probably not what you want! might obsolete this API eventually.
-IMGUI_FUNCTION(Begin_5)
+IMGUI_FUNCTION(Begin_2)
 LABEL_ARG(name)
 BOOL_POINTER_ARG(p_open)
 IM_VEC_2_ARG(size_on_first_use)
@@ -71,7 +71,7 @@ IF_RET_ADD_END_STACK(1)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          BeginChild(ImGuiID id, const ImVec2& size = ImVec2 0 0, bool border = false, ImGuiWindowFlags extra_flags = 0);            // "
-IMGUI_FUNCTION(BeginChild_4)
+IMGUI_FUNCTION(BeginChild_2)
 UINT_ARG(id)
 OPTIONAL_IM_VEC_2_ARG(size, 0, 0)
 OPTIONAL_BOOL_ARG(border, false)
@@ -221,28 +221,28 @@ IMGUI_FUNCTION(SetWindowFocus)
 CALL_FUNCTION_NO_RET(SetWindowFocus)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowPos(const char* name, const ImVec2& pos, ImGuiSetCond cond = 0);      // set named window position.
-IMGUI_FUNCTION(SetWindowPos_3)
+IMGUI_FUNCTION(SetWindowPos_2)
 LABEL_ARG(name)
 IM_VEC_2_ARG(pos)
 OPTIONAL_ENUM_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetWindowPos, name, pos, cond)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowSize(const char* name, const ImVec2& size, ImGuiSetCond cond = 0);    // set named window size. set axis to 0.0f to force an auto-fit on this axis.
-IMGUI_FUNCTION(SetWindowSize_3)
+IMGUI_FUNCTION(SetWindowSize_2)
 LABEL_ARG(name)
 IM_VEC_2_ARG(size)
 OPTIONAL_ENUM_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetWindowSize, name, size, cond)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowCollapsed(const char* name, bool collapsed, ImGuiSetCond cond = 0);   // set named window collapsed state
-IMGUI_FUNCTION(SetWindowCollapsed_3)
+IMGUI_FUNCTION(SetWindowCollapsed_2)
 LABEL_ARG(name)
 BOOL_ARG(collapsed)
 OPTIONAL_ENUM_ARG(cond, 0)
 CALL_FUNCTION_NO_RET(SetWindowCollapsed, name, collapsed, cond)
 END_IMGUI_FUNC
 //    IMGUI_API void          SetWindowFocus(const char* name);                                              // set named window to be focused / front-most. use NULL to remove focus.
-IMGUI_FUNCTION(SetWindowFocus_1)
+IMGUI_FUNCTION(SetWindowFocus_2)
 LABEL_ARG(name)
 CALL_FUNCTION_NO_RET(SetWindowFocus, name)
 END_IMGUI_FUNC
@@ -551,7 +551,7 @@ END_IMGUI_FUNC
 //    IMGUI_API void          PushID(const void* ptr_id);
 // Unsupported arg type const void* ptr_id
 //    IMGUI_API void          PushID(int int_id);
-IMGUI_FUNCTION(PushID_1)
+IMGUI_FUNCTION(PushID_4)
 INT_ARG(int_id)
 CALL_FUNCTION_NO_RET(PushID, int_id)
 END_IMGUI_FUNC
@@ -701,7 +701,7 @@ CALL_FUNCTION(RadioButton, bool, label, active)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          RadioButton(const char* label, int* v, int v_button);
-IMGUI_FUNCTION(RadioButton_3)
+IMGUI_FUNCTION(RadioButton_2)
 LABEL_ARG(label)
 INT_POINTER_ARG(v)
 INT_ARG(v_button)
@@ -721,7 +721,7 @@ PUSH_BOOL(ret)
 END_INT_CURRENT_ITEM_POINTER(current_item)
 END_IMGUI_FUNC
 //    IMGUI_API bool          Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int height_in_items = -1);      // separate items with \0, end item-list with \0\0
-IMGUI_FUNCTION(Combo_4)
+IMGUI_FUNCTION(Combo_2)
 LABEL_ARG(label)
 INT_CURRENT_ITEM_POINTER_ARG(current_item)
 LABEL_ARG(items_separated_by_zeros)
@@ -1172,7 +1172,7 @@ PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNode(const char* str_id, const char* fmt, ...);    // read the FAQ about why and how to use ID. to align arbitrary text at the same level as a TreeNode() you can use Bullet().
 // Variadic functions aren't suppported but here it is anyway
-IMGUI_FUNCTION(TreeNode_3)
+IMGUI_FUNCTION(TreeNode_2)
 LABEL_ARG(str_id)
 LABEL_ARG(fmt)
 CALL_FUNCTION(TreeNode, bool, str_id, fmt)
@@ -1196,7 +1196,7 @@ PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNodeEx(const char* str_id, ImGuiTreeNodeFlags flags, const char* fmt, ...);
 // Variadic functions aren't suppported but here it is anyway
-IMGUI_FUNCTION(TreeNodeEx_4)
+IMGUI_FUNCTION(TreeNodeEx_2)
 LABEL_ARG(str_id)
 ENUM_ARG(flags)
 LABEL_ARG(fmt)
@@ -1218,7 +1218,7 @@ CALL_FUNCTION_NO_RET(TreePush, str_id)
 ADD_END_STACK(3)
 END_IMGUI_FUNC
 //    IMGUI_API void          TreePush(const void* ptr_id = NULL);                                    // "
-IMGUI_FUNCTION(TreePush_1)
+IMGUI_FUNCTION(TreePush_2)
 DEFAULT_ARG(const void*, ptr_id, NULL)
 CALL_FUNCTION_NO_RET(TreePush, ptr_id)
 ADD_END_STACK(3)
@@ -1251,7 +1251,7 @@ CALL_FUNCTION(CollapsingHeader, bool, label, flags)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          CollapsingHeader(const char* label, bool* p_open, ImGuiTreeNodeFlags flags = 0); // when 'p_open' isn't NULL, display an additional small close button on upper right of the header
-IMGUI_FUNCTION(CollapsingHeader_3)
+IMGUI_FUNCTION(CollapsingHeader_2)
 LABEL_ARG(label)
 BOOL_POINTER_ARG(p_open)
 OPTIONAL_ENUM_ARG(flags, 0)
@@ -1269,7 +1269,7 @@ CALL_FUNCTION(Selectable, bool, label, selected, flags, size)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          Selectable(const char* label, bool* p_selected, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2 0 0);
-IMGUI_FUNCTION(Selectable_4)
+IMGUI_FUNCTION(Selectable_2)
 LABEL_ARG(label)
 BOOL_POINTER_ARG(p_selected)
 OPTIONAL_ENUM_ARG(flags, 0)
@@ -1300,7 +1300,7 @@ CALL_FUNCTION(ListBoxHeader, bool, label, size)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          ListBoxHeader(const char* label, int items_count, int height_in_items = -1); // "
-IMGUI_FUNCTION(ListBoxHeader_3)
+IMGUI_FUNCTION(ListBoxHeader_2)
 LABEL_ARG(label)
 INT_ARG(items_count)
 OPTIONAL_INT_ARG(height_in_items, -1)
@@ -1324,13 +1324,13 @@ INT_ARG(v)
 CALL_FUNCTION_NO_RET(Value, prefix, v)
 END_IMGUI_FUNC
 //    IMGUI_API void          Value(const char* prefix, unsigned int v);
-IMGUI_FUNCTION(Value_2_2)
+IMGUI_FUNCTION(Value_3)
 LABEL_ARG(prefix)
 UINT_ARG(v)
 CALL_FUNCTION_NO_RET(Value, prefix, v)
 END_IMGUI_FUNC
 //    IMGUI_API void          Value(const char* prefix, float v, const char* float_format = NULL);
-IMGUI_FUNCTION(Value_3)
+IMGUI_FUNCTION(Value_4)
 LABEL_ARG(prefix)
 NUMBER_ARG(v)
 OPTIONAL_LABEL_ARG(float_format, NULL)
@@ -1411,7 +1411,7 @@ CALL_FUNCTION(MenuItem, bool, label, shortcut, selected, enabled)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          MenuItem(const char* label, const char* shortcut, bool* p_selected, bool enabled = true);              // return true when activated + toggle (*p_selected) if p_selected != NULL
-IMGUI_FUNCTION(MenuItem_4)
+IMGUI_FUNCTION(MenuItem_2)
 LABEL_ARG(label)
 LABEL_ARG(shortcut)
 BOOL_POINTER_ARG(p_selected)

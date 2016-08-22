@@ -279,13 +279,15 @@ while ($line = <STDIN>) {
         $shouldPrint = 0;
       }
     }
-    if ($shouldPrint != 0) {
-      my $luaFunc = $funcName;
-      # Stupid way of implementing overriding
-      while($funcNames{$luaFunc}) {
-        $luaFunc .= "_" . scalar(@args);
-      }
+    my $luaFunc = $funcName;
+    # Stupid way of implementing overriding
+    if ($funcNames{$luaFunc}) {
+      $funcNames{$luaFunc} = $funcNames{$luaFunc} + 1;
+      $luaFunc .= "_" . $funcNames{$luaFunc};
+    } else {
       $funcNames{$luaFunc} = 1;
+    }
+    if ($shouldPrint != 0) {
 
       print "IMGUI_FUNCTION($luaFunc)\n";
       for (my $i = 0; $i < @before; $i++) {
