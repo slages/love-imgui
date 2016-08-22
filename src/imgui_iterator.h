@@ -1195,18 +1195,21 @@ CALL_FUNCTION(TreeNodeEx, bool, label, flags)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNodeEx(const char* str_id, ImGuiTreeNodeFlags flags, const char* fmt, ...);
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Variadic functions aren't suppported but here it is anyway
+IMGUI_FUNCTION(TreeNodeEx_4)
+LABEL_ARG(str_id)
+ENUM_ARG(flags)
+LABEL_ARG(fmt)
+CALL_FUNCTION(TreeNodeEx, bool, str_id, flags, fmt)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
 //    IMGUI_API bool          TreeNodeEx(const void* ptr_id, ImGuiTreeNodeFlags flags, const char* fmt, ...);
 // Unsupported arg type const void* ptr_id
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Variadic functions aren't suppported but here it is anyway
 //    IMGUI_API bool          TreeNodeExV(const char* str_id, ImGuiTreeNodeFlags flags, const char* fmt, va_list args);
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Unsupported arg type  va_list args
 //    IMGUI_API bool          TreeNodeExV(const void* ptr_id, ImGuiTreeNodeFlags flags, const char* fmt, va_list args);
 // Unsupported arg type const void* ptr_id
-// Unsupported arg type  ImGuiTreeNodeFlags flags
 // Unsupported arg type  va_list args
 //    IMGUI_API void          TreePush(const char* str_id = NULL);                                    // ~ Indent()+PushId(). Already called by TreeNode() when returning true, but you can call Push/Pop yourself for layout purpose
 IMGUI_FUNCTION(TreePush)
@@ -1243,7 +1246,7 @@ END_IMGUI_FUNC
 //    IMGUI_API bool          CollapsingHeader(const char* label, ImGuiTreeNodeFlags flags = 0);      // if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop().
 IMGUI_FUNCTION(CollapsingHeader)
 LABEL_ARG(label)
-DEFAULT_ARG(ImGuiTreeNodeFlags, flags, 0)
+OPTIONAL_ENUM_ARG(flags, 0)
 CALL_FUNCTION(CollapsingHeader, bool, label, flags)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
@@ -1251,7 +1254,7 @@ END_IMGUI_FUNC
 IMGUI_FUNCTION(CollapsingHeader_3)
 LABEL_ARG(label)
 BOOL_POINTER_ARG(p_open)
-DEFAULT_ARG(ImGuiTreeNodeFlags, flags, 0)
+OPTIONAL_ENUM_ARG(flags, 0)
 CALL_FUNCTION(CollapsingHeader, bool, label, p_open, flags)
 PUSH_BOOL(ret)
 END_BOOL_POINTER(p_open)
