@@ -123,6 +123,23 @@ static int w_GetWantTextInput(lua_State *L)
 }
 
 /*
+** Custom bindings
+*/
+
+static int w_GetStyleColName(lua_State *L)
+{
+	int idx = luaL_checkint(L, 1);
+	lua_pushstring(L, ImGui::GetStyleColName(idx - 1));
+	return 1;
+}
+
+static int w_GetStyleColCount(lua_State *L)
+{
+	lua_pushinteger(L, ImGuiCol_COUNT);
+	return 1;
+}
+
+/*
 ** Wrapped functions
 */
 
@@ -621,6 +638,10 @@ static const struct luaL_Reg imguilib[] = {
 
 #include "imgui_iterator.h"
 #include "imgui_iterator_dock.h"
+
+  // Custom
+  { "GetStyleColName", w_GetStyleColName },
+  { "GetStyleColCount", w_GetStyleColCount },
 
   { "ShutDown", w_ShutDown },
   { "NewFrame", w_NewFrame },
