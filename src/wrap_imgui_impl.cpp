@@ -240,7 +240,7 @@ static int impl_##name(lua_State *L) { \
 #define OPTIONAL_NUMBER_ARG(name, otherwise)\
   lua_Number name = otherwise; \
   if (arg <= max_args) { \
-    name = lua_tonumber(L, arg++); \
+    name = luaL_checknumber(L, arg++); \
     }
 
 #define FLOAT_POINTER_ARG(name) \
@@ -302,8 +302,8 @@ static int impl_##name(lua_State *L) { \
     stackval += 4; \
 
 #define INT_ARRAY2_ARG(name) \
-  int i_##name##_1 = (float)luaL_checknumber(L, arg++); \
-  int i_##name##_2 = (float)luaL_checknumber(L, arg++); \
+  int i_##name##_1 = (int)luaL_checkinteger(L, arg++); \
+  int i_##name##_2 = (int)luaL_checkinteger(L, arg++); \
   int name[2] = { i_##name##_1, i_##name##_2 };
 
 #define END_INT_ARRAY2(name) \
@@ -312,9 +312,9 @@ static int impl_##name(lua_State *L) { \
     stackval += 2; \
 
 #define INT_ARRAY3_ARG(name) \
-  int i_##name##_1 = (int)luaL_checknumber(L, arg++); \
-  int i_##name##_2 = (int)luaL_checknumber(L, arg++); \
-  int i_##name##_3 = (int)luaL_checknumber(L, arg++); \
+  int i_##name##_1 = (int)luaL_checkinteger(L, arg++); \
+  int i_##name##_2 = (int)luaL_checkinteger(L, arg++); \
+  int i_##name##_3 = (int)luaL_checkinteger(L, arg++); \
   int name[3] = { i_##name##_1, i_##name##_2, i_##name##_3 };
 
 #define END_INT_ARRAY3(name) \
@@ -324,10 +324,10 @@ static int impl_##name(lua_State *L) { \
     stackval += 3; \
 
 #define INT_ARRAY4_ARG(name) \
-  int i_##name##_1 = (int)luaL_checknumber(L, arg++); \
-  int i_##name##_2 = (int)luaL_checknumber(L, arg++); \
-  int i_##name##_3 = (int)luaL_checknumber(L, arg++); \
-  int i_##name##_4 = (int)luaL_checknumber(L, arg++); \
+  int i_##name##_1 = (int)luaL_checkinteger(L, arg++); \
+  int i_##name##_2 = (int)luaL_checkinteger(L, arg++); \
+  int i_##name##_3 = (int)luaL_checkinteger(L, arg++); \
+  int i_##name##_4 = (int)luaL_checkinteger(L, arg++); \
   int name[4] = { i_##name##_1, i_##name##_2, i_##name##_3, i_##name##_4 };
 
 #define END_INT_ARRAY4(name) \
@@ -340,11 +340,11 @@ static int impl_##name(lua_State *L) { \
 #define OPTIONAL_INT_ARG(name, otherwise)\
   int name = otherwise; \
   if (arg <= max_args) { \
-    name = (int)lua_tonumber(L, arg++); \
+    name = (int)luaL_checkinteger(L, arg++); \
     }
 
 #define INT_ARG(name) \
-  const int name = (int)luaL_checknumber(L, arg++);
+  const int name = (int)luaL_checkinteger(L, arg++);
 
 #define OPTIONAL_ENUM_ARG(name, otherwise)\
   int name = otherwise; \
@@ -389,7 +389,7 @@ static int impl_##name(lua_State *L) { \
 #define OPTIONAL_UINT_ARG(name, otherwise)\
   unsigned int name = otherwise; \
   if (arg <= max_args) { \
-    name = (unsigned int)lua_tounsigned(L, arg++); \
+    name = (unsigned int)luaL_checkint(L, arg++); \
     }
 
 #define UINT_ARG(name) \
@@ -435,7 +435,7 @@ static int impl_##name(lua_State *L) { \
   if (arg <= max_args) { \
 	if (lua_isboolean(L, arg++)) \
 		{ \
-			i_##name##_value = (bool)lua_toboolean(L, -1); \
+			i_##name##_value = (bool)lua_toboolean(L, arg - 1); \
 			name = &(i_##name##_value); \
 	} \
     }
@@ -515,6 +515,149 @@ static void ImEndStack(int type) { \
 
 #include "imgui_iterator.h"
 #include "imgui_iterator_dock.h"
+
+/*
+** Hand made overrides
+*/
+
+static int w_Value(lua_State *L)
+{
+	if (lua_isboolean(L, 2))
+	{
+		return impl_Value(L);
+	}
+	return impl_Value_4(L);
+}
+
+static int w_ValueColor(lua_State *L)
+{
+	if (lua_gettop(L) > 2)
+	{
+		return impl_ValueColor(L);
+	}
+	return impl_ValueColor_2(L);
+}
+
+static int w_CollapsingHeader(lua_State *L)
+{
+	if (lua_isboolean(L, 2))
+	{
+		return impl_CollapsingHeader_2(L);
+	}
+	return impl_CollapsingHeader(L);
+}
+
+static int w_TreeNodeEx(lua_State *L)
+{
+	if (lua_gettop(L) > 2)
+	{
+		return impl_TreeNodeEx_2(L);
+	}
+	return impl_TreeNodeEx(L);
+}
+
+static int w_TreeNode(lua_State *L)
+{
+	if (lua_gettop(L) > 1)
+	{
+		return impl_TreeNode_2(L);
+	}
+	return impl_TreeNode(L);
+}
+
+static int w_Combo(lua_State *L)
+{
+	if (lua_isstring(L, 3))
+	{
+		return impl_Combo_2(L);
+	}
+	return impl_Combo(L);
+}
+
+static int w_RadioButton(lua_State *L)
+{
+	if (lua_gettop(L) > 2)
+	{
+		return impl_RadioButton_2(L);
+	}
+	return impl_RadioButton(L);
+}
+
+static int w_PushID(lua_State *L)
+{
+	if (lua_gettop(L) > 1)
+	{
+		return impl_PushID_2(L);
+	}
+	return impl_PushID(L);
+}
+
+static int w_GetID(lua_State *L)
+{
+	if (lua_gettop(L) > 1)
+	{
+		return impl_GetID_2(L);
+	}
+	return impl_GetID(L);
+}
+
+static int w_PushStyleVar(lua_State *L)
+{
+	if (lua_gettop(L) > 2)
+	{
+		return impl_PushStyleVar_2(L);
+	}
+	return impl_PushStyleVar(L);
+}
+
+static int w_SetWindowPos(lua_State *L)
+{
+	if (lua_isstring(L, 1))
+	{
+		return impl_SetWindowPos_2(L);
+	}
+	return impl_SetWindowPos(L);
+}
+
+static int w_SetWindowSize(lua_State *L)
+{
+	if (lua_isstring(L, 1))
+	{
+		return impl_SetWindowSize_2(L);
+	}
+	return impl_SetWindowSize(L);
+}
+
+static int w_SetWindowCollapsed(lua_State *L)
+{
+	if (lua_isstring(L, 1))
+	{
+		return impl_SetWindowCollapsed_2(L);
+	}
+	return impl_SetWindowCollapsed(L);
+}
+
+static int w_SetWindowFocus(lua_State *L)
+{
+	if (lua_isstring(L, 1))
+	{
+		return impl_SetWindowFocus_2(L);
+	}
+	return impl_SetWindowFocus(L);
+}
+
+static int w_BeginChild(lua_State *L)
+{
+	if (lua_isstring(L, 1))
+	{
+		return impl_BeginChild(L);
+	}
+	return impl_BeginChild_2(L);
+}
+
+/*
+** Reg
+*/
 
 static const struct luaL_Reg imguilib[] = {
 #undef IMGUI_FUNCTION
@@ -643,6 +786,25 @@ static const struct luaL_Reg imguilib[] = {
   { "GetStyleColName", w_GetStyleColName },
   { "GetStyleColCount", w_GetStyleColCount },
 
+  // Overrides
+  { "Value", w_Value },
+  { "ValueColor", w_ValueColor },
+  { "CollapsingHeader", w_CollapsingHeader },
+  { "TreeNodeEx", w_TreeNodeEx },
+  { "TreeNode", w_TreeNode },
+  { "Combo", w_Combo },
+  { "RadioButton", w_RadioButton },
+  { "PushID", w_PushID },
+  { "GetID", w_GetID },
+  { "PushStyleVar", w_PushStyleVar },
+  { "SetWindowPos", w_SetWindowPos },
+  { "SetWindowSize", w_SetWindowSize },
+  { "SetWindowCollapsed", w_SetWindowCollapsed },
+  { "SetWindowFocus", w_SetWindowFocus },
+  { "BeginChild", w_BeginChild },
+
+
+  // Implementation
   { "ShutDown", w_ShutDown },
   { "NewFrame", w_NewFrame },
   { "MouseMoved", w_MouseMoved },
