@@ -709,7 +709,7 @@ CALL_FUNCTION(RadioButton, bool, label, v, v_button)
 PUSH_BOOL(ret)
 END_INT_POINTER(v)
 END_IMGUI_FUNC
-//    IMGUI_API bool          Combo(const char* label, int* current_item, const char** items, int items_count, int height_in_items = -1);
+//    IMGUI_API bool          Combo(const char* label, int* current_item, const char* const* items, int items_count, int height_in_items = -1);
 IMGUI_FUNCTION(Combo)
 LABEL_ARG(label)
 INT_CURRENT_ITEM_POINTER_ARG(current_item)
@@ -1232,7 +1232,7 @@ END_IMGUI_FUNC
 IMGUI_FUNCTION(TreeAdvanceToLabelPos)
 CALL_FUNCTION_NO_RET(TreeAdvanceToLabelPos)
 END_IMGUI_FUNC
-//    IMGUI_API float         GetTreeNodeToLabelSpacing();                                            // horizontal distance preceeding label when using TreeNode*() or Bullet() == (g.FontSize + style.FramePadding.x*2) for a regular unframed TreeNode
+//    IMGUI_API float         GetTreeNodeToLabelSpacing();                                            // horizontal distance preceding label when using TreeNode*() or Bullet() == (g.FontSize + style.FramePadding.x*2) for a regular unframed TreeNode
 IMGUI_FUNCTION(GetTreeNodeToLabelSpacing)
 CALL_FUNCTION(GetTreeNodeToLabelSpacing, float)
 PUSH_NUMBER(ret)
@@ -1278,7 +1278,7 @@ CALL_FUNCTION(Selectable, bool, label, p_selected, flags, size)
 PUSH_BOOL(ret)
 END_BOOL_POINTER(p_selected)
 END_IMGUI_FUNC
-//    IMGUI_API bool          ListBox(const char* label, int* current_item, const char** items, int items_count, int height_in_items = -1);
+//    IMGUI_API bool          ListBox(const char* label, int* current_item, const char* const* items, int items_count, int height_in_items = -1);
 IMGUI_FUNCTION(ListBox)
 LABEL_ARG(label)
 INT_CURRENT_ITEM_POINTER_ARG(current_item)
@@ -1432,7 +1432,7 @@ CALL_FUNCTION(BeginPopup, bool, str_id)
 IF_RET_ADD_END_STACK(8)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          BeginPopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags extra_flags = 0);               // modal dialog (can't close them by clicking outside)
+//    IMGUI_API bool          BeginPopupModal(const char* name, bool* p_open = NULL, ImGuiWindowFlags extra_flags = 0);               // modal dialog (block interactions behind the modal window, can't close the modal window by clicking outside)
 IMGUI_FUNCTION(BeginPopupModal)
 LABEL_ARG(name)
 OPTIONAL_BOOL_POINTER_ARG(p_open)
@@ -1600,10 +1600,17 @@ IMGUI_FUNCTION(IsRootWindowOrAnyChildHovered)
 CALL_FUNCTION(IsRootWindowOrAnyChildHovered, bool)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsRectVisible(const ImVec2& size);                                  // test if rectangle of given size starting from cursor pos is visible (not clipped). to perform coarse clipping on user's side (as an optimization)
+//    IMGUI_API bool          IsRectVisible(const ImVec2& size);                                  // test if rectangle (of given size, starting from cursor position) is visible / not clipped.
 IMGUI_FUNCTION(IsRectVisible)
 IM_VEC_2_ARG(size)
 CALL_FUNCTION(IsRectVisible, bool, size)
+PUSH_BOOL(ret)
+END_IMGUI_FUNC
+//    IMGUI_API bool          IsRectVisible(const ImVec2& rect_min, const ImVec2& rect_max);      // test if rectangle (in screen space) is visible / not clipped. to perform coarse clipping on user's side.
+IMGUI_FUNCTION(IsRectVisible_2)
+IM_VEC_2_ARG(rect_min)
+IM_VEC_2_ARG(rect_max)
+CALL_FUNCTION(IsRectVisible, bool, rect_min, rect_max)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          IsPosHoveringAnyWindow(const ImVec2& pos);                          // is given position hovering any active imgui window

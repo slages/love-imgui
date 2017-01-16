@@ -91,13 +91,13 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 	lua_pop(g_L, 1);
 }
 
-static const char* ImGui_Impl_GetClipboardText()
+static const char* ImGui_Impl_GetClipboardText(void* user_data)
 {
 	luaL_dostring(g_L, "return love.system.getClipboardText()");
 	return luaL_checkstring(g_L, 0);
 }
 
-static void ImGui_Impl_SetClipboardText(const char* text)
+static void ImGui_Impl_SetClipboardText(void* user_data, const char* text)
 {
 	lua_getglobal(g_L, "imgui");
 	lua_pushstring(g_L, text);

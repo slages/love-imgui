@@ -169,7 +169,7 @@ while ($line = <STDIN>) {
         # skip next argument
         $i = $i + 1;
       # const char** a
-      } elsif ($args[$i] =~ m/^ *const char\*\* *([^ =\[]*) *$/) {
+      } elsif ($args[$i] =~ m/^ *const char\*\* *([^ =\[]*) *$/ or $args[$i] =~ m/^ *const char\* const\* *([^ =\[]*) *$/) {
         my $name = $1;
         push(@before, "LABEL_ARRAY_ARG($name)");
         push(@funcArgs, $name);
