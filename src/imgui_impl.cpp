@@ -71,13 +71,20 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 			lua_pushnumber(g_L, (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 			lua_setfield(g_L, -2, "clipHeight");
 
+			luaL_dostring(g_L, "love.graphics.setBlendMode(\"alpha\")");
 			if (pcmd->TextureId == NULL)
 				luaL_dostring(g_L, "imgui.renderMesh:setTexture(imgui.textureObject)");
 			else
 			{
 				lua_pushnumber(g_L, ((int*)pcmd->TextureId)[0]);
 				lua_setfield(g_L, -2, "currentTexture");
-				luaL_dostring(g_L, "imgui.renderMesh:setTexture(imgui.textures[imgui.currentTexture])");
+				luaL_dostring(g_L, "\
+					local texture = imgui.textures[imgui.currentTexture]\
+					if texture:typeOf(\"Canvas\") then\
+						love.graphics.setBlendMode(\"alpha\", \"premultiplied\")\
+					end\
+					imgui.renderMesh:setTexture(imgui.textures[imgui.currentTexture])\
+				");
 			}
 
 			luaL_dostring(g_L, "\
@@ -110,7 +117,7 @@ static void ImGui_Impl_SetClipboardText(void* user_data, const char* text)
 // Public part
 //
 
-bool    Init(lua_State *L)
+bool Init(lua_State *L)
 {
 	ImGuiIO& io = ImGui::GetIO();
 

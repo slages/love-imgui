@@ -803,7 +803,6 @@ static const struct luaL_Reg imguilib[] = {
   { "SetWindowFocus", w_SetWindowFocus },
   { "BeginChild", w_BeginChild },
 
-
   // Implementation
   { "ShutDown", w_ShutDown },
   { "NewFrame", w_NewFrame },
