@@ -83,7 +83,7 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 					if texture:typeOf(\"Canvas\") then\
 						love.graphics.setBlendMode(\"alpha\", \"premultiplied\")\
 					end\
-					imgui.renderMesh:setTexture(imgui.textures[imgui.currentTexture])\
+					imgui.renderMesh:setTexture(texture)\
 				");
 			}
 
