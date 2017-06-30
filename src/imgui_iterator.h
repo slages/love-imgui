@@ -27,7 +27,7 @@ OPTIONAL_BOOL_POINTER_ARG(p_open)
 CALL_FUNCTION_NO_RET(ShowTestWindow, p_open)
 END_BOOL_POINTER(p_open)
 END_IMGUI_FUNC
-//    IMGUI_API void          ShowMetricsWindow(bool* p_open = NULL);     // metrics window for debugging ImGui
+//    IMGUI_API void          ShowMetricsWindow(bool* p_open = NULL);     // metrics window for debugging ImGui (browse draw commands, individual vertices, window list, etc.)
 IMGUI_FUNCTION(ShowMetricsWindow)
 OPTIONAL_BOOL_POINTER_ARG(p_open)
 CALL_FUNCTION_NO_RET(ShowMetricsWindow, p_open)
@@ -1701,29 +1701,29 @@ END_IMGUI_FUNC
 // Unsupported arg type  float& out_r
 // Unsupported arg type  float& out_g
 // Unsupported arg type  float& out_b
-//    IMGUI_API int           GetKeyIndex(ImGuiKey key);                                          // map ImGuiKey_* values into user's key index. == io.KeyMap[key]
+//    IMGUI_API int           GetKeyIndex(ImGuiKey imgui_key);                                    // map ImGuiKey_* values into user's key index. == io.KeyMap[key]
 IMGUI_FUNCTION(GetKeyIndex)
-ENUM_ARG(key)
-CALL_FUNCTION(GetKeyIndex, int, key)
+ENUM_ARG(imgui_key)
+CALL_FUNCTION(GetKeyIndex, int, imgui_key)
 PUSH_NUMBER(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsKeyDown(int key_index);                                           // key_index into the keys_down[] array, imgui doesn't know the semantic of each entry, uses your own indices!
+//    IMGUI_API bool          IsKeyDown(int user_key_index);                                      // is key being held. == io.KeysDown[user_key_index]. note that imgui doesn't know the semantic of each entry of io.KeyDown[]. Use your own indices/enums according to how your backend/engine stored them into KeyDown[]!
 IMGUI_FUNCTION(IsKeyDown)
-INT_ARG(key_index)
-CALL_FUNCTION(IsKeyDown, bool, key_index)
+INT_ARG(user_key_index)
+CALL_FUNCTION(IsKeyDown, bool, user_key_index)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsKeyPressed(int key_index, bool repeat = true);                    // uses user's key indices as stored in the keys_down[] array. if repeat=true. uses io.KeyRepeatDelay / KeyRepeatRate
+//    IMGUI_API bool          IsKeyPressed(int user_key_index, bool repeat = true);               // was key pressed (went from !Down to Down). if repeat=true, uses io.KeyRepeatDelay / KeyRepeatRate
 IMGUI_FUNCTION(IsKeyPressed)
-INT_ARG(key_index)
+INT_ARG(user_key_index)
 OPTIONAL_BOOL_ARG(repeat, true)
-CALL_FUNCTION(IsKeyPressed, bool, key_index, repeat)
+CALL_FUNCTION(IsKeyPressed, bool, user_key_index, repeat)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
-//    IMGUI_API bool          IsKeyReleased(int key_index);                                       // "
+//    IMGUI_API bool          IsKeyReleased(int user_key_index);                                  // was key released (went from Down to !Down)..
 IMGUI_FUNCTION(IsKeyReleased)
-INT_ARG(key_index)
-CALL_FUNCTION(IsKeyReleased, bool, key_index)
+INT_ARG(user_key_index)
+CALL_FUNCTION(IsKeyReleased, bool, user_key_index)
 PUSH_BOOL(ret)
 END_IMGUI_FUNC
 //    IMGUI_API bool          IsMouseDown(int button);                                            // is mouse button held
