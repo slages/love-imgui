@@ -351,3 +351,15 @@ bool GetWantTextInput()
 	ImGuiIO& io = ImGui::GetIO();
 	return io.WantTextInput;
 }
+
+// Fonts
+void SetGlobalFontFromFileTTF(const char *path, float size_pixels, float spacing_x, float spacing_y, float oversample_x, float oversample_y)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    ImFontConfig conf;
+    conf.OversampleH = oversample_x;
+    conf.OversampleV = oversample_y;
+    conf.GlyphExtraSpacing.x = spacing_x;
+    conf.GlyphExtraSpacing.y = spacing_y;
+    io.Fonts->AddFontFromFileTTF(path, size_pixels, &conf);
+}
