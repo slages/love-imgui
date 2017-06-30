@@ -41,6 +41,7 @@ struct DockContext
 			, size(-1, -1)
 			, active(true)
 			, status(Status_Float)
+            , split_ratio(0.5, 0.5)
 			, label(nullptr)
 			, opened(false)
         
@@ -186,6 +187,7 @@ struct DockContext
 		ImVec2 pos;
 		ImVec2 size;
 		Status_ status;
+        ImVec2 split_ratio;
 		int last_frame;
 		int invalid_frames;
 		char location[16];
@@ -203,19 +205,21 @@ struct DockContext
     ImVec2 m_workspace_pos;
     ImVec2 m_workspace_size;
     ImGuiDockSlot m_next_dock_slot;
+    ImVec2 m_next_split_ratio;
 
     DockContext()
         : m_current(nullptr)
         , m_next_parent(nullptr)
         , m_last_frame(0)
         , m_next_dock_slot(ImGuiDockSlot_Tab)
+        , m_next_split_ratio(0.5, 0.5)
     {
     }
 
 
 	~DockContext() {}
 
-	Dock& getDock(const char* label, bool opened)
+    Dock& getDock(const char* label, bool opened, const ImVec2& default_size, const ImVec2& split_ratio)
 	{
 		ImU32 id = ImHash(label, 0);
 		for (int i = 0; i < m_docks.size(); ++i)
@@ -232,7 +236,9 @@ struct DockContext
 		new_dock->setActive();
 		new_dock->status = (m_docks.size() == 1)?Status_Docked:Status_Float;
 		new_dock->pos = ImVec2(0, 0);
-		new_dock->size = GetIO().DisplaySize;
+        new_dock->size.x = default_size.x < 0 ? GetIO().DisplaySize.x : default_size.x;
+		new_dock->size.y = default_size.y < 0 ? GetIO().DisplaySize.y : default_size.y;
+        new_dock->split_ratio = split_ratio;
 		new_dock->opened = opened;
 		new_dock->first = true;
 		new_dock->last_frame = 0;
@@ -751,23 +757,23 @@ struct DockContext
 		switch (dock_slot)
 		{
 			case ImGuiDockSlot_Bottom:
-				dest.size.y *= 0.5f;
-				dock.size.y *= 0.5f;
+				dest.size.y *= 1.-dock.split_ratio.y;
+				dock.size.y *= dock.split_ratio.y;
 				dock.pos.y += dest.size.y;
 				break;
 			case ImGuiDockSlot_Right:
-				dest.size.x *= 0.5f;
-				dock.size.x *= 0.5f;
+				dest.size.x *= 1.-dock.split_ratio.x;
+				dock.size.x *= dock.split_ratio.x;
 				dock.pos.x += dest.size.x;
 				break;
 			case ImGuiDockSlot_Left:
-				dest.size.x *= 0.5f;
-				dock.size.x *= 0.5f;
+				dest.size.x *= 1.-dock.split_ratio.x;
+				dock.size.x *= dock.split_ratio.x;
 				dest.pos.x += dock.size.x;
 				break;
 			case ImGuiDockSlot_Top:
-				dest.size.y *= 0.5f;
-				dock.size.y *= 0.5f;
+				dest.size.y *= 1.-dock.split_ratio.y;
+				dock.size.y *= dock.split_ratio.y;
 				dest.pos.y += dock.size.y;
 				break;
 			default: IM_ASSERT(false); break;
@@ -917,11 +923,11 @@ struct DockContext
 	}
 
 
-	bool begin(const char* label, bool* opened, ImGuiWindowFlags extra_flags)
+	bool begin(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size, const ImVec2& split_ratio)
 	{
         ImGuiDockSlot next_slot = m_next_dock_slot;
         m_next_dock_slot = ImGuiDockSlot_Tab;
-		Dock& dock = getDock(label, !opened || *opened);
+		Dock& dock = getDock(label, !opened || *opened, default_size, split_ratio);
 		if (!dock.opened && (!opened || *opened)) tryDockToStoredLocation(dock);
 		dock.last_frame = ImGui::GetFrameCount();
 		if (strcmp(dock.label, label) != 0)
@@ -1113,9 +1119,9 @@ void ImGui::SetDockActive()
 }
 
 
-bool ImGui::BeginDock(const char* label, bool* opened, ImGuiWindowFlags extra_flags)
+bool ImGui::BeginDock(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size, const ImVec2& split_ratio)
 {
-	return g_dock.begin(label, opened, extra_flags);
+	return g_dock.begin(label, opened, extra_flags, default_size, split_ratio);
 }
 
 
