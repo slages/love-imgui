@@ -17,17 +17,24 @@ IMGUI_FUNCTION(SetNextDock)
 OPTIONAL_ENUM_ARG(slot, 6)
 CALL_FUNCTION_NO_RET(SetNextDock, (ImGuiDockSlot)slot)
 END_IMGUI_FUNC
-//IMGUI_API bool BeginDock(const char* label, bool* opened = nullptr, ImGuiWindowFlags extra_flags = 0, const ImVec2& default_size = ImVec2 -1  -1, const ImVec2& split_ratio = ImVec2 0.5 0.5);
+//IMGUI_API bool BeginDock(const char* label, bool* opened = nullptr, ImGuiWindowFlags extra_flags = 0);
 IMGUI_FUNCTION(BeginDock)
 LABEL_ARG(label)
-OPTIONAL_BOOL_POINTER_ARG(opened)
+DEFAULT_ARG(bool*, opened, nullptr)
 OPTIONAL_ENUM_ARG(extra_flags, 0)
-OPTIONAL_IM_VEC_2_ARG(default_size, -1 , -1)
-OPTIONAL_IM_VEC_2_ARG(split_ratio, 0.5 , 0.5)
-CALL_FUNCTION(BeginDock, bool, label, opened, extra_flags, default_size, split_ratio)
+CALL_FUNCTION(BeginDock, bool, label, opened, extra_flags)
 IF_RET_ADD_END_STACK(1)
 PUSH_BOOL(ret)
-END_BOOL_POINTER(opened)
+END_IMGUI_FUNC
+//IMGUI_API void SetNextDockSplitRatio(const ImVec2& split_ratio = ImVec2 0.5  0.5);
+IMGUI_FUNCTION(SetNextDockSplitRatio)
+OPTIONAL_IM_VEC_2_ARG(split_ratio, 0.5 , 0.5)
+CALL_FUNCTION_NO_RET(SetNextDockSplitRatio, split_ratio)
+END_IMGUI_FUNC
+//IMGUI_API void SetNextDockFloatingSize(const ImVec2& floating_size = ImVec2 0.5  0.5);
+IMGUI_FUNCTION(SetNextDockFloatingSize)
+OPTIONAL_IM_VEC_2_ARG(floating_size, 0.5 , 0.5)
+CALL_FUNCTION_NO_RET(SetNextDockFloatingSize, floating_size)
 END_IMGUI_FUNC
 //IMGUI_API void EndDock();
 IMGUI_FUNCTION(EndDock)
