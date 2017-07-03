@@ -20,7 +20,7 @@ END_IMGUI_FUNC
 //IMGUI_API bool BeginDock(const char* label, bool* opened = nullptr, ImGuiWindowFlags extra_flags = 0);
 IMGUI_FUNCTION(BeginDock)
 LABEL_ARG(label)
-DEFAULT_ARG(bool*, opened, nullptr)
+DEFAULT_ARG(bool*, opened, NULL)
 OPTIONAL_ENUM_ARG(extra_flags, 0)
 CALL_FUNCTION(BeginDock, bool, label, opened, extra_flags)
 IF_RET_ADD_END_STACK(1)
