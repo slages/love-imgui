@@ -206,6 +206,7 @@ struct DockContext
     ImVec2 m_workspace_size;
     ImGuiDockSlot m_next_dock_slot;
     ImVec2 m_next_split_ratio;
+    ImVec2 m_next_floating_size;
 
     DockContext()
         : m_current(nullptr)
@@ -213,13 +214,14 @@ struct DockContext
         , m_last_frame(0)
         , m_next_dock_slot(ImGuiDockSlot_Tab)
         , m_next_split_ratio(0.5, 0.5)
+        , m_next_floating_size(-1, -1)
     {
     }
 
 
 	~DockContext() {}
 
-    Dock& getDock(const char* label, bool opened, const ImVec2& default_size, const ImVec2& split_ratio)
+    Dock& getDock(const char* label, bool opened)
 	{
 		ImU32 id = ImHash(label, 0);
 		for (int i = 0; i < m_docks.size(); ++i)
@@ -236,9 +238,17 @@ struct DockContext
 		new_dock->setActive();
 		new_dock->status = (m_docks.size() == 1)?Status_Docked:Status_Float;
 		new_dock->pos = ImVec2(0, 0);
-        new_dock->size.x = default_size.x < 0 ? GetIO().DisplaySize.x : default_size.x;
-		new_dock->size.y = default_size.y < 0 ? GetIO().DisplaySize.y : default_size.y;
-        new_dock->split_ratio = split_ratio;
+        if (m_next_floating_size.x >= 0 && m_next_floating_size.y >= 0)
+        {
+            new_dock->size.x = m_next_floating_size.x < 0 ? GetIO().DisplaySize.x : m_next_floating_size.x;
+            new_dock->size.y = m_next_floating_size.y < 0 ? GetIO().DisplaySize.y : m_next_floating_size.y;
+        }
+        else
+        {
+            new_dock->size.x = new_dock->size.x < 0 ? GetIO().DisplaySize.x : m_next_floating_size.x;
+            new_dock->size.y = new_dock->size.y < 0 ? GetIO().DisplaySize.y : m_next_floating_size.y;
+        }
+        new_dock->split_ratio = m_next_split_ratio;
 		new_dock->opened = opened;
 		new_dock->first = true;
 		new_dock->last_frame = 0;
@@ -923,11 +933,11 @@ struct DockContext
 	}
 
 
-	bool begin(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size, const ImVec2& split_ratio)
+	bool begin(const char* label, bool* opened, ImGuiWindowFlags extra_flags)
 	{
         ImGuiDockSlot next_slot = m_next_dock_slot;
         m_next_dock_slot = ImGuiDockSlot_Tab;
-		Dock& dock = getDock(label, !opened || *opened, default_size, split_ratio);
+		Dock& dock = getDock(label, !opened || *opened);
 		if (!dock.opened && (!opened || *opened)) tryDockToStoredLocation(dock);
 		dock.last_frame = ImGui::GetFrameCount();
 		if (strcmp(dock.label, label) != 0)
@@ -1119,12 +1129,20 @@ void ImGui::SetDockActive()
 }
 
 
-bool ImGui::BeginDock(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size, const ImVec2& split_ratio)
+bool ImGui::BeginDock(const char* label, bool* opened, ImGuiWindowFlags extra_flags)
 {
-	return g_dock.begin(label, opened, extra_flags, default_size, split_ratio);
+	return g_dock.begin(label, opened, extra_flags);
 }
 
+void ImGui::SetNextDockSplitRatio(const ImVec2& split_ratio)
+{
+    g_dock.m_next_split_ratio = split_ratio;
+}
 
+void ImGui::SetNextDockFloatingSize(const ImVec2& floating_size)
+{
+    g_dock.m_next_floating_size = floating_size;
+}
 void ImGui::EndDock()
 {
 	g_dock.end();
