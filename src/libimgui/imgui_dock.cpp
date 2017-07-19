@@ -40,6 +40,7 @@ struct DockContext
 			, pos(0, 0)
 			, size(-1, -1)
 			, active(true)
+			, movable(true)
 			, status(Status_Float)
             , split_ratio(0.5, 0.5)
 			, label(nullptr)
@@ -184,6 +185,7 @@ struct DockContext
 		Dock* children[2];
 		Dock* parent;
 		bool active;
+		bool movable;
 		ImVec2 pos;
 		ImVec2 size;
 		Status_ status;
@@ -711,7 +713,7 @@ struct DockContext
                     m_next_parent = dock_tab;
 				}
 
-				if (IsItemActive() && IsMouseDragging())
+				if (IsItemActive() && IsMouseDragging() && dock_tab->movable)
 				{
 					m_drag_offset = GetMousePos() - dock_tab->pos;
 					doUndock(*dock_tab);
@@ -946,6 +948,8 @@ struct DockContext
 			dock.label = ImStrdup(label);
 		}
 
+		dock.movable = (extra_flags & ImGuiWindowFlags_NoMove) != ImGuiWindowFlags_NoMove;
+
 		m_end_action = EndAction_None;
 
         bool prev_opened = dock.opened;
@@ -1005,8 +1009,6 @@ struct DockContext
 		}
 
 		if (!dock.active && dock.status != Status_Dragged) return false;
-
-        //beginPanel();
 
 		m_end_action = EndAction_EndChild;
         
@@ -1097,7 +1099,6 @@ struct DockContext
 
 static DockContext g_dock;
 
-
 void ImGui::ShutdownDock()
 {
 	for (int i = 0; i < g_dock.m_docks.size(); ++i)
@@ -1128,7 +1129,6 @@ void ImGui::SetDockActive()
 	g_dock.setDockActive();
 }
 
-
 bool ImGui::BeginDock(const char* label, bool* opened, ImGuiWindowFlags extra_flags)
 {
 	return g_dock.begin(label, opened, extra_flags);
@@ -1143,6 +1143,7 @@ void ImGui::SetNextDockFloatingSize(const ImVec2& floating_size)
 {
     g_dock.m_next_floating_size = floating_size;
 }
+
 void ImGui::EndDock()
 {
 	g_dock.end();
