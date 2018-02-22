@@ -2,7 +2,7 @@
 
 [imgui](https://github.com/ocornut/imgui) module for the [LÖVE](https://love2d.org/) game engine including lua bindings based on this [project](https://github.com/patrickriordan/imgui_lua_bindings).
 
-It uses imgui 1.50 and supports 259 functions (40 unsupported), and is based on LÖVE 0.10.2.
+It uses imgui 1.53 and supports 273 functions (45 unsupported), and is based on LÖVE 0.10.2.
 
 It also includes the docks extension by @adcox (https://github.com/adcox/imgui).
 
@@ -78,7 +78,7 @@ function love.draw()
     end
 
     if showTestWindow then
-        showTestWindow = imgui.ShowTestWindow(true)
+        showTestWindow = imgui.ShowDemoWindow(true)
     end
 
     love.graphics.clear(clearColor[1] * 255, clearColor[2] * 255, clearColor[3] * 255, 255)

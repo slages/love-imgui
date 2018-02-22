@@ -56,7 +56,8 @@ while ($line = <STDIN>) {
   $line =~ s/ImVec2\(([^,]*),([^\)]*)\)/ImVec2 $1 $2/g;
   $line =~ s/ImVec4\(([^,]*),([^,]*),([^,]*),([^\)]*)\)/ImVec4 $1 $2 $3 $4/g;
   #delete this so it's eaiser for regexes
-  $line =~ s/ IM_PRINTFARGS\(.\);/;/g;
+  $line =~ s/\s+IM_FMTARGS\(.\);/;/g;
+  $line =~ s/\s+IM_FMTLIST\(.\);/;/g;
   if ($line =~ m/ *IMGUI_API *(const char*\*|[^ ]+) *([^\(]+)\(([^\;]*)\);/) {
     print "//" . $line;
     # this will be set to 0 if something is not supported yet
@@ -106,6 +107,10 @@ while ($line = <STDIN>) {
     } elsif ($1 =~ /^(unsigned int|ImGuiID|ImU32)$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "unsigned int");
+      push(@after, "PUSH_NUMBER(ret)");
+    } elsif ($1 =~ /^(ImGuiMouseCursor)$/) { # Enums
+      $callMacro = "CALL_FUNCTION";
+      push(@funcArgs, "int");
       push(@after, "PUSH_NUMBER(ret)");
     } elsif ($1 =~ /^int$/) {
       $callMacro = "CALL_FUNCTION";
@@ -169,7 +174,7 @@ while ($line = <STDIN>) {
         # skip next argument
         $i = $i + 1;
       # const char** a
-      } elsif ($args[$i] =~ m/^ *const char\*\* *([^ =\[]*) *$/ or $args[$i] =~ m/^ *const char\* const\* *([^ =\[]*) *$/) {
+      } elsif ($args[$i] =~ m/^ *const char\*\* *([^ =\[]*) *$/ or $args[$i] =~ m/^ *const char\* const\* *([^ =\[]*) *$/ or $args[$i] =~ m/^ *const char\* const *([^ =\[]*)\[\] *$/) {
         my $name = $1;
         push(@before, "LABEL_ARRAY_ARG($name)");
         push(@funcArgs, $name);
@@ -193,7 +198,7 @@ while ($line = <STDIN>) {
         push(@funcArgs, $name);
         # one of the various enums
         # we are handling these as ints
-      } elsif ($args[$i] =~ m/^ *(ImGuiWindowFlags|ImGuiCol|ImGuiStyleVar|ImGuiKey|ImGuiAlign|ImGuiColorEditMode|ImGuiMouseCursor|ImGuiSetCond|ImGuiInputTextFlags|ImGuiSelectableFlags|ImGuiTreeNodeFlags) ([^ ]*)( = 0|) *$/) {
+      } elsif ($args[$i] =~ m/^ *(ImGuiWindowFlags|ImGuiCol|ImGuiStyleVar|ImGuiKey|ImGuiAlign|ImGuiColorEditMode|ImGuiMouseCursor|ImGuiSetCond|ImGuiInputTextFlags|ImGuiSelectableFlags|ImGuiTreeNodeFlags|ImGuiComboFlags|ImGuiFocusedFlags|ImGuiHoveredFlags|ImGuiDragDropFlags|ImGuiColorEditFlags|ImGuiCond|ImGuiStyle) ([^ ]*)( = 0|) *$/) {
        #These are ints
        my $name = $2;
         if ($3 =~ m/^ = 0$/) {
