@@ -1,16 +1,37 @@
 # LOVE-IMGUI
 
 [imgui](https://github.com/ocornut/imgui) module for the [LÖVE](https://love2d.org/) game engine including lua bindings based on this [project](https://github.com/patrickriordan/imgui_lua_bindings).
+The main difference is that now by default in this version the return values ordering is reverted. For instance to retrieve the value from a slider, you need to do:
+```lua
+floatValue, status = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
+```
+Or if you're not interested to know if the field was modified, just:
+```lua
+floatValue = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
+```
+To reverse this behavior and receive back the return values from a function first before the modified fields, just call at the beginning of your application:
+```lua
+imgui.SetReturnValueLast(false)
+```
+
+Another notable difference is that enum values are handled using strings (and array of strings) instead of numerical values, for instance to create a window:
+```lua
+imgui.Begin("Test Window", true, { "ImGuiWindowFlags_AlwaysAutoResize", "ImGuiWindowFlags_NoTitleBar" });
+```
+Or for a single flag:
+```lua
+imgui.Begin("Test Window", true, "ImGuiWindowFlags_AlwaysAutoResize");
+```
 
 It uses imgui 1.53 and supports 273 functions (45 unsupported), and is based on LÖVE 0.10.2.
 
-It also includes the docks extension by @adcox (https://github.com/adcox/imgui).
+It also includes the docks extension by @adcox (https://github.com/adcox/imgui) (it's deprecated and will be replaced by imgui native dock management as soon as it's available).
 
 ## Getting Started
 
 Just build the project, and copy the generated dynamic module next to your love executable or into the LÖVE application data folder (for instance "C:/Users/<user>/AppData/Roaming/LOVE" on Windows or ~/.local/shared/love on Linux).
 
-Pre-built binaries are provided in the [releases](https://github.com/slages/love-imgui/releases) page.
+Pre-built binaries for Windows and Mas OSX are provided in the [releases](https://github.com/slages/love-imgui/releases) page.
 
 ## Examples
 
@@ -37,7 +58,6 @@ function love.update(dt)
 end
 
 function love.draw()
-    local status
 
     -- Menu
     if imgui.BeginMainMenuBar() then
@@ -50,14 +70,14 @@ function love.draw()
 
     -- Debug window
     imgui.Text("Hello, world!");
-    status, clearColor[1], clearColor[2], clearColor[3] = imgui.ColorEdit3("Clear color", clearColor[1], clearColor[2], clearColor[3]);
+    clearColor[1], clearColor[2], clearColor[3] = imgui.ColorEdit3("Clear color", clearColor[1], clearColor[2], clearColor[3]);
     
     -- Sliders
-    status, floatValue = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
-    status, sliderFloat[1], sliderFloat[2] = imgui.SliderFloat2("SliderFloat2", sliderFloat[1], sliderFloat[2], 0.0, 1.0);
+    floatValue = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
+    sliderFloat[1], sliderFloat[2] = imgui.SliderFloat2("SliderFloat2", sliderFloat[1], sliderFloat[2], 0.0, 1.0);
     
     -- Combo
-    status, comboSelection = imgui.Combo("Combo", comboSelection, { "combo1", "combo2", "combo3", "combo4" }, 4);
+    comboSelection = imgui.Combo("Combo", comboSelection, { "combo1", "combo2", "combo3", "combo4" }, 4);
 
     -- Windows
     if imgui.Button("Test Window") then
@@ -70,10 +90,10 @@ function love.draw()
     
     if showAnotherWindow then
         imgui.SetNextWindowPos(50, 50, "FirstUseEver")
-        status, showAnotherWindow = imgui.Begin("Another Window", true, { "AlwaysAutoResize", "NoTitleBar" });
+        showAnotherWindow = imgui.Begin("Another Window", true, { "ImGuiWindowFlags_AlwaysAutoResize", "ImGuiWindowFlags_NoTitleBar" });
         imgui.Text("Hello");
         -- Input text
-        status, textValue = imgui.InputTextMultiline("InputText", textValue, 200, 300, 200);
+        textValue = imgui.InputTextMultiline("InputText", textValue, 200, 300, 200);
         imgui.End();
     end
 
@@ -159,7 +179,7 @@ end
 function love.draw()
     imgui.SetNextWindowPos(0, 0)
     imgui.SetNextWindowSize(love.graphics.getWidth(), love.graphics.getHeight())
-    if imgui.Begin("DockArea", nil, { "NoTitleBar", "NoResize", "NoMove", "NoBringToFrontOnFocus" }) then
+    if imgui.Begin("DockArea", nil, { "ImGuiWindowFlags_NoTitleBar", "ImGuiWindowFlags_NoResize", "ImGuiWindowFlags_NoMove", "ImGuiWindowFlags_NoBringToFrontOnFocus" }) then
         imgui.BeginDockspace()
 
         -- Create 10 docks

@@ -76,47 +76,48 @@ while ($line = <STDIN>) {
       $shouldPrint = 0;
     }
     # c++ type of return value
+    my $retLine = $1;
     my $retType;
     # macro used for calling function
     my $callMacro;
     # if it has a return value (yes I know this is not the cleanest code)
     my $hasRet = 1;
-    if ($1 =~ /^void$/) {
+    if ($retLine =~ /^void$/) {
       $callMacro = "CALL_FUNCTION_NO_RET";
       $hasRet = 0;
-    } elsif ($1 =~ /^bool$/) {
+    } elsif ($retLine =~ /^bool$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "bool");
       push(@after, "PUSH_BOOL(ret)");
-    } elsif ($1 =~ /^float$/) {
+    } elsif ($retLine =~ /^float$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "float");
       push(@after, "PUSH_NUMBER(ret)");
-    } elsif ($1 =~ /^ImVec2$/) {
+    } elsif ($retLine =~ /^ImVec2$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "ImVec2");
       push(@after, "PUSH_NUMBER(ret.x)");
       push(@after, "PUSH_NUMBER(ret.y)");
-    } elsif ($1 =~ /^ImVec4$/) {
+    } elsif ($retLine =~ /^ImVec4$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "ImVec4");
       push(@after, "PUSH_NUMBER(ret.x)");
       push(@after, "PUSH_NUMBER(ret.y)");
       push(@after, "PUSH_NUMBER(ret.z)");
       push(@after, "PUSH_NUMBER(ret.w)");
-    } elsif ($1 =~ /^(unsigned int|ImGuiID|ImU32)$/) {
+    } elsif ($retLine =~ /^(unsigned int|ImGuiID|ImU32)$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "unsigned int");
       push(@after, "PUSH_NUMBER(ret)");
-    } elsif ($1 =~ /^(ImGuiMouseCursor)$/) { # Enums
+    } elsif ($retLine =~ /^(ImGuiMouseCursor)$/) { # Enums
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "int");
       push(@after, "PUSH_NUMBER(ret)");
-    } elsif ($1 =~ /^int$/) {
+    } elsif ($retLine =~ /^int$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "int");
       push(@after, "PUSH_NUMBER(ret)");
-    } elsif ($1 =~ /^const char*\*$/) {
+    } elsif ($retLine =~ /^const char*\*$/) {
       $callMacro = "CALL_FUNCTION";
       push(@funcArgs, "const char*");
       push(@after, "PUSH_STRING(ret)");
@@ -284,6 +285,29 @@ while ($line = <STDIN>) {
         $shouldPrint = 0;
       }
     }
+
+    if ($retLine =~ /^bool$/) {
+      push(@after, "PUSH_LAST_BOOL(ret)");
+    } elsif ($retLine =~ /^float$/) {
+      push(@after, "PUSH_LAST_NUMBER(ret)");
+    } elsif ($retLine =~ /^ImVec2$/) {
+      push(@after, "PUSH_LAST_NUMBER(ret.x)");
+      push(@after, "PUSH_LAST_NUMBER(ret.y)");
+    } elsif ($retLine =~ /^ImVec4$/) {
+      push(@after, "PUSH_LAST_NUMBER(ret.x)");
+      push(@after, "PUSH_LAST_NUMBER(ret.y)");
+      push(@after, "PUSH_LAST_NUMBER(ret.z)");
+      push(@after, "PUSH_LAST_NUMBER(ret.w)");
+    } elsif ($retLine =~ /^(unsigned int|ImGuiID|ImU32)$/) {
+      push(@after, "PUSH_LAST_NUMBER(ret)");
+    } elsif ($retLine =~ /^(ImGuiMouseCursor)$/) { # Enums
+      push(@after, "PUSH_LAST_NUMBER(ret)");
+    } elsif ($retLine =~ /^int$/) {
+      push(@after, "PUSH_LAST_NUMBER(ret)");
+    } elsif ($retLine =~ /^const char*\*$/) {
+      push(@after, "PUSH_LAST_STRING(ret)");
+    }
+
     my $luaFunc = $funcName;
     # Stupid way of implementing overriding
     if ($funcNames{$luaFunc}) {
