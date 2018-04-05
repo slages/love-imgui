@@ -136,7 +136,7 @@ bool Init(lua_State *L)
 	lua_setfield(L, -2, "textureHeight");
 	lua_pushlstring(L, (char *)pixels, width * height * 4);
 	lua_setfield(L, -2, "texturePixels");
-	luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.newImageData(imgui.textureWidth, imgui.textureHeight, {\"rgba8\"}, imgui.texturePixels))\
+	luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.newImageData(imgui.textureWidth, imgui.textureHeight, \"rgba8\", imgui.texturePixels))\
 					  imgui.vertexformat = { {\"VertexPosition\", \"float\", 2}, {\"VertexTexCoord\", \"float\", 2}, {\"VertexColor\", \"byte\", 4} }");
 	lua_pop(L, 1);
 
