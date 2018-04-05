@@ -48,7 +48,7 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 		lua_pushnumber(g_L, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
 		lua_setfield(g_L, -2, "verticesSize");
 
-		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, imgui.verticesData), \"triangles\")\
+		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, \"rgba8\", imgui.verticesData), \"triangles\")\
 						    imgui.renderMesh:setTexture(imgui.textureObject)\
 							imgui.renderMesh:setVertexMap(imgui.idx)");
 
