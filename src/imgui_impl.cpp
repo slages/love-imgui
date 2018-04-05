@@ -48,7 +48,7 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 		lua_pushnumber(g_L, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
 		lua_setfield(g_L, -2, "verticesSize");
 
-		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, imgui.verticesData), \"triangles\")\
+		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, \"rgba8\", imgui.verticesData), \"triangles\")\
 						    imgui.renderMesh:setTexture(imgui.textureObject)\
 							imgui.renderMesh:setVertexMap(imgui.idx)");
 
@@ -136,7 +136,7 @@ bool Init(lua_State *L)
 	lua_setfield(L, -2, "textureHeight");
 	lua_pushlstring(L, (char *)pixels, width * height * 4);
 	lua_setfield(L, -2, "texturePixels");
-	luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.newImageData(imgui.textureWidth, imgui.textureHeight, imgui.texturePixels))\
+	luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.newImageData(imgui.textureWidth, imgui.textureHeight, \"rgba8\", imgui.texturePixels))\
 					  imgui.vertexformat = { {\"VertexPosition\", \"float\", 2}, {\"VertexTexCoord\", \"float\", 2}, {\"VertexColor\", \"byte\", 4} }");
 	lua_pop(L, 1);
 
