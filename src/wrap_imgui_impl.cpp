@@ -665,6 +665,15 @@ static int w_PushStyleVar(lua_State *L)
 	return impl_PushStyleVar(L);
 }
 
+static int w_PushStyleColor(lua_State *L)
+{
+	if (lua_gettop(L) > 2)
+	{
+		return impl_PushStyleColor_2(L);
+	}
+	return impl_PushStyleColor(L);
+}
+
 static int w_SetWindowPos(lua_State *L)
 {
 	if (lua_isstring(L, 1))
@@ -856,6 +865,7 @@ static const struct luaL_Reg imguilib[] = {
 { "PushID", w_PushID },
 { "GetID", w_GetID },
 { "PushStyleVar", w_PushStyleVar },
+{ "PushStyleColor", w_PushStyleColor },
 { "SetWindowPos", w_SetWindowPos },
 { "SetWindowSize", w_SetWindowSize },
 { "SetWindowCollapsed", w_SetWindowCollapsed },

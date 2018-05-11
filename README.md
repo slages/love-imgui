@@ -1,7 +1,7 @@
 # LOVE-IMGUI
 
 [imgui](https://github.com/ocornut/imgui) module for the [LÖVE](https://love2d.org/) game engine including lua bindings based on this [project](https://github.com/patrickriordan/imgui_lua_bindings).
-The main difference is that now by default in this version the return values ordering is reverted. For instance to retrieve the value from a slider, you need to do:
+**The main difference is that now by default in this version the return values ordering is reverted.** For instance to retrieve the value from a slider, you need to do:
 ```lua
 floatValue, status = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
 ```
@@ -23,7 +23,7 @@ Or for a single flag:
 imgui.Begin("Test Window", true, "ImGuiWindowFlags_AlwaysAutoResize");
 ```
 
-It uses imgui 1.53 and supports 273 functions (45 unsupported), and is based on LÖVE 0.10.2.
+It uses imgui 1.53 and supports 273 functions (45 unsupported), and is based on LÖVE 11.1.
 
 It also includes the docks extension by @adcox (https://github.com/adcox/imgui) (it's deprecated and will be replaced by imgui native dock management as soon as it's available).
 
@@ -89,7 +89,7 @@ function love.draw()
     end
     
     if showAnotherWindow then
-        imgui.SetNextWindowPos(50, 50, "FirstUseEver")
+        imgui.SetNextWindowPos(50, 50, "ImGuiCond_FirstUseEver")
         showAnotherWindow = imgui.Begin("Another Window", true, { "ImGuiWindowFlags_AlwaysAutoResize", "ImGuiWindowFlags_NoTitleBar" });
         imgui.Text("Hello");
         -- Input text
@@ -101,7 +101,7 @@ function love.draw()
         showTestWindow = imgui.ShowDemoWindow(true)
     end
 
-    love.graphics.clear(clearColor[1] * 255, clearColor[2] * 255, clearColor[3] * 255, 255)
+    love.graphics.clear(clearColor[1], clearColor[2], clearColor[3])
     imgui.Render();
 end
 
@@ -194,7 +194,7 @@ function love.draw()
     end
     imgui.End()
 
-    love.graphics.clear(100, 100, 100, 255)
+    love.graphics.clear(0.2, 0.2, 0.2)
     imgui.Render();
 end
 
