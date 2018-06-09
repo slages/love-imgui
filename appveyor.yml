@@ -18,7 +18,7 @@ build_script:
     - unzip LuaJIT-2.0.5.zip
     - cd LuaJIT-2.0.5
     - make install
-    - set LUAJIT_DIR=c:/projects/LuaJIT-2.0.5/src
+    - set LUAJIT_DIR=c:/projects/LuaJIT-2.0.5
     - cd %BUILD_DIR%
     - cmake .
 
