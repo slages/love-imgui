@@ -14,7 +14,7 @@ build_script:
     - echo %BUILD_DIR%
     - cd ..
     - curl -O http://luajit.org/download/LuaJIT-2.0.5.zip
-    - unzip LuaJIT-2.0.5.zip
+    - start /wait unzip LuaJIT-2.0.5.zip
     - cd LuaJIT-2.0.5\src
     - make install
     - cd %BUILD_DIR%
