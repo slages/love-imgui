@@ -5,7 +5,7 @@ configuration: Release
 platform: x64
 
 install:
-    - choco install make
+    - choco install make mingw
 
 build_script:
     - set BUILD_DIR=%cd%
