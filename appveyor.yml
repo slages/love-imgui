@@ -1,0 +1,20 @@
+version: 0.9.{build}
+image: Visual Studio 2017
+configuration: Release
+
+platform: x64
+
+build_script:
+    - echo "Building project ..."
+    - cmake .
+
+test: off
+
+# artifacts:
+#     - path: x64/Release/myfavoriteproject.exe
+#     - name: Release
+
+# deploy:
+#     - provider: GitHub
+#     - auth_token:
+#         - secure: xxxxx
