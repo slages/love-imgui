@@ -4,6 +4,9 @@ configuration: Release
 
 platform: x64
 
+install:
+    - choco install make
+
 build_script:
     - set BUILD_DIR=%cd%
     - echo %BUILD_DIR%
@@ -11,7 +14,7 @@ build_script:
     - curl -O http://luajit.org/download/LuaJIT-2.0.5.zip
     - unzip LuaJIT-2.0.5.zip
     - cd LuaJIT-2.0.5\src
-    - make
+    - make install
     - cd %BUILD_DIR%
     - echo "Building project ..."
     - cmake .
