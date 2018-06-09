@@ -6,7 +6,7 @@ platform: x64
 
 install:
     - choco install make mingw
-    - dir c:\tools
+    - dir c:\tools\mingw64
 
 build_script:
     - set BUILD_DIR=%cd%
