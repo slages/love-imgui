@@ -20,6 +20,7 @@ build_script:
     - make install
     - set LUAJIT_DIR=c:/projects/LuaJIT-2.0.5
     - cd %BUILD_DIR%
+    - dir /usr/local/lib
     - cmake .
 
 test: off
