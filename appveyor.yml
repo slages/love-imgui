@@ -17,10 +17,9 @@ build_script:
     - curl -O http://luajit.org/download/LuaJIT-2.0.5.zip
     - unzip LuaJIT-2.0.5.zip
     - cd LuaJIT-2.0.5
-    - make install
+    - make install PREFIX=c:/usr/
     - set LUAJIT_DIR=c:/projects/LuaJIT-2.0.5
     - cd %BUILD_DIR%
-    - dir c:\usr\local\lib
     - cmake .
 
 test: off
