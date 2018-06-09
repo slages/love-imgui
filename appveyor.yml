@@ -6,6 +6,7 @@ platform: x64
 
 install:
     - choco install make mingw
+    - gcc --version
 
 build_script:
     - set BUILD_DIR=%cd%
