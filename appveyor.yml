@@ -4,12 +4,6 @@ configuration: Release
 
 platform: x64
 
-# install:
-#     - choco install make mingw
-#     - dir c:\tools\mingw64\bin
-#     - set PATH=c:\tools\mingw64\bin;%PATH%
-#     - set PATH=/usr/local/bin;%PATH%
-
 build_script:
     - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
     - set BUILD_DIR=%cd%
@@ -19,10 +13,10 @@ build_script:
     - unzip LuaJIT-2.0.5.zip
     - cd LuaJIT-2.0.5\src
     - msvcbuild
-    - dir /s c:\projects
     - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5\src
     - cd %BUILD_DIR%
     - cmake .
+    - dir /s c:\projects
 
 test: off
 
@@ -30,7 +24,13 @@ test: off
 #     - path: x64/Release/myfavoriteproject.exe
 #     - name: Release
 
-# deploy:
-#     - provider: GitHub
-#     - auth_token:
-#         - secure: xxxxx
+deploy:
+    - provider: GitHub
+    - auth_token:
+        - secure: 0h1+FjAtYe4Q6io/1tKnoEBalYWLfvG0QsqVVF5aq8SVgYGIXA31VAA8rT7gEI3q
+    - release: latest
+    - description: 'Imgui latest build'
+    - prerelease: true
+    - artifact: /.*\.dll)+/
+    - on:
+        - branch: master
