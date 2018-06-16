@@ -10,10 +10,6 @@ install:
     - set PATH=c:\tools\mingw64\bin;%PATH%
     - set PATH=/usr/local/bin;%PATH%
 
-cache:
-  - C:\ProgramData\chocolatey\bin -> appveyor.yml
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml
-
 build_script:
     - set BUILD_DIR=%cd%
     - echo %BUILD_DIR%
