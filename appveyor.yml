@@ -1,40 +1,41 @@
-
-
 version: 0.9.{build}
 image: Visual Studio 2017
 configuration: Release
-
 platform: x64
 
-install:
-    - echo Testing by "Nuthen"
-    - choco install make mingw
-    - dir c:\tools\mingw64\bin
-    - set PATH=c:\tools\mingw64\bin;%PATH%
-    - set PATH=/usr/local/bin;%PATH%
-
 build_script:
+    - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
     - set BUILD_DIR=%cd%
-    - echo %BUILD_DIR%
     - cd ..
     - curl -O http://luajit.org/download/LuaJIT-2.0.5.zip
     - unzip LuaJIT-2.0.5.zip
-    - cd LuaJIT-2.0.5
-    - make install PREFIX=c:/usr
-    - dir c:\usr\lib
-    - dir c:\usr\lib\lua
-    - dir c:\usr\bin\luajit
-    - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5  #c:/projects/LuaJIT-2.0.5
+    - cd LuaJIT-2.0.5\src
+    - msvcbuild
+    - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5\src
     - cd %BUILD_DIR%
     - cmake .
+    - git status
+    - cat Project.sln
+    - cat ALL_BUILD.vcxproj
+    - cat ZERO_CHECK.vcxproj
+    - cat imgui.vcxproj
+    - msbuild Project.sln /t:imgui
+    - dir /s c:\projects\love-imgui
 
 test: off
 
-# artifacts:
-#     - path: x64/Release/myfavoriteproject.exe
-#     - name: Release
+artifacts:
+    - path: "*"
+      name: Release
+      type: zip
 
-# deploy:
-#     - provider: GitHub
-#     - auth_token:
-#         - secure: xxxxx
+deploy:
+    provider: GitHub
+    auth_token:
+        secure: 0h1+FjAtYe4Q6io/1tKnoEBalYWLfvG0QsqVVF5aq8SVgYGIXA31VAA8rT7gEI3q
+    release: latest
+    description: 'Imgui latest build'
+    prerelease: true
+    artifact: /.*\.dll)+/
+    on:
+        branch: master
