@@ -20,6 +20,7 @@ build_script:
     - cd LuaJIT-2.0.5\src
     - msvcbuild
     - dir /s c:\projects
+    - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5\src
     - cd %BUILD_DIR%
     - cmake .
 
