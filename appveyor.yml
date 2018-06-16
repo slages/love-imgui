@@ -21,7 +21,7 @@ build_script:
 test: off
 
 artifacts:
-    - path: src
+    - path: "."
       name: Release
       type: zip
 
