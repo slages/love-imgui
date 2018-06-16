@@ -19,7 +19,7 @@ build_script:
     - cat ALL_BUILD.vcxproj
     - cat ZERO_CHECK.vcxproj
     - cat imgui.vcxproj
-    - msbuild Project.sln /t:imgui
+    - msbuild Project.sln /t:ALL_BUILD /p:Configuration="Release" /p:Platform="Win32"
     - dir /s c:\projects\love-imgui
 
 test: off
