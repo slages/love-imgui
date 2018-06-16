@@ -7,6 +7,8 @@
 set(LUAJIT_SEARCH_PATHS
     /usr/local
     /usr
+    c:/projects/LuaJIT-2.0.5
+    c:/projects/LuaJIT-2.0.5/src
     c:/usr/local/lib
     c:/usr/local
     c:/usr/lib
