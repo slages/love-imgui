@@ -25,9 +25,8 @@ build_script:
 test: off
 
 artifacts:
-    - path: "*"
-      name: Release
-      type: zip
+    - path: Release\imgui.dll
+      name: love-imgui-win64.dll
 
 deploy:
     provider: GitHub
@@ -36,6 +35,6 @@ deploy:
     release: latest
     description: 'Imgui latest build'
     prerelease: true
-    artifact: /.*\.dll)+/
+    artifact: /.*\.dll/
     on:
         branch: master
