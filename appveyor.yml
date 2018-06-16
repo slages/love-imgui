@@ -19,6 +19,8 @@ build_script:
     - unzip LuaJIT-2.0.5.zip
     - cd LuaJIT-2.0.5\src
     - msvcbuild
+    - dir /s c:\usr
+    - dir /s c:\projects
     - set LUAJIT_DIR=c:\usr\bin\luajit
     - cd %BUILD_DIR%
     - cmake .
