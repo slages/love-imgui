@@ -4,13 +4,15 @@ configuration: Release
 
 platform: x64
 
-install:
-    - choco install make mingw
-    - dir c:\tools\mingw64\bin
-    - set PATH=c:\tools\mingw64\bin;%PATH%
-    - set PATH=/usr/local/bin;%PATH%
+# install:
+#     - choco install make mingw
+#     - dir c:\tools\mingw64\bin
+#     - set PATH=c:\tools\mingw64\bin;%PATH%
+#     - set PATH=/usr/local/bin;%PATH%
 
 build_script:
+    - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+    - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
     - set BUILD_DIR=%cd%
     - echo %BUILD_DIR%
     - cd ..
