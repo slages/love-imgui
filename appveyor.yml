@@ -11,6 +11,8 @@ install:
     - set PATH=/usr/local/bin;%PATH%
 
 build_script:
+    - mkdir -p c:\usr\local\lib
+    - mkdir -p c:\usr\local\bin
     - set BUILD_DIR=%cd%
     - echo %BUILD_DIR%
     - cd ..
