@@ -20,9 +20,10 @@ build_script:
 
 test: off
 
-# artifacts:
-#     - path: x64/Release/myfavoriteproject.exe
-#     - name: Release
+artifacts:
+    - path: src
+      name: Release
+      type: zip
 
 deploy:
     provider: GitHub
