@@ -17,6 +17,7 @@ build_script:
     - cmake .
     - dir /s c:\projects\love-imgui
     - git status
+    - msbuild Project.sln
 
 test: off
 
