@@ -20,7 +20,7 @@ build_script:
     - make install PREFIX=c:/usr
     - dir c:\usr\lib
     - dir c:\usr\bin
-    - set LUAJIT_DIR=c:/projects/LuaJIT-2.0.5
+    - set LUAJIT_DIR=c:\usr\bin  #c:/projects/LuaJIT-2.0.5
     - cd %BUILD_DIR%
     - cmake .
 
