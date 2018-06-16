@@ -12,9 +12,10 @@ build_script:
     - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5\src
     - cd %BUILD_DIR%
     - cmake .
-    - dir /s c:\projects\love-imgui
     - git status
-    - msbuild Project.sln
+    - cat Project.sln
+    - msbuild Project.sln /t:imgui
+    - dir /s c:\projects\love-imgui
 
 test: off
 
