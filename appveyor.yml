@@ -24,7 +24,7 @@ build_script:
     - dir c:\usr\lib
     - dir c:\usr\lib\lua
     - dir c:\usr\bin\luajit
-    - set LUAJIT_DIR=c:\usr  #c:/projects/LuaJIT-2.0.5
+    - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5  #c:/projects/LuaJIT-2.0.5
     - cd %BUILD_DIR%
     - cmake .
 
