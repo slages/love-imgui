@@ -13,7 +13,7 @@ build_script:
     - msvcbuild
     - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5\src
     - cd %BUILD_DIR%
-    - cmake .
+    - cmake -DCMAKE_GENERATOR_PLATFORM=x64 .
     - git status
     - cat Project.sln
     - cat ALL_BUILD.vcxproj
