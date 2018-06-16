@@ -15,8 +15,8 @@ build_script:
     - set LUAJIT_DIR=c:\projects\LuaJIT-2.0.5\src
     - cd %BUILD_DIR%
     - cmake .
-    - cmake --build .
     - dir /s c:\projects\love-imgui
+    - git status
 
 test: off
 
