@@ -18,7 +18,7 @@ build_script:
     - unzip LuaJIT-2.0.5.zip
     - cd LuaJIT-2.0.5
     - make install PREFIX=c:/usr
-    - dir c:\usr\local\lib
+    - dir c:\usr\lib
     - dir c:\usr\local\bin
     - set LUAJIT_DIR=c:/projects/LuaJIT-2.0.5
     - cd %BUILD_DIR%
