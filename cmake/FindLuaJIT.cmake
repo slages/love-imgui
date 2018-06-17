@@ -11,7 +11,6 @@ set(LUAJIT_SEARCH_PATHS
     c:/usr/local
     c:/usr/lib
     c:/usr
-    c:/
     $ENV{LUAJIT_DIR}
     )
 
