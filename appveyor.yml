@@ -32,7 +32,7 @@ deploy:
     provider: GitHub
     auth_token:
         secure: 0h1+FjAtYe4Q6io/1tKnoEBalYWLfvG0QsqVVF5aq8SVgYGIXA31VAA8rT7gEI3q
-    release: $APPVEYOR_REPO_BRANCH-latest
+    release: $(appveyor_repo_branch)-latest
     description: 'Imgui latest build'
     prerelease: true
     artifact: /.*\.dll/
