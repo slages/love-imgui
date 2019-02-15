@@ -580,6 +580,12 @@ INT_ARG(column_index)
 NUMBER_ARG(width)
 CALL_FUNCTION_NO_RET(SetColumnWidth, column_index, width)
 END_IMGUI_FUNC
+//    IMGUI_API void          SetDefaultFontLua(const char* label, int font_id);		// hack
+IMGUI_FUNCTION(SetDefaultFontLua)
+LABEL_ARG(label)
+INT_ARG(font_id)
+CALL_FUNCTION_NO_RET(SetDefaultFontLua, label, font_id)
+END_IMGUI_FUNC
 //    IMGUI_API float         GetColumnOffset(int column_index = -1);                             // get position of column line (in pixels, from the left side of the contents region). pass -1 to use current column, otherwise 0..GetColumnsCount() inclusive. column 0 is typically 0.0f
 IMGUI_FUNCTION(GetColumnOffset)
 OPTIONAL_INT_ARG(column_index, -1)

@@ -5265,6 +5265,17 @@ void ImGui::PushFont(ImFont* font)
     g.CurrentWindow->DrawList->PushTextureID(font->ContainerAtlas->TexID);
 }
 
+void ImGui::SetDefaultFontLua(const char* label, int font_id)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    ImFont* font_current = ImGui::GetFont();
+    for (int n = 0; n < io.Fonts->Fonts.Size; n++) {
+        if (n == font_id) {
+            io.FontDefault = io.Fonts->Fonts[n];
+        }
+    }
+}
+
 void  ImGui::PopFont()
 {
     ImGuiContext& g = *GImGui;

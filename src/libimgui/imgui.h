@@ -192,6 +192,7 @@ namespace ImGui
 
     // Parameters stacks (shared)
     IMGUI_API void          PushFont(ImFont* font);                                             // use NULL as a shortcut to push default font
+    IMGUI_API void          SetDefaultFontLua(const char* label, int font_id);			// hack
     IMGUI_API void          PopFont();
     IMGUI_API void          PushStyleColor(ImGuiCol idx, ImU32 col);
     IMGUI_API void          PushStyleColor(ImGuiCol idx, const ImVec4& col);
