@@ -23,7 +23,7 @@ Or for a single flag:
 imgui.Begin("Test Window", true, "ImGuiWindowFlags_AlwaysAutoResize");
 ```
 
-It uses imgui 1.53 and supports 273 functions (45 unsupported), and is based on LÖVE 11.1.
+It uses imgui 1.53 and supports 275 functions (43 unsupported), and is based on LÖVE 11.1.
 
 It also includes the docks extension by @adcox (https://github.com/adcox/imgui) (it's deprecated and will be replaced by imgui native dock management as soon as it's available).
 
