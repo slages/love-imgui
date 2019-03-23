@@ -26,7 +26,7 @@ artifacts:
 deploy:
     provider: GitHub
     auth_token:
-        secure: 0h1+FjAtYe4Q6io/1tKnoEBalYWLfvG0QsqVVF5aq8SVgYGIXA31VAA8rT7gEI3q
+        secure: QAwjfXBfk1n/gpJs1AfMe/VLAc3N6PbVOxe9yjLg0I3hVnH6pJXEWzLV5/iwuCKK
     release: $(appveyor_repo_branch)-latest
     description: 'love-imgui-latest'
     prerelease: true
