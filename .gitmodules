@@ -1,0 +1,6 @@
+[submodule "bindings_generator"]
+	path = bindings_generator
+	url = https://github.com/patrickriordan/imgui_lua_bindings.git
+[submodule "src/libimgui"]
+	path = src/libimgui
+	url = https://github.com/ocornut/imgui.git
