@@ -23,9 +23,7 @@ Or for a single flag:
 imgui.Begin("Test Window", true, "ImGuiWindowFlags_AlwaysAutoResize");
 ```
 
-It uses imgui 1.53 and supports 275 functions (43 unsupported), and is based on LÖVE 11.1.
-
-It also includes the docks extension by @adcox (https://github.com/adcox/imgui) (it's deprecated and will be replaced by imgui native dock management as soon as it's available).
+It uses imgui source head and supports 275 functions (43 unsupported), and is based on LÖVE 11.3.
 
 ## Getting Started
 
@@ -159,78 +157,6 @@ function love.wheelmoved(x, y)
     if not imgui.GetWantCaptureMouse() then
         -- Pass event to the game
     end
-end
-```
-
-Docks:
-```lua
-require "imgui"
-
---
--- LOVE callbacks
---
-function love.load(arg)
-end
-
-function love.update(dt)
-    imgui.NewFrame()
-end
-
-function love.draw()
-    imgui.SetNextWindowPos(0, 0)
-    imgui.SetNextWindowSize(love.graphics.getWidth(), love.graphics.getHeight())
-    if imgui.Begin("DockArea", nil, { "ImGuiWindowFlags_NoTitleBar", "ImGuiWindowFlags_NoResize", "ImGuiWindowFlags_NoMove", "ImGuiWindowFlags_NoBringToFrontOnFocus" }) then
-        imgui.BeginDockspace()
-
-        -- Create 10 docks
-        for i = 1, 10 do
-            if imgui.BeginDock("dock_"..i) then
-                imgui.Text("Hello, dock "..i.."!");
-            end
-            imgui.EndDock()
-        end
-
-        imgui.EndDockspace()
-    end
-    imgui.End()
-
-    love.graphics.clear(0.2, 0.2, 0.2)
-    imgui.Render();
-end
-
-function love.quit()
-    imgui.ShutDown();
-end
-
---
--- User inputs
---
-function love.textinput(t)
-    imgui.TextInput(t)
-end
-
-function love.keypressed(key)
-    imgui.KeyPressed(key)
-end
-
-function love.keyreleased(key)
-    imgui.KeyReleased(key)
-end
-
-function love.mousemoved(x, y)
-    imgui.MouseMoved(x, y)
-end
-
-function love.mousepressed(x, y, button)
-    imgui.MousePressed(button)
-end
-
-function love.mousereleased(x, y, button)
-    imgui.MouseReleased(button)
-end
-
-function love.wheelmoved(x, y)
-    imgui.WheelMoved(y)
 end
 ```
 

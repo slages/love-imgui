@@ -9,6 +9,7 @@ extern "C" {
 bool Init(lua_State *L);
 void ShutDown();
 void NewFrame();
+void Render();
 // Inputs
 void MouseMoved(int x, int y);
 void MousePressed(int button);

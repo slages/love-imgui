@@ -1,9 +1,23 @@
+PROJECT(love-imgui)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+OPTION(EnableCodeGen "automatically recompile the code-generated imgui header. requires perl." ON)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 FIND_PACKAGE(LuaJIT REQUIRED)
 
 SET(LIB_NAME imgui)
+
+IF(EnableCodeGen)
+	FIND_PACKAGE(Perl REQUIRED)
+	ADD_CUSTOM_COMMAND(
+		COMMAND ${PERL_EXECUTABLE} generate_imgui_bindings.pl < ../src/libimgui/imgui.h > ../src/imgui_iterator.inl
+		DEPENDS bindings_generator/generate_imgui_bindings.pl src/libimgui/imgui.h
+		OUTPUT src/imgui_iterator.inl
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings_generator
+		COMMENT "Generating imgui_iterator.inl"
+	)
+ENDIF()
 
 ADD_LIBRARY(${LIB_NAME}
 	MODULE
@@ -13,17 +27,19 @@ ADD_LIBRARY(${LIB_NAME}
 	src/libimgui/imgui_draw.cpp
 	src/libimgui/imgui_demo.cpp
 	src/libimgui/imgui_internal.h
-	src/libimgui/imgui_dock.cpp
-	src/libimgui/imgui_dock.h
-	src/libimgui/stb_rect_pack.h
-	src/libimgui/stb_textedit.h
-	src/libimgui/stb_truetype.h
+	src/libimgui/imstb_rectpack.h
+	src/libimgui/imstb_textedit.h
+	src/libimgui/imstb_truetype.h
+
 	src/imgui_impl.cpp
 	src/wrap_imgui_impl.cpp
 	src/imgui_impl.h
 	src/wrap_imgui_impl.h
-	src/imgui_iterator.h
-	src/imgui_iterator_dock.h
+
+	src/imgui_iterator.inl
+	src/wrap_imgui.inl
+	src/register_imgui.inl
+	src/register_imgui_enums.inl
 )
 
 TARGET_INCLUDE_DIRECTORIES(${LIB_NAME}

@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <map>
-//#include <iostream>
 
 // Data
 static bool							g_MousePressed[3] = { false, false, false };
@@ -14,6 +13,7 @@ static float						g_MouseWheel = 0.0f;
 static std::string					g_iniPath;
 static std::map<std::string, int>	g_keyMap;
 static lua_State					*g_L;
+static ImGuiContext					*g_ctx;
 
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // If text or lines are blurry when integrating ImGui in your engine:
@@ -119,6 +119,8 @@ static void ImGui_Impl_SetClipboardText(void* user_data, const char* text)
 
 bool Init(lua_State *L)
 {
+	g_ctx = ImGui::CreateContext();
+	ImGui::SetCurrentContext(g_ctx);
 	ImGuiIO& io = ImGui::GetIO();
 
 	// LUA state
@@ -181,7 +183,6 @@ bool Init(lua_State *L)
 	io.KeyMap[ImGuiKey_Y] = g_keyMap["y"];
 	io.KeyMap[ImGuiKey_Z] = g_keyMap["z"];
 
-	io.RenderDrawListsFn = ImGui_Impl_RenderDrawLists;   // Alternatively you can set this to NULL and call ImGui::GetDrawData() after ImGui::Render() to get the same ImDrawData pointer.
 	io.SetClipboardTextFn = ImGui_Impl_SetClipboardText;
 	io.GetClipboardTextFn = ImGui_Impl_GetClipboardText;
 
@@ -196,7 +197,8 @@ bool Init(lua_State *L)
 
 void ShutDown()
 {
-	ImGui::Shutdown();
+	ImGui::DestroyContext(g_ctx);
+	g_ctx = nullptr;
 }
 
 void NewFrame()
@@ -238,6 +240,12 @@ void NewFrame()
 
 	// Start the frame
 	ImGui::NewFrame();
+}
+
+void Render()
+{
+	ImGui::Render();
+	ImGui_Impl_RenderDrawLists(ImGui::GetDrawData());
 }
 
 //
