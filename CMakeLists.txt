@@ -9,13 +9,25 @@ FIND_PACKAGE(LuaJIT REQUIRED)
 SET(LIB_NAME imgui)
 
 IF(EnableCodeGen)
-	FIND_PACKAGE(Perl REQUIRED)
+	SET(BindSource
+		bindings2/generate_bindings.lua
+		bindings2/types.lua
+		bindings2/parse.lua
+		bindings2/wrap_imgui_codegen.cpp
+		bindings2/wrap_imgui_codegen.h
+		src/libimgui/imgui.h
+	)
+	SET(BindOutput
+		${CMAKE_SOURCE_DIR}/src/wrap_imgui_codegen.h
+		${CMAKE_SOURCE_DIR}/src/wrap_imgui_codegen.cpp
+
+	)
 	ADD_CUSTOM_COMMAND(
-		COMMAND ${PERL_EXECUTABLE} generate_imgui_bindings.pl < ../src/libimgui/imgui.h > ../src/imgui_iterator.inl
-		DEPENDS bindings_generator/generate_imgui_bindings.pl src/libimgui/imgui.h
-		OUTPUT src/imgui_iterator.inl
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/bindings_generator
-		COMMENT "Generating imgui_iterator.inl"
+		COMMAND lua ${CMAKE_SOURCE_DIR}/bindings2/generate_bindings.lua
+		DEPENDS ${BindSource}
+		OUTPUT ${BindOutput}
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+		COMMENT "Generating bindings"
 	)
 ENDIF()
 
@@ -36,10 +48,8 @@ ADD_LIBRARY(${LIB_NAME}
 	src/imgui_impl.h
 	src/wrap_imgui_impl.h
 
-	src/imgui_iterator.inl
-	src/wrap_imgui.inl
-	src/register_imgui.inl
-	src/register_imgui_enums.inl
+	src/wrap_imgui_codegen.cpp
+	src/wrap_imgui_codegen.h
 )
 
 TARGET_INCLUDE_DIRECTORIES(${LIB_NAME}
@@ -51,6 +61,7 @@ TARGET_LINK_LIBRARIES(${LIB_NAME}
 	${LUAJIT_LIBRARY}
 )
 
+SET_PROPERTY(TARGET ${LIB_NAME} PROPERTY CXX_STANDARD 17)
 SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES PREFIX "")
 
 IF(DEFINED "LIB_DIR")

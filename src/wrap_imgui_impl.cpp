@@ -20,7 +20,7 @@
 
 #include "libimgui/imgui.h"
 #include "imgui_impl.h"
-#include "wrap_imgui_impl.h"
+#include "wrap_imgui_codegen.h"
 
 #include <vector>
 #include <cstring>
@@ -247,11 +247,6 @@ static int w_AddFontFromFileTTF(lua_State *L) {
 }
 
 /*
-** Wrapped functions
-*/
-#include "wrap_imgui.inl"
-
-/*
 ** Hand made overrides
 */
 
@@ -397,7 +392,6 @@ static int w_BeginChild(lua_State *L)
 */
 
 static const struct luaL_Reg imguilib[] = {
-#include "register_imgui.inl"
 	// Custom
 	{ "GetStyleColName", w_GetStyleColorName },
 	{ "GetStyleColCount", w_GetStyleColCount },
@@ -441,14 +435,13 @@ extern "C" {
 	void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
 }
 
-#include "register_imgui_enums.inl"
-
-extern "C" LOVE_IMGUI_EXPORT int luaopen_imgui(lua_State *L)
+extern "C" int luaopen_imgui(lua_State *L)
 {
-	PushImguiEnums(L, "enum");
 
 	// Enums not handled by iterator yet
 	lua_newtable(L);
+	addImguiWrappers(L);
+
 
 	luaL_openlib(L, "imgui", imguilib, 1);
 	return 1;
