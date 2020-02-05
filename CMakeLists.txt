@@ -36,12 +36,15 @@ ADD_LIBRARY(${LIB_NAME}
 	src/libimgui/imconfig.h
 	src/libimgui/imgui.cpp
 	src/libimgui/imgui.h
-	src/libimgui/imgui_draw.cpp
 	src/libimgui/imgui_demo.cpp
+	src/libimgui/imgui_draw.cpp
 	src/libimgui/imgui_internal.h
+	src/libimgui/imgui_widgets.cpp
 	src/libimgui/imstb_rectpack.h
 	src/libimgui/imstb_textedit.h
 	src/libimgui/imstb_truetype.h
+	src/libimgui/misc/cpp/imgui_stdlib.cpp
+	src/libimgui/misc/cpp/imgui_stdlib.h
 
 	src/imgui_impl.cpp
 	src/wrap_imgui_impl.cpp
@@ -55,6 +58,7 @@ ADD_LIBRARY(${LIB_NAME}
 TARGET_INCLUDE_DIRECTORIES(${LIB_NAME}
 	PUBLIC
 	${LUAJIT_INCLUDE_DIR}
+	src/libimgui
 )
 
 TARGET_LINK_LIBRARIES(${LIB_NAME}

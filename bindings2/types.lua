@@ -5,80 +5,95 @@ local Types = {}
 do
 	-- Check argument types
 	local function simple_arg(getter, defaultGetter)
-		return function(buf, name, default, i)
-			if default then
-				buf:addf("auto %s = %s(L, %d, %s);", name, defaultGetter, i, default)
+		return function(buf, arg, i)
+			if arg.default then
+				buf:addf("auto %s = %s(L, %d, %s);", arg.name, defaultGetter, i, arg.default)
 			else
-				buf:addf("auto %s = %s(L, %d);", name, getter, i)
+				buf:addf("auto %s = %s(L, %d);", arg.name, getter, i)
 			end
 			return i + 1
 		end
 	end
 
 	local function static_cast_arg(ctype, getter, defaultGetter)
-		return function(buf, name, default, i)
-			if default then
-				buf:addf("auto %s = static_cast<%s>(%s(L, %d, %s));", name, ctype, defaultGetter, i, default)
+		return function(buf, arg, i)
+			if arg.default then
+				buf:addf("auto %s = static_cast<%s>(%s(L, %d, %s));", arg.name, ctype, defaultGetter, i, arg.default)
 			else
-				buf:addf("auto %s = static_cast<%s>(%s(L, %d));", name, ctype, getter, i)
+				buf:addf("auto %s = static_cast<%s>(%s(L, %d));", arg.name, ctype, getter, i)
 			end
 			return i + 1
 		end
 	end
 
 	local function enum_arg(ctype, fromstring)
-		return function(buf, name, default, i)
-			if default then
-				buf:addf("auto %s = luax_optenum<%s>(%s, L, %d, %s);", name, ctype, fromstring, i, default)
+		return function(buf, arg, i)
+			if arg.default then
+				buf:addf("auto %s = luax_optenum<%s>(%s, L, %d, %s);", arg.name, ctype, fromstring, i, arg.default)
 			else
-				buf:addf("auto %s = luax_checkenum<%s>(%s, L, %d);", name, ctype, fromstring, i)
+				buf:addf("auto %s = luax_checkenum<%s>(%s, L, %d);", arg.name, ctype, fromstring, i)
 			end
 			return i + 1
 		end
 	end
 
 	local function flags_arg(ctype, fromstring)
-		return function(buf, name, default, i)
-			if default then
-				buf:addf("auto %s = luax_optflags<%s>(%s, L, %d, %s);", name, ctype, fromstring, i, default)
+		return function(buf, arg, i)
+			if arg.default then
+				buf:addf("auto %s = luax_optflags<%s>(%s, L, %d, %s);", arg.name, ctype, fromstring, i, arg.default)
 			else
-				buf:addf("auto %s = luax_checkflags<%s>(%s, L, %d);", name, ctype, fromstring, i)
+				buf:addf("auto %s = luax_checkflags<%s>(%s, L, %d);", arg.name, ctype, fromstring, i)
 			end
 			return i + 1
 		end
 	end
 
-	local function simple_out_arg(ctype, getter, defaultGetter)
-		return function(buf, name, default, i, outParams)
-			if default then
-				buf:addf("auto %s = %s(L, %d, %s);", name, defaultGetter, i, default)
+	local function skip_arg()
+		return function(buf, arg, i)
+			if arg.default then
+				buf:addf("%s %s = %s; // skipping", arg.type, arg.name, arg.default)
 			else
-				buf:addf("auto %s = %s(L, %d);", name, getter, i)
+				-- unimplemented required param
+				return i, "stop"
 			end
-			table.insert(outParams, {name, ctype})
+			return i
+		end
+	end
+
+	local function simple_out_arg(ctype, getter, defaultGetter)
+		return function(buf, arg, i, outParams)
+			if arg.default then
+				buf:addf("%s %s = %s(L, %d, %s);", ctype, arg.name, defaultGetter, i, arg.default)
+			else
+				buf:addf("%s %s = %s(L, %d);", ctype, arg.name, getter, i)
+			end
+			arg.isOutParam = true
+			table.insert(outParams, {arg.name, ctype})
 			return i + 1
 		end
 	end
 
 	local function static_cast_out_arg(ctype, getter, defaultGetter)
-		return function(buf, name, default, i, outParams)
+		return function(buf, arg, i, outParams)
 			if default then
-				buf:addf("auto %s = static_cast<%s>(%s(L, %d, %s));", name, ctype, defaultGetter, i, default)
+				buf:addf("auto %s = static_cast<%s>(%s(L, %d, %s));", arg.name, ctype, defaultGetter, i, arg.default)
 			else
-				buf:addf("auto %s = static_cast<%s>(%s(L, %d));", name, ctype, getter, i)
+				buf:addf("auto %s = static_cast<%s>(%s(L, %d));", arg.name, ctype, getter, i)
 			end
-			table.insert(outParams, {name, ctype})
+			arg.isOutParam = true
+			table.insert(outParams, {arg.name, ctype})
 			return i + 1
 		end
 	end
 
 	local function array_out_arg(size, ctype, getter)
-		return function(buf, name, default, i, outParams)
-			assert(not default, "defaults unimplemented")
-			buf:addf("%s %s[%d];", ctype, name, size)
+		return function(buf, arg, i, outParams)
+			assert(not arg.default, "defaults unimplemented")
+			buf:addf("%s %s[%d];", ctype, arg.name, size)
 			for ai = 0, size-1 do
-				local element = string.format("%s[%d]", name, ai)
+				local element = string.format("%s[%d]", arg.name, ai)
 				buf:addf("%s = static_cast<%s>(%s(L, %d));", element, ctype, getter, i+ai)
+				arg.isOutParam = true
 				table.insert(outParams, {element, ctype})
 			end
 			return i + size
@@ -91,13 +106,35 @@ do
 		["bool"] = simple_arg("luax_checkboolean", "luax_optboolean"),
 		["int"] = simple_arg("luaL_checkint", "luaL_optint"),
 		["double"] = simple_arg("luaL_checknumber", "luaL_optnumber"),
+		["ImTextureID"] = simple_arg("luax_checkTextureID", "luax_checkTextureID"),
+		["ImGuiContext*"] = static_cast_arg("ImGuiContext*", "luax_checklightuserdata", "luax_optlightuserdata"),
 		["unsigned int"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
 		["float"] = static_cast_arg("float", "luaL_checknumber", "luaL_optnumber"),
 		["ImU32"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
 		["ImGuiID"] = static_cast_arg("ImGuiID", "luaL_checkint", "luaL_optint"),
-		["const ImVec2&"] = function(buf, name, default, i, _)
-			if default then
-				buf:addf("auto %s = %s;", name, default)
+		["const fmt*"] = function(buf, arg, i)
+			-- get format string
+			buf:addf("auto %s = luax_formatargs(L, %s);", arg.name, i)
+			return i + 1
+		end,
+		["const ImVec2*"] = function(buf, arg, i, _)
+			local name = arg.name
+			if arg.default then
+				buf:addf("ImVec2* %s = %s;", name, arg.default)
+				buf:addf("ImVec2 %s_buf;", name)
+				buf:addf("if(!lua_isnoneornil(L, %d)) {", i+1) buf:indent()
+					buf:addf("%s_buf.x = luaL_checknumber(L, %d);", name, i)
+					buf:addf("%s_buf.y = luaL_checknumber(L, %d);", name, i+1)
+				buf:unindent() buf:add("}")
+				return i+2
+			else
+				return i, "stop"
+			end
+		end,
+		["const ImVec2&"] = function(buf, arg, i, _)
+			local name = arg.name
+			if arg.default then
+				buf:addf("auto %s = %s;", name, arg.default)
 				buf:addf("%s.x = luaL_optnumber(L, %d, %s.x);", name, i, name)
 				buf:addf("%s.y = luaL_optnumber(L, %d, %s.y);", name, i+1, name)
 			else
@@ -107,22 +144,30 @@ do
 			end
 			return i+2
 		end,
-		["const ImVec4&"] = function(buf, name, default, i, _)
-			if default then
-				buf:addf("ImVec4 %s = %s;", name, default)
+		["const ImVec4&"] = function(buf, arg, i, _)
+			local name = arg.name
+			if arg.default then
+				buf:addf("ImVec4 %s = %s;", name, arg.default)
 				buf:addf("%s.x = luaL_optnumber(L, %d, %s.x);", name, i, name)
 				buf:addf("%s.y = luaL_optnumber(L, %d, %s.y);", name, i+1, name)
-				buf:addf("%s.z = luaL_optnumber(L, %d, %s.z);", name, i+1, name)
-				buf:addf("%s.w = luaL_optnumber(L, %d, %s.w);", name, i+1, name)
+				buf:addf("%s.z = luaL_optnumber(L, %d, %s.z);", name, i+2, name)
+				buf:addf("%s.w = luaL_optnumber(L, %d, %s.w);", name, i+3, name)
 			else
 				buf:addf("ImVec4 %s;", name)
 				buf:addf("%s.x = luaL_checknumber(L, %d);", name, i)
 				buf:addf("%s.y = luaL_checknumber(L, %d);", name, i+1)
-				buf:addf("%s.z = luaL_checknumber(L, %d);", name, i+1)
-				buf:addf("%s.w = luaL_checknumber(L, %d);", name, i+1)
+				buf:addf("%s.z = luaL_checknumber(L, %d);", name, i+2)
+				buf:addf("%s.w = luaL_checknumber(L, %d);", name, i+3)
 			end
 			return i+4
 		end,
+		["ImGuiInputTextCallback"] = function(buf, arg, i, _)
+			local name = arg.name
+			buf:addf("ImGuiInputTextCallback %s = callLuaInputTextCallback;", name)
+			buf:addf("void* user_data = luax_getImguiInputTextCallback(L, %d);", i)
+			buf:addf("if (!user_data) { %s = nullptr; }", name)
+		end,
+
 		["ImGuiDir"] = enum_arg("ImGuiDir", "getImGuiDirFromString"),
 		["ImGuiCol"] = enum_arg("ImGuiCol", "getImGuiColFromString"),
 		["ImGuiMouseCursor"] = enum_arg("ImGuiMouseCursor", "getImGuiMouseCursorFromString"),
@@ -142,12 +187,23 @@ do
 		["ImGuiTabBarFlags"] = flags_arg("ImGuiTabBarFlags", "getImGuiTabBarFlagsFromString"),
 		["ImGuiTabItemFlags"] = flags_arg("ImGuiTabItemFlags", "getImGuiTabItemFlagsFromString"),
 		["ImGuiDragDropFlags"] = flags_arg("ImGuiDragDropFlags", "getImGuiDragDropFlagsFromString"),
+		["ImGuiDockNodeFlags"] = flags_arg("ImGuiDockNodeFlags", "getImGuiDockNodeFlagsFromString"),
+
+		-- TODO
+		["ImFontAtlas*"] = skip_arg(),
+		["ImGuiViewport*"] = skip_arg(),
+		["const ImGuiWindowClass*"] = skip_arg(),
+		["noop"] = function(_, _, i)
+			return i
+		end,
+
 		-- edit input
 		["bool*"] = simple_out_arg("bool", "luax_checkboolean", "luax_optboolean"),
 		["int*"] = simple_out_arg("int", "luaL_checkint", "luaL_optint"),
 		["double*"] = simple_out_arg("double", "luaL_checknumber", "luaL_optnumber"),
 		["unsigned int*"] = static_cast_out_arg("unsigned int", "luaL_checkint", "luaL_optint"),
 		["float*"] = static_cast_out_arg("float", "luaL_checknumber", "luaL_optnumber"),
+		["std::string*"] = simple_out_arg("std::string", "luaL_checkstring", "luaL_optstring"),
 		["int[2]"] = array_out_arg(2, "int", "luaL_checkint"),
 		["int[3]"] = array_out_arg(3, "int", "luaL_checkint"),
 		["int[4]"] = array_out_arg(4, "int", "luaL_checkint"),
@@ -157,9 +213,10 @@ do
 	}
 	typeCheckers["ImVec2"] = typeCheckers["const ImVec2&"]
 	local unrecognizedCheckType = {}
-	function Types.check(buf, name, ctype, default, i, outParams)
+	function Types.check(buf, arg, i, outParams)
+		local ctype = arg.type
 		if typeCheckers[ctype] then
-			return typeCheckers[ctype](buf, name, default, i, outParams)
+			return typeCheckers[ctype](buf, arg, i, outParams)
 		end
 
 		-- failure
@@ -179,6 +236,12 @@ do
 			return i + 1
 		end
 	end
+	local function enum_return(stringFromEnum)
+		return function(buf, name, i)
+			buf:addf("lua_pushstring(L, %s(%s));", stringFromEnum, name)
+			return i + 1
+		end
+	end
 	local typePushers = {
 		["bool"] = simple_return("lua_pushboolean"),
 		["int"] = simple_return("lua_pushinteger"),
@@ -188,10 +251,23 @@ do
 		["float"] = simple_return("lua_pushnumber"),
 		["double"] = simple_return("lua_pushnumber"),
 		["const char*"] = simple_return("lua_pushstring"),
+		["ImGuiContext*"] = simple_return("lua_pushlightuserdata"),
+		["ImGuiMouseCursor"] = enum_return("getStringFromImGuiMouseCursor"),
 		-- custom
+		["std::string"] = function(buf, name, i)
+			buf:addf("lua_pushlstring(L, %s.c_str(), %s.size());", name, name)
+			return i + 1
+		end,
 		["ImVec2"] = function(buf, name, i)
 			buf:addf("lua_pushnumber(L, %s.x);", name)
 			buf:addf("lua_pushnumber(L, %s.y);", name)
+			return i + 2
+		end,
+		["ImVec4"] = function(buf, name, i)
+			buf:addf("lua_pushnumber(L, %s.x);", name)
+			buf:addf("lua_pushnumber(L, %s.y);", name)
+			buf:addf("lua_pushnumber(L, %s.z);", name)
+			buf:addf("lua_pushnumber(L, %s.w);", name)
 			return i + 2
 		end,
 	}

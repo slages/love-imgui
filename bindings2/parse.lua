@@ -1,6 +1,17 @@
 local util = require 'bindings2.util'
 
 local SKIP_FUNCTIONS = {
+	-- allocation strategy is a C++ native thing
+	["SetAllocatorFunctions"] = true,
+	["MemAlloc"] = true,
+	["MemFree"] = true,
+	-- color functions: use platform native equivalents instead
+	["GetColorU32"] = true,
+	["ColorConvertHSVtoRGB"] = true,
+	["ColorConvertFloat4ToU32"] = true,
+	["ColorConvertFloatu32ToFloat4"] = true,
+	-- not convenient convenience function: use begin/endcombo instead
+	["Combo"] = true,
 }
 
 local function trim(s)
@@ -174,23 +185,6 @@ local function matchCArgs(line, start)
 	return args, varargs
 end
 
-local function parseImguiFunction(line)
-	local _, apiStop = line:find("IMGUI_API")
-	local returnType, _, returnStop = matchCType(line, apiStop + 1)
-	local name = line:match("%w+", returnStop + 1)
-	local _, nameStop = line:find("%w+", returnStop + 1)
-	local args, isVarargs = matchCArgs(line, nameStop+1)
-	local comment = line:match("//(.+)")
-	return {
-		rawLine = line,
-		returnType = returnType,
-		name = name,
-		arguments = args,
-		isVarargs = isVarargs,
-		comment = comment,
-	}
-end
-
 local function getNamespaceFromRegions(regions)
 	table.sort(regions, function(left, right) return left.start < right.start end)
 	local r = {}
@@ -200,39 +194,83 @@ local function getNamespaceFromRegions(regions)
 	return table.concat(r, "::")
 end
 
-local Parse = {}
-function Parse.parseHeader(fname)
-	util.logf("Parsing %s", fname)
-	local file = assert(io.open(fname, 'r'))
-	local source = file:read('*a')
-	file:close()
+local function parseImguiFunction(line, regions)
+	local _, apiStop = line:find("IMGUI_API")
+	local returnType, _, returnStop = matchCType(line, apiStop + 1)
+	local name = line:match("%w+", returnStop + 1)
+	local _, nameStop = line:find("%w+", returnStop + 1)
+	local args, isVarargs = matchCArgs(line, nameStop+1)
+	local comment = line:match("//(.+)")
+	local namespace = getNamespaceFromRegions(regions)
+	local qualifiedName = namespace .. "::" .. name
+	return {
+		rawLine = line,
+		returnType = returnType,
+		name = name,
+		qualifiedName = qualifiedName,
+		namespace = namespace,
+		arguments = args,
+		isVarargs = isVarargs,
+		comment = comment,
+	}
+end
 
-	-- manually remove obsolete functions
-	local obsoleteRegionPattern = "#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS.-#endif"
-	source = source:gsub(obsoleteRegionPattern, "")
+local function findFunctions(source, data)
+	local functions = {}
 
-	local data = {}
-	data.functions = {}
-	data.namespaces = findRegions(source, "namespace")
-	data.structs = findRegions(source, "struct")
-	data.classes = findRegions(source, "class")
-	data.enums = findEnums(source)
-
+	-- step 1. find functions
 	local start, stop = source:find("[^\n]+")
 	while start do
 		local line = source:sub(start, stop)
 		if line:match("^%s*IMGUI_API") then
 			local regions = getRegionsForPosition(data, start)
 			if not isMethod(regions) then
-				local fnData = parseImguiFunction(line)
-				fnData.namespace = getNamespaceFromRegions(regions)
+				local fnData = parseImguiFunction(line, regions)
 				if not SKIP_FUNCTIONS[fnData.name] and not fnData.name:match("V$") then
-					table.insert(data.functions, fnData)
+					table.insert(functions, fnData)
 				end
 			end
 		end
 		start, stop = source:find("[^\n]+", stop + 1)
 	end
+
+	-- step 2. detect overriden functions
+	local fnNames = {}
+	local fnOverrides = {}
+	for _, fnData in ipairs(functions) do
+		if not fnNames[fnData.qualifiedName] then
+			fnNames[fnData.qualifiedName] = fnData
+		else
+			local overrides = fnOverrides[fnData.qualifiedName] or {fnNames[fnData.qualifiedName]}
+			table.insert(overrides, fnData)
+			fnOverrides[fnData.qualifiedName] = overrides
+		end
+	end
+
+	return functions, fnOverrides
+end
+
+local Parse = {}
+function Parse.parseHeaders(filenames)
+	local sources = {}
+	for _, fname in ipairs(filenames) do
+		util.logf("Parsing %s", fname)
+		local file = assert(io.open(fname, 'r'))
+		table.insert(sources, file:read('*a'))
+		file:close()
+	end
+	local source = table.concat(sources, "\n")
+
+	-- manually remove obsolete functions
+	local obsoleteRegionPattern = "#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS.-#endif"
+	source = source:gsub(obsoleteRegionPattern, "")
+
+	local data = {}
+	data.namespaces = findRegions(source, "namespace")
+	data.structs = findRegions(source, "struct")
+	data.classes = findRegions(source, "class")
+	data.enums = findEnums(source)
+	data.functions, data.functionOverrides = findFunctions(source, data)
 
 	return data
 end

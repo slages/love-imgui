@@ -1,14 +1,19 @@
 // This is an automatically generated file!!
 
 #include "wrap_imgui_codegen.h"
-#include "libimgui/imgui.h"
+#include "imgui.h"
+#include "misc/cpp/imgui_stdlib.h"
 
 #include <optional>
 #include <string>
 #include <vector>
 #include <sstream>
+#include <locale>
+#include <codecvt>
 
-// helpers
+// Helpers {{{
+extern ImTextureID luax_checkTextureID(lua_State* L, int narg); // define in your application
+
 bool luax_optboolean(lua_State* L, int narg, bool d)
 {
 	if(lua_isnoneornil(L, narg)) {
@@ -20,6 +25,41 @@ bool luax_optboolean(lua_State* L, int narg, bool d)
 bool luax_checkboolean(lua_State* L, int narg)
 {
 	return lua_toboolean(L, narg);
+}
+
+void* luax_checklightuserdata(lua_State* L, int narg)
+{
+	if(!lua_islightuserdata(L, narg)) {
+		luaL_error(L, "Invalid lightuserdata passed as parameter %d", narg);
+		return nullptr;
+	}
+	return lua_touserdata(L, narg);
+}
+
+void* luax_optlightuserdata(lua_State* L, int narg, void* d)
+{
+	if(lua_isnoneornil(L, narg)) {
+		return d;
+	}
+	return luax_checklightuserdata(L, narg);
+}
+
+const char* luax_formatargs(lua_State* L, int startarg)
+{
+	int endarg = lua_gettop(L);
+
+	lua_getglobal(L, "string"); // 1
+	lua_getfield(L, -1, "format"); // 2
+	lua_remove(L, -2); // 1, remove string
+	for (int i = startarg; i <= endarg; ++i) {
+		lua_pushvalue(L, i);
+	} // 1 + args
+	// out = string.format(...)
+	lua_call(L, endarg - startarg + 1, 1); // 1
+	const char* out = luaL_checkstring(L, -1); // 1
+	lua_pop(L, 1); // 0
+
+	return out;
 }
 
 template<typename T, typename U>
@@ -90,30 +130,34 @@ T luax_optflags(U fromString, lua_State* L, int narg, T d)
 	}
 }
 
-// Enums
+// End Helpers }}}
+
+// Enums {{{
 
 std::optional<ImGuiWindowFlags_> getImGuiWindowFlagsFromString(const char* in)
 {
 	if (strcmp(in, "None") == 0) { return ImGuiWindowFlags_None; }
+	if (strcmp(in, "DockNodeHost") == 0) { return ImGuiWindowFlags_DockNodeHost; }
 	if (strcmp(in, "NavFlattened") == 0) { return ImGuiWindowFlags_NavFlattened; }
 	if (strcmp(in, "ChildMenu") == 0) { return ImGuiWindowFlags_ChildMenu; }
+	if (strcmp(in, "Modal") == 0) { return ImGuiWindowFlags_Modal; }
 	if (strcmp(in, "NoResize") == 0) { return ImGuiWindowFlags_NoResize; }
 	if (strcmp(in, "AlwaysVerticalScrollbar") == 0) { return ImGuiWindowFlags_AlwaysVerticalScrollbar; }
 	if (strcmp(in, "MenuBar") == 0) { return ImGuiWindowFlags_MenuBar; }
-	if (strcmp(in, "Modal") == 0) { return ImGuiWindowFlags_Modal; }
-	if (strcmp(in, "HorizontalScrollbar") == 0) { return ImGuiWindowFlags_HorizontalScrollbar; }
 	if (strcmp(in, "Popup") == 0) { return ImGuiWindowFlags_Popup; }
+	if (strcmp(in, "HorizontalScrollbar") == 0) { return ImGuiWindowFlags_HorizontalScrollbar; }
 	if (strcmp(in, "NoNavFocus") == 0) { return ImGuiWindowFlags_NoNavFocus; }
-	if (strcmp(in, "NoTitleBar") == 0) { return ImGuiWindowFlags_NoTitleBar; }
 	if (strcmp(in, "ChildWindow") == 0) { return ImGuiWindowFlags_ChildWindow; }
+	if (strcmp(in, "NoTitleBar") == 0) { return ImGuiWindowFlags_NoTitleBar; }
+	if (strcmp(in, "NoInputs") == 0) { return ImGuiWindowFlags_NoInputs; }
 	if (strcmp(in, "NoCollapse") == 0) { return ImGuiWindowFlags_NoCollapse; }
 	if (strcmp(in, "NoBackground") == 0) { return ImGuiWindowFlags_NoBackground; }
-	if (strcmp(in, "NoInputs") == 0) { return ImGuiWindowFlags_NoInputs; }
+	if (strcmp(in, "NoDecoration") == 0) { return ImGuiWindowFlags_NoDecoration; }
 	if (strcmp(in, "AlwaysAutoResize") == 0) { return ImGuiWindowFlags_AlwaysAutoResize; }
 	if (strcmp(in, "AlwaysHorizontalScrollbar") == 0) { return ImGuiWindowFlags_AlwaysHorizontalScrollbar; }
-	if (strcmp(in, "NoDecoration") == 0) { return ImGuiWindowFlags_NoDecoration; }
-	if (strcmp(in, "NoMove") == 0) { return ImGuiWindowFlags_NoMove; }
 	if (strcmp(in, "NoBringToFrontOnFocus") == 0) { return ImGuiWindowFlags_NoBringToFrontOnFocus; }
+	if (strcmp(in, "NoMove") == 0) { return ImGuiWindowFlags_NoMove; }
+	if (strcmp(in, "NoDocking") == 0) { return ImGuiWindowFlags_NoDocking; }
 	if (strcmp(in, "UnsavedDocument") == 0) { return ImGuiWindowFlags_UnsavedDocument; }
 	if (strcmp(in, "AlwaysUseWindowPadding") == 0) { return ImGuiWindowFlags_AlwaysUseWindowPadding; }
 	if (strcmp(in, "Tooltip") == 0) { return ImGuiWindowFlags_Tooltip; }
@@ -125,6 +169,44 @@ std::optional<ImGuiWindowFlags_> getImGuiWindowFlagsFromString(const char* in)
 	if (strcmp(in, "NoScrollbar") == 0) { return ImGuiWindowFlags_NoScrollbar; }
 	if (strcmp(in, "NoMouseInputs") == 0) { return ImGuiWindowFlags_NoMouseInputs; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiWindowFlags(ImGuiWindowFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 29: return "DockNodeHost";
+		case 1 << 23: return "NavFlattened";
+		case 1 << 28: return "ChildMenu";
+		case 1 << 27: return "Modal";
+		case 1 << 1: return "NoResize";
+		case 1 << 14: return "AlwaysVerticalScrollbar";
+		case 1 << 10: return "MenuBar";
+		case 1 << 26: return "Popup";
+		case 1 << 11: return "HorizontalScrollbar";
+		case 1 << 19: return "NoNavFocus";
+		case 1 << 24: return "ChildWindow";
+		case 1 << 0: return "NoTitleBar";
+		// skipping // case ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus: return "NoInputs";
+		case 1 << 5: return "NoCollapse";
+		case 1 << 7: return "NoBackground";
+		// skipping // case ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse: return "NoDecoration";
+		case 1 << 6: return "AlwaysAutoResize";
+		case 1<< 15: return "AlwaysHorizontalScrollbar";
+		case 1 << 13: return "NoBringToFrontOnFocus";
+		case 1 << 2: return "NoMove";
+		case 1 << 21: return "NoDocking";
+		case 1 << 20: return "UnsavedDocument";
+		case 1 << 16: return "AlwaysUseWindowPadding";
+		case 1 << 25: return "Tooltip";
+		case 1 << 8: return "NoSavedSettings";
+		case 1 << 18: return "NoNavInputs";
+		case 1 << 4: return "NoScrollWithMouse";
+		// skipping // case ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus: return "NoNav";
+		case 1 << 12: return "NoFocusOnAppearing";
+		case 1 << 3: return "NoScrollbar";
+		case 1 << 9: return "NoMouseInputs";
+	}
+	return "";
 }
 
 std::optional<ImGuiInputTextFlags_> getImGuiInputTextFlagsFromString(const char* in)
@@ -153,6 +235,34 @@ std::optional<ImGuiInputTextFlags_> getImGuiInputTextFlagsFromString(const char*
 	if (strcmp(in, "EnterReturnsTrue") == 0) { return ImGuiInputTextFlags_EnterReturnsTrue; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiInputTextFlags(ImGuiInputTextFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 13: return "AlwaysInsertMode";
+		case 1 << 12: return "NoHorizontalScroll";
+		case 1 << 21: return "NoMarkEdited";
+		case 1 << 7: return "CallbackHistory";
+		case 1 << 8: return "CallbackAlways";
+		case 1 << 14: return "ReadOnly";
+		case 1 << 18: return "CallbackResize";
+		case 1 << 6: return "CallbackCompletion";
+		case 1 << 4: return "AutoSelectAll";
+		case 1 << 9: return "CallbackCharFilter";
+		case 1 << 2: return "CharsUppercase";
+		case 1 << 1: return "CharsHexadecimal";
+		case 1 << 20: return "Multiline";
+		case 1 << 17: return "CharsScientific";
+		case 1 << 0: return "CharsDecimal";
+		case 1 << 3: return "CharsNoBlank";
+		case 1 << 15: return "Password";
+		case 1 << 11: return "CtrlEnterForNewLine";
+		case 1 << 10: return "AllowTabInput";
+		case 1 << 16: return "NoUndoRedo";
+		case 1 << 5: return "EnterReturnsTrue";
+	}
+	return "";
+}
 
 std::optional<ImGuiTreeNodeFlags_> getImGuiTreeNodeFlagsFromString(const char* in)
 {
@@ -174,6 +284,28 @@ std::optional<ImGuiTreeNodeFlags_> getImGuiTreeNodeFlagsFromString(const char* i
 	if (strcmp(in, "Leaf") == 0) { return ImGuiTreeNodeFlags_Leaf; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiTreeNodeFlags(ImGuiTreeNodeFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 7: return "OpenOnArrow";
+		case 1 << 12: return "SpanFullWidth";
+		case 1 << 11: return "SpanAvailWidth";
+		case 1 << 13: return "NavLeftJumpsBackHere";
+		case 1 << 5: return "DefaultOpen";
+		case 1 << 10: return "FramePadding";
+		case 1 << 0: return "Selected";
+		case 1 << 6: return "OpenOnDoubleClick";
+		case 1 << 2: return "AllowItemOverlap";
+		case 1 << 1: return "Framed";
+		// skipping // case ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_NoAutoOpenOnLog: return "CollapsingHeader";
+		case 1 << 4: return "NoAutoOpenOnLog";
+		case 1 << 9: return "Bullet";
+		case 1 << 3: return "NoTreePushOnOpen";
+		case 1 << 8: return "Leaf";
+	}
+	return "";
+}
 
 std::optional<ImGuiSelectableFlags_> getImGuiSelectableFlagsFromString(const char* in)
 {
@@ -184,6 +316,18 @@ std::optional<ImGuiSelectableFlags_> getImGuiSelectableFlagsFromString(const cha
 	if (strcmp(in, "AllowDoubleClick") == 0) { return ImGuiSelectableFlags_AllowDoubleClick; }
 	if (strcmp(in, "Disabled") == 0) { return ImGuiSelectableFlags_Disabled; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiSelectableFlags(ImGuiSelectableFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 4: return "AllowItemOverlap";
+		case 1 << 0: return "DontClosePopups";
+		case 1 << 1: return "SpanAllColumns";
+		case 1 << 2: return "AllowDoubleClick";
+		case 1 << 3: return "Disabled";
+	}
+	return "";
 }
 
 std::optional<ImGuiComboFlags_> getImGuiComboFlagsFromString(const char* in)
@@ -198,6 +342,21 @@ std::optional<ImGuiComboFlags_> getImGuiComboFlagsFromString(const char* in)
 	if (strcmp(in, "HeightLarge") == 0) { return ImGuiComboFlags_HeightLarge; }
 	if (strcmp(in, "PopupAlignLeft") == 0) { return ImGuiComboFlags_PopupAlignLeft; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiComboFlags(ImGuiComboFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 2: return "HeightRegular";
+		case 1 << 1: return "HeightSmall";
+		case 1 << 5: return "NoArrowButton";
+		// skipping // case ImGuiComboFlags_HeightSmall | ImGuiComboFlags_HeightRegular | ImGuiComboFlags_HeightLarge | ImGuiComboFlags_HeightLargest: return "HeightMask_";
+		case 1 << 4: return "HeightLargest";
+		case 1 << 6: return "NoPreview";
+		case 1 << 3: return "HeightLarge";
+		case 1 << 0: return "PopupAlignLeft";
+	}
+	return "";
 }
 
 std::optional<ImGuiTabBarFlags_> getImGuiTabBarFlagsFromString(const char* in)
@@ -215,6 +374,23 @@ std::optional<ImGuiTabBarFlags_> getImGuiTabBarFlagsFromString(const char* in)
 	if (strcmp(in, "FittingPolicyScroll") == 0) { return ImGuiTabBarFlags_FittingPolicyScroll; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiTabBarFlags(ImGuiTabBarFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 5: return "NoTooltip";
+		case 1 << 2: return "TabListPopupButton";
+		case 1 << 6: return "FittingPolicyResizeDown";
+		case 1 << 4: return "NoTabListScrollingButtons";
+		case 1 << 0: return "Reorderable";
+		// skipping // case ImGuiTabBarFlags_FittingPolicyResizeDown | ImGuiTabBarFlags_FittingPolicyScroll: return "FittingPolicyMask_";
+		case 1 << 1: return "AutoSelectNewTabs";
+		// skipping // case ImGuiTabBarFlags_FittingPolicyResizeDown: return "FittingPolicyDefault_";
+		case 1 << 3: return "NoCloseWithMiddleMouseButton";
+		case 1 << 7: return "FittingPolicyScroll";
+	}
+	return "";
+}
 
 std::optional<ImGuiTabItemFlags_> getImGuiTabItemFlagsFromString(const char* in)
 {
@@ -225,6 +401,17 @@ std::optional<ImGuiTabItemFlags_> getImGuiTabItemFlagsFromString(const char* in)
 	if (strcmp(in, "UnsavedDocument") == 0) { return ImGuiTabItemFlags_UnsavedDocument; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiTabItemFlags(ImGuiTabItemFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 3: return "NoPushId";
+		case 1 << 1: return "SetSelected";
+		case 1 << 2: return "NoCloseWithMiddleMouseButton";
+		case 1 << 0: return "UnsavedDocument";
+	}
+	return "";
+}
 
 std::optional<ImGuiFocusedFlags_> getImGuiFocusedFlagsFromString(const char* in)
 {
@@ -234,6 +421,17 @@ std::optional<ImGuiFocusedFlags_> getImGuiFocusedFlagsFromString(const char* in)
 	if (strcmp(in, "ChildWindows") == 0) { return ImGuiFocusedFlags_ChildWindows; }
 	if (strcmp(in, "RootAndChildWindows") == 0) { return ImGuiFocusedFlags_RootAndChildWindows; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiFocusedFlags(ImGuiFocusedFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 1: return "RootWindow";
+		case 1 << 2: return "AnyWindow";
+		case 1 << 0: return "ChildWindows";
+		// skipping // case ImGuiFocusedFlags_RootWindow | ImGuiFocusedFlags_ChildWindows: return "RootAndChildWindows";
+	}
+	return "";
 }
 
 std::optional<ImGuiHoveredFlags_> getImGuiHoveredFlagsFromString(const char* in)
@@ -249,6 +447,47 @@ std::optional<ImGuiHoveredFlags_> getImGuiHoveredFlagsFromString(const char* in)
 	if (strcmp(in, "ChildWindows") == 0) { return ImGuiHoveredFlags_ChildWindows; }
 	if (strcmp(in, "AllowWhenBlockedByActiveItem") == 0) { return ImGuiHoveredFlags_AllowWhenBlockedByActiveItem; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiHoveredFlags(ImGuiHoveredFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		// skipping // case ImGuiHoveredFlags_RootWindow | ImGuiHoveredFlags_ChildWindows: return "RootAndChildWindows";
+		case 1 << 7: return "AllowWhenDisabled";
+		case 1 << 1: return "RootWindow";
+		case 1 << 2: return "AnyWindow";
+		// skipping // case ImGuiHoveredFlags_AllowWhenBlockedByPopup | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem | ImGuiHoveredFlags_AllowWhenOverlapped: return "RectOnly";
+		case 1 << 3: return "AllowWhenBlockedByPopup";
+		case 1 << 6: return "AllowWhenOverlapped";
+		case 1 << 0: return "ChildWindows";
+		case 1 << 5: return "AllowWhenBlockedByActiveItem";
+	}
+	return "";
+}
+
+std::optional<ImGuiDockNodeFlags_> getImGuiDockNodeFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiDockNodeFlags_None; }
+	if (strcmp(in, "NoSplit") == 0) { return ImGuiDockNodeFlags_NoSplit; }
+	if (strcmp(in, "AutoHideTabBar") == 0) { return ImGuiDockNodeFlags_AutoHideTabBar; }
+	if (strcmp(in, "KeepAliveOnly") == 0) { return ImGuiDockNodeFlags_KeepAliveOnly; }
+	if (strcmp(in, "NoResize") == 0) { return ImGuiDockNodeFlags_NoResize; }
+	if (strcmp(in, "PassthruCentralNode") == 0) { return ImGuiDockNodeFlags_PassthruCentralNode; }
+	if (strcmp(in, "NoDockingInCentralNode") == 0) { return ImGuiDockNodeFlags_NoDockingInCentralNode; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiDockNodeFlags(ImGuiDockNodeFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 4: return "NoSplit";
+		case 1 << 6: return "AutoHideTabBar";
+		case 1 << 0: return "KeepAliveOnly";
+		case 1 << 5: return "NoResize";
+		case 1 << 3: return "PassthruCentralNode";
+		case 1 << 2: return "NoDockingInCentralNode";
+	}
+	return "";
 }
 
 std::optional<ImGuiDragDropFlags_> getImGuiDragDropFlagsFromString(const char* in)
@@ -266,6 +505,23 @@ std::optional<ImGuiDragDropFlags_> getImGuiDragDropFlagsFromString(const char* i
 	if (strcmp(in, "AcceptNoPreviewTooltip") == 0) { return ImGuiDragDropFlags_AcceptNoPreviewTooltip; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiDragDropFlags(ImGuiDragDropFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 4: return "SourceExtern";
+		case 1 << 5: return "SourceAutoExpirePayload";
+		// skipping // case ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect: return "AcceptPeekOnly";
+		case 1 << 3: return "SourceAllowNullID";
+		case 1 << 1: return "SourceNoDisableHover";
+		case 1 << 2: return "SourceNoHoldToOpenOthers";
+		case 1 << 10: return "AcceptBeforeDelivery";
+		case 1 << 11: return "AcceptNoDrawDefaultRect";
+		case 1 << 0: return "SourceNoPreviewTooltip";
+		case 1 << 12: return "AcceptNoPreviewTooltip";
+	}
+	return "";
+}
 
 std::optional<ImGuiDataType_> getImGuiDataTypeFromString(const char* in)
 {
@@ -281,6 +537,22 @@ std::optional<ImGuiDataType_> getImGuiDataTypeFromString(const char* in)
 	if (strcmp(in, "U16") == 0) { return ImGuiDataType_U16; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiDataType(ImGuiDataType in)
+{
+	switch (in) {
+		case 1: return "U8";
+		case 5: return "U32";
+		case 9: return "Double";
+		case 0: return "S8";
+		case 7: return "U64";
+		case 6: return "S64";
+		case 4: return "S32";
+		case 8: return "Float";
+		case 2: return "S16";
+		case 3: return "U16";
+	}
+	return "";
+}
 
 std::optional<ImGuiDir_> getImGuiDirFromString(const char* in)
 {
@@ -290,6 +562,17 @@ std::optional<ImGuiDir_> getImGuiDirFromString(const char* in)
 	if (strcmp(in, "Up") == 0) { return ImGuiDir_Up; }
 	if (strcmp(in, "Down") == 0) { return ImGuiDir_Down; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiDir(ImGuiDir in)
+{
+	switch (in) {
+		case -1: return "None";
+		case 0: return "Left";
+		case 1: return "Right";
+		case 2: return "Up";
+		case 3: return "Down";
+	}
+	return "";
 }
 
 std::optional<ImGuiKey_> getImGuiKeyFromString(const char* in)
@@ -318,6 +601,34 @@ std::optional<ImGuiKey_> getImGuiKeyFromString(const char* in)
 	if (strcmp(in, "PageDown") == 0) { return ImGuiKey_PageDown; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiKey(ImGuiKey in)
+{
+	switch (in) {
+		case 0: return "Tab";
+		case 12: return "Space";
+		case 5: return "PageUp";
+		case 21: return "Z";
+		case 10: return "Delete";
+		case 1: return "LeftArrow";
+		case 2: return "RightArrow";
+		case 9: return "Insert";
+		case 7: return "Home";
+		case 4: return "DownArrow";
+		case 14: return "Escape";
+		case 3: return "UpArrow";
+		case 16: return "A";
+		case 18: return "V";
+		case 17: return "C";
+		case 19: return "X";
+		case 13: return "Enter";
+		case 11: return "Backspace";
+		case 20: return "Y";
+		case 15: return "KeyPadEnter";
+		case 8: return "End";
+		case 6: return "PageDown";
+	}
+	return "";
+}
 
 std::optional<ImGuiNavInput_> getImGuiNavInputFromString(const char* in)
 {
@@ -345,6 +656,34 @@ std::optional<ImGuiNavInput_> getImGuiNavInputFromString(const char* in)
 	if (strcmp(in, "LStickLeft") == 0) { return ImGuiNavInput_LStickLeft; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiNavInput(ImGuiNavInput in)
+{
+	switch (in) {
+		case 3: return "Menu";
+		case 14: return "TweakSlow";
+		case 5: return "DpadRight";
+		case 11: return "LStickDown";
+		case 15: return "TweakFast";
+		case 1: return "Cancel";
+		case 7: return "DpadDown";
+		case 12: return "FocusPrev";
+		case 6: return "DpadUp";
+		case 10: return "LStickUp";
+		case 16: return "KeyMenu_";
+		case 9: return "LStickRight";
+		case 4: return "DpadLeft";
+		// skipping // case ImGuiNavInput_KeyMenu_: return "InternalStart_";
+		case 17: return "KeyLeft_";
+		case 19: return "KeyUp_";
+		case 18: return "KeyRight_";
+		case 0: return "Activate";
+		case 20: return "KeyDown_";
+		case 13: return "FocusNext";
+		case 2: return "Input";
+		case 8: return "LStickLeft";
+	}
+	return "";
+}
 
 std::optional<ImGuiConfigFlags_> getImGuiConfigFlagsFromString(const char* in)
 {
@@ -353,11 +692,34 @@ std::optional<ImGuiConfigFlags_> getImGuiConfigFlagsFromString(const char* in)
 	if (strcmp(in, "NavEnableGamepad") == 0) { return ImGuiConfigFlags_NavEnableGamepad; }
 	if (strcmp(in, "IsSRGB") == 0) { return ImGuiConfigFlags_IsSRGB; }
 	if (strcmp(in, "NavEnableKeyboard") == 0) { return ImGuiConfigFlags_NavEnableKeyboard; }
+	if (strcmp(in, "NavEnableSetMousePos") == 0) { return ImGuiConfigFlags_NavEnableSetMousePos; }
+	if (strcmp(in, "DpiEnableScaleFonts") == 0) { return ImGuiConfigFlags_DpiEnableScaleFonts; }
+	if (strcmp(in, "DpiEnableScaleViewports") == 0) { return ImGuiConfigFlags_DpiEnableScaleViewports; }
+	if (strcmp(in, "DockingEnable") == 0) { return ImGuiConfigFlags_DockingEnable; }
 	if (strcmp(in, "IsTouchScreen") == 0) { return ImGuiConfigFlags_IsTouchScreen; }
 	if (strcmp(in, "NoMouse") == 0) { return ImGuiConfigFlags_NoMouse; }
-	if (strcmp(in, "NavEnableSetMousePos") == 0) { return ImGuiConfigFlags_NavEnableSetMousePos; }
 	if (strcmp(in, "NoMouseCursorChange") == 0) { return ImGuiConfigFlags_NoMouseCursorChange; }
+	if (strcmp(in, "ViewportsEnable") == 0) { return ImGuiConfigFlags_ViewportsEnable; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiConfigFlags(ImGuiConfigFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 3: return "NavNoCaptureKeyboard";
+		case 1 << 1: return "NavEnableGamepad";
+		case 1 << 20: return "IsSRGB";
+		case 1 << 0: return "NavEnableKeyboard";
+		case 1 << 2: return "NavEnableSetMousePos";
+		case 1 << 15: return "DpiEnableScaleFonts";
+		case 1 << 14: return "DpiEnableScaleViewports";
+		case 1 << 6: return "DockingEnable";
+		case 1 << 21: return "IsTouchScreen";
+		case 1 << 4: return "NoMouse";
+		case 1 << 5: return "NoMouseCursorChange";
+		case 1 << 10: return "ViewportsEnable";
+	}
+	return "";
 }
 
 std::optional<ImGuiBackendFlags_> getImGuiBackendFlagsFromString(const char* in)
@@ -365,9 +727,26 @@ std::optional<ImGuiBackendFlags_> getImGuiBackendFlagsFromString(const char* in)
 	if (strcmp(in, "None") == 0) { return ImGuiBackendFlags_None; }
 	if (strcmp(in, "HasGamepad") == 0) { return ImGuiBackendFlags_HasGamepad; }
 	if (strcmp(in, "HasMouseCursors") == 0) { return ImGuiBackendFlags_HasMouseCursors; }
+	if (strcmp(in, "RendererHasViewports") == 0) { return ImGuiBackendFlags_RendererHasViewports; }
+	if (strcmp(in, "HasMouseHoveredViewport") == 0) { return ImGuiBackendFlags_HasMouseHoveredViewport; }
 	if (strcmp(in, "RendererHasVtxOffset") == 0) { return ImGuiBackendFlags_RendererHasVtxOffset; }
+	if (strcmp(in, "PlatformHasViewports") == 0) { return ImGuiBackendFlags_PlatformHasViewports; }
 	if (strcmp(in, "HasSetMousePos") == 0) { return ImGuiBackendFlags_HasSetMousePos; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiBackendFlags(ImGuiBackendFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 0: return "HasGamepad";
+		case 1 << 1: return "HasMouseCursors";
+		case 1 << 12: return "RendererHasViewports";
+		case 1 << 11: return "HasMouseHoveredViewport";
+		case 1 << 3: return "RendererHasVtxOffset";
+		case 1 << 10: return "PlatformHasViewports";
+		case 1 << 2: return "HasSetMousePos";
+	}
+	return "";
 }
 
 std::optional<ImGuiCol_> getImGuiColFromString(const char* in)
@@ -395,14 +774,16 @@ std::optional<ImGuiCol_> getImGuiColFromString(const char* in)
 	if (strcmp(in, "NavHighlight") == 0) { return ImGuiCol_NavHighlight; }
 	if (strcmp(in, "SeparatorHovered") == 0) { return ImGuiCol_SeparatorHovered; }
 	if (strcmp(in, "ResizeGrip") == 0) { return ImGuiCol_ResizeGrip; }
-	if (strcmp(in, "SeparatorActive") == 0) { return ImGuiCol_SeparatorActive; }
-	if (strcmp(in, "Border") == 0) { return ImGuiCol_Border; }
 	if (strcmp(in, "ButtonActive") == 0) { return ImGuiCol_ButtonActive; }
+	if (strcmp(in, "SeparatorActive") == 0) { return ImGuiCol_SeparatorActive; }
 	if (strcmp(in, "NavWindowingHighlight") == 0) { return ImGuiCol_NavWindowingHighlight; }
-	if (strcmp(in, "Separator") == 0) { return ImGuiCol_Separator; }
-	if (strcmp(in, "FrameBgHovered") == 0) { return ImGuiCol_FrameBgHovered; }
+	if (strcmp(in, "Border") == 0) { return ImGuiCol_Border; }
 	if (strcmp(in, "DragDropTarget") == 0) { return ImGuiCol_DragDropTarget; }
 	if (strcmp(in, "PlotLinesHovered") == 0) { return ImGuiCol_PlotLinesHovered; }
+	if (strcmp(in, "Separator") == 0) { return ImGuiCol_Separator; }
+	if (strcmp(in, "FrameBgHovered") == 0) { return ImGuiCol_FrameBgHovered; }
+	if (strcmp(in, "DockingEmptyBg") == 0) { return ImGuiCol_DockingEmptyBg; }
+	if (strcmp(in, "DockingPreview") == 0) { return ImGuiCol_DockingPreview; }
 	if (strcmp(in, "TabUnfocusedActive") == 0) { return ImGuiCol_TabUnfocusedActive; }
 	if (strcmp(in, "Tab") == 0) { return ImGuiCol_Tab; }
 	if (strcmp(in, "CheckMark") == 0) { return ImGuiCol_CheckMark; }
@@ -421,6 +802,62 @@ std::optional<ImGuiCol_> getImGuiColFromString(const char* in)
 	if (strcmp(in, "ScrollbarBg") == 0) { return ImGuiCol_ScrollbarBg; }
 	if (strcmp(in, "Text") == 0) { return ImGuiCol_Text; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiCol(ImGuiCol in)
+{
+	switch (in) {
+		case 15: return "ScrollbarGrab";
+		case 35: return "TabActive";
+		case 34: return "TabHovered";
+		case 9: return "FrameBgActive";
+		case 22: return "ButtonHovered";
+		case 3: return "ChildBg";
+		case 42: return "PlotHistogram";
+		case 20: return "SliderGrabActive";
+		case 32: return "ResizeGripActive";
+		case 49: return "ModalWindowDimBg";
+		case 7: return "FrameBg";
+		case 1: return "TextDisabled";
+		case 31: return "ResizeGripHovered";
+		case 43: return "PlotHistogramHovered";
+		case 40: return "PlotLines";
+		case 19: return "SliderGrab";
+		case 44: return "TextSelectedBg";
+		case 36: return "TabUnfocused";
+		case 12: return "TitleBgCollapsed";
+		case 10: return "TitleBg";
+		case 46: return "NavHighlight";
+		case 28: return "SeparatorHovered";
+		case 30: return "ResizeGrip";
+		case 23: return "ButtonActive";
+		case 29: return "SeparatorActive";
+		case 47: return "NavWindowingHighlight";
+		case 5: return "Border";
+		case 45: return "DragDropTarget";
+		case 41: return "PlotLinesHovered";
+		case 27: return "Separator";
+		case 8: return "FrameBgHovered";
+		case 39: return "DockingEmptyBg";
+		case 38: return "DockingPreview";
+		case 37: return "TabUnfocusedActive";
+		case 33: return "Tab";
+		case 18: return "CheckMark";
+		case 16: return "ScrollbarGrabHovered";
+		case 25: return "HeaderHovered";
+		case 26: return "HeaderActive";
+		case 21: return "Button";
+		case 17: return "ScrollbarGrabActive";
+		case 48: return "NavWindowingDimBg";
+		case 4: return "PopupBg";
+		case 2: return "WindowBg";
+		case 13: return "MenuBarBg";
+		case 11: return "TitleBgActive";
+		case 24: return "Header";
+		case 6: return "BorderShadow";
+		case 14: return "ScrollbarBg";
+		case 0: return "Text";
+	}
+	return "";
 }
 
 std::optional<ImGuiStyleVar_> getImGuiStyleVarFromString(const char* in)
@@ -449,6 +886,35 @@ std::optional<ImGuiStyleVar_> getImGuiStyleVarFromString(const char* in)
 	if (strcmp(in, "ItemSpacing") == 0) { return ImGuiStyleVar_ItemSpacing; }
 	if (strcmp(in, "WindowRounding") == 0) { return ImGuiStyleVar_WindowRounding; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiStyleVar(ImGuiStyleVar in)
+{
+	switch (in) {
+		case 12: return "FrameBorderSize";
+		case 11: return "FrameRounding";
+		case 10: return "FramePadding";
+		case 7: return "ChildBorderSize";
+		case 0: return "Alpha";
+		case 15: return "IndentSpacing";
+		case 9: return "PopupBorderSize";
+		case 5: return "WindowTitleAlign";
+		case 6: return "ChildRounding";
+		case 19: return "GrabRounding";
+		case 3: return "WindowBorderSize";
+		case 4: return "WindowMinSize";
+		case 16: return "ScrollbarSize";
+		case 22: return "SelectableTextAlign";
+		case 21: return "ButtonTextAlign";
+		case 20: return "TabRounding";
+		case 1: return "WindowPadding";
+		case 14: return "ItemInnerSpacing";
+		case 17: return "ScrollbarRounding";
+		case 18: return "GrabMinSize";
+		case 8: return "PopupRounding";
+		case 13: return "ItemSpacing";
+		case 2: return "WindowRounding";
+	}
+	return "";
 }
 
 std::optional<ImGuiColorEditFlags_> getImGuiColorEditFlagsFromString(const char* in)
@@ -483,6 +949,40 @@ std::optional<ImGuiColorEditFlags_> getImGuiColorEditFlagsFromString(const char*
 	if (strcmp(in, "InputRGB") == 0) { return ImGuiColorEditFlags_InputRGB; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiColorEditFlags(ImGuiColorEditFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 6: return "NoTooltip";
+		// skipping // case ImGuiColorEditFlags_Uint8|ImGuiColorEditFlags_DisplayRGB|ImGuiColorEditFlags_InputRGB|ImGuiColorEditFlags_PickerHueBar: return "_OptionsDefault";
+		case 1 << 9: return "NoDragDrop";
+		// skipping // case ImGuiColorEditFlags_Uint8|ImGuiColorEditFlags_Float: return "_DataTypeMask";
+		case 1 << 7: return "NoLabel";
+		// skipping // case ImGuiColorEditFlags_InputRGB|ImGuiColorEditFlags_InputHSV: return "_InputMask";
+		// skipping // case ImGuiColorEditFlags_PickerHueWheel|ImGuiColorEditFlags_PickerHueBar: return "_PickerMask";
+		case 1 << 18: return "AlphaPreviewHalf";
+		// skipping // case ImGuiColorEditFlags_DisplayRGB|ImGuiColorEditFlags_DisplayHSV|ImGuiColorEditFlags_DisplayHex: return "_DisplayMask";
+		case 1 << 23: return "Uint8";
+		case 1 << 2: return "NoPicker";
+		case 1 << 21: return "DisplayHSV";
+		case 1 << 19: return "HDR";
+		case 1 << 1: return "NoAlpha";
+		case 1 << 8: return "NoSidePreview";
+		case 1 << 17: return "AlphaPreview";
+		case 1 << 26: return "PickerHueWheel";
+		case 1 << 16: return "AlphaBar";
+		case 1 << 5: return "NoInputs";
+		case 1 << 24: return "Float";
+		case 1 << 28: return "InputHSV";
+		case 1 << 4: return "NoSmallPreview";
+		case 1 << 25: return "PickerHueBar";
+		case 1 << 3: return "NoOptions";
+		case 1 << 22: return "DisplayHex";
+		case 1 << 20: return "DisplayRGB";
+		case 1 << 27: return "InputRGB";
+	}
+	return "";
+}
 
 std::optional<ImGuiMouseButton_> getImGuiMouseButtonFromString(const char* in)
 {
@@ -490,6 +990,15 @@ std::optional<ImGuiMouseButton_> getImGuiMouseButtonFromString(const char* in)
 	if (strcmp(in, "Middle") == 0) { return ImGuiMouseButton_Middle; }
 	if (strcmp(in, "Left") == 0) { return ImGuiMouseButton_Left; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiMouseButton(ImGuiMouseButton in)
+{
+	switch (in) {
+		case 1: return "Right";
+		case 2: return "Middle";
+		case 0: return "Left";
+	}
+	return "";
 }
 
 std::optional<ImGuiMouseCursor_> getImGuiMouseCursorFromString(const char* in)
@@ -506,6 +1015,22 @@ std::optional<ImGuiMouseCursor_> getImGuiMouseCursorFromString(const char* in)
 	if (strcmp(in, "Arrow") == 0) { return ImGuiMouseCursor_Arrow; }
 	return std::nullopt;
 }
+const char* getStringFromImGuiMouseCursor(ImGuiMouseCursor in)
+{
+	switch (in) {
+		case -1: return "None";
+		case 4: return "ResizeEW";
+		case 5: return "ResizeNESW";
+		case 6: return "ResizeNWSE";
+		case 1: return "TextInput";
+		case 2: return "ResizeAll";
+		case 3: return "ResizeNS";
+		case 8: return "NotAllowed";
+		case 7: return "Hand";
+		case 0: return "Arrow";
+	}
+	return "";
+}
 
 std::optional<ImGuiCond_> getImGuiCondFromString(const char* in)
 {
@@ -514,6 +1039,16 @@ std::optional<ImGuiCond_> getImGuiCondFromString(const char* in)
 	if (strcmp(in, "Appearing") == 0) { return ImGuiCond_Appearing; }
 	if (strcmp(in, "FirstUseEver") == 0) { return ImGuiCond_FirstUseEver; }
 	return std::nullopt;
+}
+const char* getStringFromImGuiCond(ImGuiCond in)
+{
+	switch (in) {
+		case 1 << 1: return "Once";
+		case 1 << 0: return "Always";
+		case 1 << 3: return "Appearing";
+		case 1 << 2: return "FirstUseEver";
+	}
+	return "";
 }
 
 std::optional<ImDrawCornerFlags_> getImDrawCornerFlagsFromString(const char* in)
@@ -530,6 +1065,22 @@ std::optional<ImDrawCornerFlags_> getImDrawCornerFlagsFromString(const char* in)
 	if (strcmp(in, "Left") == 0) { return ImDrawCornerFlags_Left; }
 	return std::nullopt;
 }
+const char* getStringFromImDrawCornerFlags(ImDrawCornerFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 0: return "TopLeft";
+		case 1 << 2: return "BotLeft";
+		// skipping // case ImDrawCornerFlags_BotLeft | ImDrawCornerFlags_BotRight: return "Bot";
+		// skipping // case 0xF: return "All";
+		case 1 << 1: return "TopRight";
+		// skipping // case ImDrawCornerFlags_TopRight | ImDrawCornerFlags_BotRight: return "Right";
+		case 1 << 3: return "BotRight";
+		// skipping // case ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_TopRight: return "Top";
+		// skipping // case ImDrawCornerFlags_TopLeft | ImDrawCornerFlags_BotLeft: return "Left";
+	}
+	return "";
+}
 
 std::optional<ImDrawListFlags_> getImDrawListFlagsFromString(const char* in)
 {
@@ -539,6 +1090,16 @@ std::optional<ImDrawListFlags_> getImDrawListFlagsFromString(const char* in)
 	if (strcmp(in, "AntiAliasedLines") == 0) { return ImDrawListFlags_AntiAliasedLines; }
 	return std::nullopt;
 }
+const char* getStringFromImDrawListFlags(ImDrawListFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 2: return "AllowVtxOffset";
+		case 1 << 1: return "AntiAliasedFill";
+		case 1 << 0: return "AntiAliasedLines";
+	}
+	return "";
+}
 
 std::optional<ImFontAtlasFlags_> getImFontAtlasFlagsFromString(const char* in)
 {
@@ -547,24 +1108,171 @@ std::optional<ImFontAtlasFlags_> getImFontAtlasFlagsFromString(const char* in)
 	if (strcmp(in, "NoMouseCursors") == 0) { return ImFontAtlasFlags_NoMouseCursors; }
 	return std::nullopt;
 }
+const char* getStringFromImFontAtlasFlags(ImFontAtlasFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 0: return "NoPowerOfTwoHeight";
+		case 1 << 1: return "NoMouseCursors";
+	}
+	return "";
+}
 
+std::optional<ImGuiViewportFlags_> getImGuiViewportFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiViewportFlags_None; }
+	if (strcmp(in, "NoFocusOnClick") == 0) { return ImGuiViewportFlags_NoFocusOnClick; }
+	if (strcmp(in, "NoRendererClear") == 0) { return ImGuiViewportFlags_NoRendererClear; }
+	if (strcmp(in, "TopMost") == 0) { return ImGuiViewportFlags_TopMost; }
+	if (strcmp(in, "NoTaskBarIcon") == 0) { return ImGuiViewportFlags_NoTaskBarIcon; }
+	if (strcmp(in, "CanHostOtherWindows") == 0) { return ImGuiViewportFlags_CanHostOtherWindows; }
+	if (strcmp(in, "Minimized") == 0) { return ImGuiViewportFlags_Minimized; }
+	if (strcmp(in, "NoAutoMerge") == 0) { return ImGuiViewportFlags_NoAutoMerge; }
+	if (strcmp(in, "NoInputs") == 0) { return ImGuiViewportFlags_NoInputs; }
+	if (strcmp(in, "NoFocusOnAppearing") == 0) { return ImGuiViewportFlags_NoFocusOnAppearing; }
+	if (strcmp(in, "NoDecoration") == 0) { return ImGuiViewportFlags_NoDecoration; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiViewportFlags(ImGuiViewportFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 3: return "NoFocusOnClick";
+		case 1 << 5: return "NoRendererClear";
+		case 1 << 6: return "TopMost";
+		case 1 << 1: return "NoTaskBarIcon";
+		case 1 << 9: return "CanHostOtherWindows";
+		case 1 << 7: return "Minimized";
+		case 1 << 8: return "NoAutoMerge";
+		case 1 << 4: return "NoInputs";
+		case 1 << 2: return "NoFocusOnAppearing";
+		case 1 << 0: return "NoDecoration";
+	}
+	return "";
+}
 
+// End Enums }}}
 
-// Functions
+// Callbacks {{{
+struct FuncRef {
+	lua_State* L = nullptr;
+	int index = 0;
+};
 
-// skipping function due to unimplemented argument type "ImFontAtlas*": ImGui::CreateContext
+int callLuaInputTextCallback(ImGuiInputTextCallbackData *data)
+{
+	auto* ref = reinterpret_cast<FuncRef*>(data->UserData);
+	if(!ref) {
+		return 0; // no lua ref
+	}
+	lua_State* L = ref->L;
+	lua_rawgeti(L, LUA_REGISTRYINDEX, ref->index);
+	luaL_unref(L, LUA_REGISTRYINDEX, ref->index);
 
-// skipping function due to unimplemented argument type "ImGuiContext*": ImGui::DestroyContext
+	// TODO: metatable to add/remove from buffer
+	lua_newtable(L);
+	lua_pushvalue(L, -1); //copy for later
+	
+	lua_pushstring(L, getStringFromImGuiInputTextFlags(data->EventFlag));
+	lua_setfield(L, -2, "EventFlag");
 
-// skipping function due to unimplemented return type "ImGuiContext*": ImGui::GetCurrentContext
+	lua_pushlstring(L, data->Buf, data->BufTextLen);
+	lua_setfield(L, -2, "Buf");
 
-// skipping function due to unimplemented argument type "ImGuiContext*": ImGui::SetCurrentContext
+	std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
+		ImWchar k = data->EventChar;
+		std::string u8str = convert.to_bytes(k);
+		lua_pushlstring(L, u8str.c_str(), u8str.size());
+		lua_setfield(L, -2, "EventChar");
+	}
+	if (data->Flags & (ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory)) {
+		lua_pushstring(L, getStringFromImGuiKey(data->EventKey));
+		lua_setfield(L, -2, "EventKey");
+	}
+	if (data->Flags & (ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackAlways)) {
+		lua_pushinteger(L, data->CursorPos);
+		lua_setfield(L, -2, "CursorPos");
+		lua_pushinteger(L, data->SelectionStart);
+		lua_setfield(L, -2, "SelectionStart");
+		lua_pushinteger(L, data->SelectionEnd);
+		lua_setfield(L, -2, "SelectionEnd");
+	}
 
-// skipping function due to unimplemented argument type "size_t": ImGui::DebugCheckVersionAndDataLayout
+	lua_call(L, 1, 1);
+	int out = lua_tointeger(L, -1);
+	lua_pop(L, 1);
 
-// skipping function due to unimplemented return type "ImGuiIO&": ImGui::GetIO
+	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
+		lua_getfield(L, -2, "EventChar");
+		const char* k = lua_tostring(L, -1);
+		std::u16string u16str = convert.from_bytes(k);
+		data->EventChar = u16str.at(0);
+		lua_pop(L, 1);
+	}
+	delete ref;
+	data->UserData = nullptr;
+	return out;
+}
 
-// skipping function due to unimplemented return type "ImGuiStyle&": ImGui::GetStyle
+void* luax_getImguiInputTextCallback(lua_State* L, int narg)
+{
+	ptrdiff_t ref = 0;
+	if (lua_isfunction(L, narg)) {
+		auto* ref = new FuncRef;
+		ref->L = L;
+		lua_pushvalue(L, narg);
+		ref->index = luaL_ref(L, LUA_REGISTRYINDEX);
+		return ref;
+	}
+	return nullptr;
+}
+// End Callbacks }}}
+
+// Functions {{{
+
+static int w_CreateContext(lua_State *L)
+{
+	ImFontAtlas* shared_font_atlas = NULL; // skipping
+	
+	ImGuiContext* out = ImGui::CreateContext(shared_font_atlas);
+	
+	lua_pushlightuserdata(L, out);
+	return 1;
+}
+
+static int w_DestroyContext(lua_State *L)
+{
+	auto ctx = static_cast<ImGuiContext*>(luax_optlightuserdata(L, 1, NULL));
+	
+	ImGui::DestroyContext(ctx);
+	
+	return 0;
+}
+
+static int w_GetCurrentContext(lua_State *L)
+{
+	
+	ImGuiContext* out = ImGui::GetCurrentContext();
+	
+	lua_pushlightuserdata(L, out);
+	return 1;
+}
+
+static int w_SetCurrentContext(lua_State *L)
+{
+	auto ctx = static_cast<ImGuiContext*>(luax_checklightuserdata(L, 1));
+	
+	ImGui::SetCurrentContext(ctx);
+	
+	return 0;
+}
+
+// skipping ImGui::DebugCheckVersionAndDataLayout due to unimplemented argument type: "(TODO) const buf*"
+
+// skipping ImGui::GetIO due to unimplemented return type: "ImGuiIO&"
+
+// skipping ImGui::GetStyle due to unimplemented return type: "ImGuiStyle&"
 
 static int w_NewFrame(lua_State *L)
 {
@@ -590,11 +1298,11 @@ static int w_Render(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented return type "ImDrawData*": ImGui::GetDrawData
+// skipping ImGui::GetDrawData due to unimplemented return type: "ImDrawData*"
 
 static int w_ShowDemoWindow(lua_State *L)
 {
-	auto p_open = luax_optboolean(L, 1, NULL);
+	bool p_open = luax_optboolean(L, 1, NULL);
 	
 	ImGui::ShowDemoWindow(&p_open);
 	
@@ -604,7 +1312,7 @@ static int w_ShowDemoWindow(lua_State *L)
 
 static int w_ShowAboutWindow(lua_State *L)
 {
-	auto p_open = luax_optboolean(L, 1, NULL);
+	bool p_open = luax_optboolean(L, 1, NULL);
 	
 	ImGui::ShowAboutWindow(&p_open);
 	
@@ -614,7 +1322,7 @@ static int w_ShowAboutWindow(lua_State *L)
 
 static int w_ShowMetricsWindow(lua_State *L)
 {
-	auto p_open = luax_optboolean(L, 1, NULL);
+	bool p_open = luax_optboolean(L, 1, NULL);
 	
 	ImGui::ShowMetricsWindow(&p_open);
 	
@@ -622,7 +1330,7 @@ static int w_ShowMetricsWindow(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented argument type "ImGuiStyle*": ImGui::ShowStyleEditor
+// skipping ImGui::ShowStyleEditor due to unimplemented argument type: "ImGuiStyle*"
 
 static int w_ShowStyleSelector(lua_State *L)
 {
@@ -660,16 +1368,16 @@ static int w_GetVersion(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented argument type "ImGuiStyle*": ImGui::StyleColorsDark
+// skipping ImGui::StyleColorsDark due to unimplemented argument type: "ImGuiStyle*"
 
-// skipping function due to unimplemented argument type "ImGuiStyle*": ImGui::StyleColorsClassic
+// skipping ImGui::StyleColorsClassic due to unimplemented argument type: "ImGuiStyle*"
 
-// skipping function due to unimplemented argument type "ImGuiStyle*": ImGui::StyleColorsLight
+// skipping ImGui::StyleColorsLight due to unimplemented argument type: "ImGuiStyle*"
 
 static int w_Begin(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
-	auto p_open = luax_optboolean(L, 2, NULL);
+	bool p_open = luax_optboolean(L, 2, NULL);
 	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 3, 0);
 	
 	bool out = ImGui::Begin(name, &p_open, flags);
@@ -687,7 +1395,7 @@ static int w_End(lua_State *L)
 	return 0;
 }
 
-static int w_BeginChild(lua_State *L)
+static int w_BeginChild_Override1(lua_State *L)
 {
 	auto str_id = luaL_checkstring(L, 1);
 	auto size = ImVec2(0,0);
@@ -702,7 +1410,7 @@ static int w_BeginChild(lua_State *L)
 	return 1;
 }
 
-static int w_BeginChild_EX(lua_State *L)
+static int w_BeginChild_Override2(lua_State *L)
 {
 	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
 	auto size = ImVec2(0,0);
@@ -763,7 +1471,18 @@ static int w_IsWindowHovered(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented return type "ImDrawList*": ImGui::GetWindowDrawList
+// skipping ImGui::GetWindowDrawList due to unimplemented return type: "ImDrawList*"
+
+static int w_GetWindowDpiScale(lua_State *L)
+{
+	
+	float out = ImGui::GetWindowDpiScale();
+	
+	lua_pushnumber(L, out);
+	return 1;
+}
+
+// skipping ImGui::GetWindowViewport due to unimplemented return type: "ImGuiViewport*"
 
 static int w_GetWindowPos(lua_State *L)
 {
@@ -830,7 +1549,7 @@ static int w_SetNextWindowSize(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented argument type "ImGuiSizeCallback": ImGui::SetNextWindowSizeConstraints
+// skipping ImGui::SetNextWindowSizeConstraints due to unimplemented argument type: "ImGuiSizeCallback"
 
 static int w_SetNextWindowContentSize(lua_State *L)
 {
@@ -870,7 +1589,16 @@ static int w_SetNextWindowBgAlpha(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowPos(lua_State *L)
+static int w_SetNextWindowViewport(lua_State *L)
+{
+	auto viewport_id = static_cast<ImGuiID>(luaL_checkint(L, 1));
+	
+	ImGui::SetNextWindowViewport(viewport_id);
+	
+	return 0;
+}
+
+static int w_SetWindowPos_Override1(lua_State *L)
 {
 	ImVec2 pos;
 	pos.x = luaL_checknumber(L, 1);
@@ -882,7 +1610,7 @@ static int w_SetWindowPos(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowSize(lua_State *L)
+static int w_SetWindowSize_Override1(lua_State *L)
 {
 	ImVec2 size;
 	size.x = luaL_checknumber(L, 1);
@@ -894,7 +1622,7 @@ static int w_SetWindowSize(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowCollapsed(lua_State *L)
+static int w_SetWindowCollapsed_Override1(lua_State *L)
 {
 	auto collapsed = luax_checkboolean(L, 1);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 2, 0);
@@ -904,7 +1632,7 @@ static int w_SetWindowCollapsed(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowFocus(lua_State *L)
+static int w_SetWindowFocus_Override1(lua_State *L)
 {
 	
 	ImGui::SetWindowFocus();
@@ -921,7 +1649,7 @@ static int w_SetWindowFontScale(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowPos_EX(lua_State *L)
+static int w_SetWindowPos_Override2(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
 	ImVec2 pos;
@@ -934,7 +1662,7 @@ static int w_SetWindowPos_EX(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowSize_EX(lua_State *L)
+static int w_SetWindowSize_Override2(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
 	ImVec2 size;
@@ -947,7 +1675,7 @@ static int w_SetWindowSize_EX(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowCollapsed_EX(lua_State *L)
+static int w_SetWindowCollapsed_Override2(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
 	auto collapsed = luax_checkboolean(L, 2);
@@ -958,7 +1686,7 @@ static int w_SetWindowCollapsed_EX(lua_State *L)
 	return 0;
 }
 
-static int w_SetWindowFocus_EX(lua_State *L)
+static int w_SetWindowFocus_Override2(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
 	
@@ -1108,7 +1836,7 @@ static int w_SetScrollFromPosY(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented argument type "ImFont*": ImGui::PushFont
+// skipping ImGui::PushFont due to unimplemented argument type: "ImFont*"
 
 static int w_PopFont(lua_State *L)
 {
@@ -1118,7 +1846,7 @@ static int w_PopFont(lua_State *L)
 	return 0;
 }
 
-static int w_PushStyleColor(lua_State *L)
+static int w_PushStyleColor_Override1(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
 	auto col = static_cast<unsigned int>(luaL_checklong(L, 2));
@@ -1128,14 +1856,14 @@ static int w_PushStyleColor(lua_State *L)
 	return 0;
 }
 
-static int w_PushStyleColor_EX(lua_State *L)
+static int w_PushStyleColor_Override2(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
 	ImVec4 col;
 	col.x = luaL_checknumber(L, 2);
 	col.y = luaL_checknumber(L, 3);
-	col.z = luaL_checknumber(L, 3);
-	col.w = luaL_checknumber(L, 3);
+	col.z = luaL_checknumber(L, 4);
+	col.w = luaL_checknumber(L, 5);
 	
 	ImGui::PushStyleColor(idx, col);
 	
@@ -1151,7 +1879,7 @@ static int w_PopStyleColor(lua_State *L)
 	return 0;
 }
 
-static int w_PushStyleVar(lua_State *L)
+static int w_PushStyleVar_Override1(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
 	auto val = static_cast<float>(luaL_checknumber(L, 2));
@@ -1161,7 +1889,7 @@ static int w_PushStyleVar(lua_State *L)
 	return 0;
 }
 
-static int w_PushStyleVar_EX(lua_State *L)
+static int w_PushStyleVar_Override2(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
 	ImVec2 val;
@@ -1182,9 +1910,9 @@ static int w_PopStyleVar(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented return type "const ImVec4&": ImGui::GetStyleColorVec4
+// skipping ImGui::GetStyleColorVec4 due to unimplemented return type: "const ImVec4&"
 
-// skipping function due to unimplemented return type "ImFont*": ImGui::GetFont
+// skipping ImGui::GetFont due to unimplemented return type: "ImFont*"
 
 static int w_GetFontSize(lua_State *L)
 {
@@ -1203,41 +1931,6 @@ static int w_GetFontTexUvWhitePixel(lua_State *L)
 	lua_pushnumber(L, out.x);
 	lua_pushnumber(L, out.y);
 	return 2;
-}
-
-static int w_GetColorU32(lua_State *L)
-{
-	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
-	auto alpha_mul = static_cast<float>(luaL_optnumber(L, 2, 1.0f));
-	
-	ImU32 out = ImGui::GetColorU32(idx, alpha_mul);
-	
-	lua_pushinteger(L, out);
-	return 1;
-}
-
-static int w_GetColorU32_EX(lua_State *L)
-{
-	ImVec4 col;
-	col.x = luaL_checknumber(L, 1);
-	col.y = luaL_checknumber(L, 2);
-	col.z = luaL_checknumber(L, 2);
-	col.w = luaL_checknumber(L, 2);
-	
-	ImU32 out = ImGui::GetColorU32(col);
-	
-	lua_pushinteger(L, out);
-	return 1;
-}
-
-static int w_GetColorU32_EX_EX(lua_State *L)
-{
-	auto col = static_cast<unsigned int>(luaL_checklong(L, 1));
-	
-	ImU32 out = ImGui::GetColorU32(col);
-	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 static int w_PushItemWidth(lua_State *L)
@@ -1537,7 +2230,7 @@ static int w_GetFrameHeightWithSpacing(lua_State *L)
 	return 1;
 }
 
-static int w_PushID(lua_State *L)
+static int w_PushID_Override1(lua_State *L)
 {
 	auto str_id = luaL_checkstring(L, 1);
 	
@@ -1546,7 +2239,7 @@ static int w_PushID(lua_State *L)
 	return 0;
 }
 
-static int w_PushID_EX(lua_State *L)
+static int w_PushID_Override2(lua_State *L)
 {
 	auto str_id_begin = luaL_checkstring(L, 1);
 	auto str_id_end = luaL_checkstring(L, 2);
@@ -1556,9 +2249,9 @@ static int w_PushID_EX(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented argument type "const void*": ImGui::PushID
+// skipping ImGui::PushID due to unimplemented argument type: "const void*"
 
-static int w_PushID_EX_EX(lua_State *L)
+static int w_PushID_Override4(lua_State *L)
 {
 	auto int_id = luaL_checkint(L, 1);
 	
@@ -1575,7 +2268,7 @@ static int w_PopID(lua_State *L)
 	return 0;
 }
 
-static int w_GetID(lua_State *L)
+static int w_GetID_Override1(lua_State *L)
 {
 	auto str_id = luaL_checkstring(L, 1);
 	
@@ -1585,7 +2278,7 @@ static int w_GetID(lua_State *L)
 	return 1;
 }
 
-static int w_GetID_EX(lua_State *L)
+static int w_GetID_Override2(lua_State *L)
 {
 	auto str_id_begin = luaL_checkstring(L, 1);
 	auto str_id_end = luaL_checkstring(L, 2);
@@ -1596,7 +2289,7 @@ static int w_GetID_EX(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented argument type "const void*": ImGui::GetID
+// skipping ImGui::GetID due to unimplemented argument type: "const void*"
 
 static int w_TextUnformatted(lua_State *L)
 {
@@ -1608,17 +2301,65 @@ static int w_TextUnformatted(lua_State *L)
 	return 0;
 }
 
-// skipping function due to having variable arguments: ImGui::Text
+static int w_Text(lua_State *L)
+{
+	auto fmt = luax_formatargs(L, 1);
+	
+	ImGui::Text("%s", fmt);
+	
+	return 0;
+}
 
-// skipping function due to having variable arguments: ImGui::TextColored
+static int w_TextColored(lua_State *L)
+{
+	ImVec4 col;
+	col.x = luaL_checknumber(L, 1);
+	col.y = luaL_checknumber(L, 2);
+	col.z = luaL_checknumber(L, 3);
+	col.w = luaL_checknumber(L, 4);
+	auto fmt = luax_formatargs(L, 5);
+	
+	ImGui::TextColored(col, "%s", fmt);
+	
+	return 0;
+}
 
-// skipping function due to having variable arguments: ImGui::TextDisabled
+static int w_TextDisabled(lua_State *L)
+{
+	auto fmt = luax_formatargs(L, 1);
+	
+	ImGui::TextDisabled("%s", fmt);
+	
+	return 0;
+}
 
-// skipping function due to having variable arguments: ImGui::TextWrapped
+static int w_TextWrapped(lua_State *L)
+{
+	auto fmt = luax_formatargs(L, 1);
+	
+	ImGui::TextWrapped("%s", fmt);
+	
+	return 0;
+}
 
-// skipping function due to having variable arguments: ImGui::LabelText
+static int w_LabelText(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	auto fmt = luax_formatargs(L, 2);
+	
+	ImGui::LabelText(label, "%s", fmt);
+	
+	return 0;
+}
 
-// skipping function due to having variable arguments: ImGui::BulletText
+static int w_BulletText(lua_State *L)
+{
+	auto fmt = luax_formatargs(L, 1);
+	
+	ImGui::BulletText("%s", fmt);
+	
+	return 0;
+}
 
 static int w_Button(lua_State *L)
 {
@@ -1667,14 +2408,68 @@ static int w_ArrowButton(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented argument type "ImTextureID": ImGui::Image
+static int w_Image(lua_State *L)
+{
+	auto user_texture_id = luax_checkTextureID(L, 1);
+	ImVec2 size;
+	size.x = luaL_checknumber(L, 2);
+	size.y = luaL_checknumber(L, 3);
+	auto uv0 = ImVec2(0,0);
+	uv0.x = luaL_optnumber(L, 4, uv0.x);
+	uv0.y = luaL_optnumber(L, 5, uv0.y);
+	auto uv1 = ImVec2(1,1);
+	uv1.x = luaL_optnumber(L, 6, uv1.x);
+	uv1.y = luaL_optnumber(L, 7, uv1.y);
+	ImVec4 tint_col = ImVec4(1,1,1,1);
+	tint_col.x = luaL_optnumber(L, 8, tint_col.x);
+	tint_col.y = luaL_optnumber(L, 9, tint_col.y);
+	tint_col.z = luaL_optnumber(L, 10, tint_col.z);
+	tint_col.w = luaL_optnumber(L, 11, tint_col.w);
+	ImVec4 border_col = ImVec4(0,0,0,0);
+	border_col.x = luaL_optnumber(L, 12, border_col.x);
+	border_col.y = luaL_optnumber(L, 13, border_col.y);
+	border_col.z = luaL_optnumber(L, 14, border_col.z);
+	border_col.w = luaL_optnumber(L, 15, border_col.w);
+	
+	ImGui::Image(user_texture_id, size, uv0, uv1, tint_col, border_col);
+	
+	return 0;
+}
 
-// skipping function due to unimplemented argument type "ImTextureID": ImGui::ImageButton
+static int w_ImageButton(lua_State *L)
+{
+	auto user_texture_id = luax_checkTextureID(L, 1);
+	ImVec2 size;
+	size.x = luaL_checknumber(L, 2);
+	size.y = luaL_checknumber(L, 3);
+	auto uv0 = ImVec2(0,0);
+	uv0.x = luaL_optnumber(L, 4, uv0.x);
+	uv0.y = luaL_optnumber(L, 5, uv0.y);
+	auto uv1 = ImVec2(1,1);
+	uv1.x = luaL_optnumber(L, 6, uv1.x);
+	uv1.y = luaL_optnumber(L, 7, uv1.y);
+	auto frame_padding = luaL_optint(L, 8, -1);
+	ImVec4 bg_col = ImVec4(0,0,0,0);
+	bg_col.x = luaL_optnumber(L, 9, bg_col.x);
+	bg_col.y = luaL_optnumber(L, 10, bg_col.y);
+	bg_col.z = luaL_optnumber(L, 11, bg_col.z);
+	bg_col.w = luaL_optnumber(L, 12, bg_col.w);
+	ImVec4 tint_col = ImVec4(1,1,1,1);
+	tint_col.x = luaL_optnumber(L, 13, tint_col.x);
+	tint_col.y = luaL_optnumber(L, 14, tint_col.y);
+	tint_col.z = luaL_optnumber(L, 15, tint_col.z);
+	tint_col.w = luaL_optnumber(L, 16, tint_col.w);
+	
+	bool out = ImGui::ImageButton(user_texture_id, size, uv0, uv1, frame_padding, bg_col, tint_col);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
 static int w_Checkbox(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto v = luax_checkboolean(L, 2);
+	bool v = luax_checkboolean(L, 2);
 	
 	bool out = ImGui::Checkbox(label, &v);
 	
@@ -1696,7 +2491,7 @@ static int w_CheckboxFlags(lua_State *L)
 	return 2;
 }
 
-static int w_RadioButton(lua_State *L)
+static int w_RadioButton_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto active = luax_checkboolean(L, 2);
@@ -1707,10 +2502,10 @@ static int w_RadioButton(lua_State *L)
 	return 1;
 }
 
-static int w_RadioButton_EX(lua_State *L)
+static int w_RadioButton_Override2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto v = luaL_checkint(L, 2);
+	int v = luaL_checkint(L, 2);
 	auto v_button = luaL_checkint(L, 3);
 	
 	bool out = ImGui::RadioButton(label, &v, v_button);
@@ -1760,24 +2555,6 @@ static int w_EndCombo(lua_State *L)
 	
 	return 0;
 }
-
-// skipping function due to unimplemented argument type "const char* const[]": ImGui::Combo
-
-static int w_Combo(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	auto current_item = luaL_checkint(L, 2);
-	auto items_separated_by_zeros = luaL_checkstring(L, 3);
-	auto popup_max_height_in_items = luaL_optint(L, 4, -1);
-	
-	bool out = ImGui::Combo(label, &current_item, items_separated_by_zeros, popup_max_height_in_items);
-	
-	lua_pushinteger(L, current_item);
-	lua_pushboolean(L, out);
-	return 2;
-}
-
-// skipping function due to unimplemented argument type " bool(*items_getter)(void* data, int idx, const char** out_text)": ImGui::Combo
 
 static int w_DragFloat(lua_State *L)
 {
@@ -1885,7 +2662,7 @@ static int w_DragFloatRange2(lua_State *L)
 static int w_DragInt(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto v = luaL_checkint(L, 2);
+	int v = luaL_checkint(L, 2);
 	auto v_speed = static_cast<float>(luaL_optnumber(L, 3, 1.0f));
 	auto v_min = luaL_optint(L, 4, 0);
 	auto v_max = luaL_optint(L, 5, 0);
@@ -1964,8 +2741,8 @@ static int w_DragInt4(lua_State *L)
 static int w_DragIntRange2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto v_current_min = luaL_checkint(L, 2);
-	auto v_current_max = luaL_checkint(L, 3);
+	int v_current_min = luaL_checkint(L, 2);
+	int v_current_max = luaL_checkint(L, 3);
 	auto v_speed = static_cast<float>(luaL_optnumber(L, 4, 1.0f));
 	auto v_min = luaL_optint(L, 5, 0);
 	auto v_max = luaL_optint(L, 6, 0);
@@ -1980,9 +2757,9 @@ static int w_DragIntRange2(lua_State *L)
 	return 3;
 }
 
-// skipping function due to unimplemented argument type "ImGuiDataType": ImGui::DragScalar
+// skipping ImGui::DragScalar due to unimplemented argument type: "ImGuiDataType"
 
-// skipping function due to unimplemented argument type "ImGuiDataType": ImGui::DragScalarN
+// skipping ImGui::DragScalarN due to unimplemented argument type: "ImGuiDataType"
 
 static int w_SliderFloat(lua_State *L)
 {
@@ -2081,7 +2858,7 @@ static int w_SliderAngle(lua_State *L)
 static int w_SliderInt(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto v = luaL_checkint(L, 2);
+	int v = luaL_checkint(L, 2);
 	auto v_min = luaL_checkint(L, 3);
 	auto v_max = luaL_checkint(L, 4);
 	auto format = luaL_optstring(L, 5, "%d");
@@ -2153,9 +2930,9 @@ static int w_SliderInt4(lua_State *L)
 	return 5;
 }
 
-// skipping function due to unimplemented argument type "ImGuiDataType": ImGui::SliderScalar
+// skipping ImGui::SliderScalar due to unimplemented argument type: "ImGuiDataType"
 
-// skipping function due to unimplemented argument type "ImGuiDataType": ImGui::SliderScalarN
+// skipping ImGui::SliderScalarN due to unimplemented argument type: "ImGuiDataType"
 
 static int w_VSliderFloat(lua_State *L)
 {
@@ -2182,7 +2959,7 @@ static int w_VSliderInt(lua_State *L)
 	ImVec2 size;
 	size.x = luaL_checknumber(L, 2);
 	size.y = luaL_checknumber(L, 3);
-	auto v = luaL_checkint(L, 4);
+	int v = luaL_checkint(L, 4);
 	auto v_min = luaL_checkint(L, 5);
 	auto v_max = luaL_checkint(L, 6);
 	auto format = luaL_optstring(L, 7, "%d");
@@ -2194,13 +2971,13 @@ static int w_VSliderInt(lua_State *L)
 	return 2;
 }
 
-// skipping function due to unimplemented argument type "ImGuiDataType": ImGui::VSliderScalar
+// skipping ImGui::VSliderScalar due to unimplemented argument type: "ImGuiDataType"
 
-// skipping function due to unimplemented argument type "char*": ImGui::InputText
+// skipping ImGui::InputText due to unimplemented argument type: "(TODO) const buf*"
 
-// skipping function due to unimplemented argument type "char*": ImGui::InputTextMultiline
+// skipping ImGui::InputTextMultiline due to unimplemented argument type: "(TODO) const buf*"
 
-// skipping function due to unimplemented argument type "char*": ImGui::InputTextWithHint
+// skipping ImGui::InputTextWithHint due to unimplemented argument type: "(TODO) const buf*"
 
 static int w_InputFloat(lua_State *L)
 {
@@ -2278,7 +3055,7 @@ static int w_InputFloat4(lua_State *L)
 static int w_InputInt(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto v = luaL_checkint(L, 2);
+	int v = luaL_checkint(L, 2);
 	auto step = luaL_optint(L, 3, 1);
 	auto step_fast = luaL_optint(L, 4, 100);
 	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 5, 0);
@@ -2347,7 +3124,7 @@ static int w_InputInt4(lua_State *L)
 static int w_InputDouble(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto v = luaL_checknumber(L, 2);
+	double v = luaL_checknumber(L, 2);
 	auto step = luaL_optnumber(L, 3, 0.0);
 	auto step_fast = luaL_optnumber(L, 4, 0.0);
 	auto format = luaL_optstring(L, 5, "%.6f");
@@ -2360,9 +3137,9 @@ static int w_InputDouble(lua_State *L)
 	return 2;
 }
 
-// skipping function due to unimplemented argument type "ImGuiDataType": ImGui::InputScalar
+// skipping ImGui::InputScalar due to unimplemented argument type: "ImGuiDataType"
 
-// skipping function due to unimplemented argument type "ImGuiDataType": ImGui::InputScalarN
+// skipping ImGui::InputScalarN due to unimplemented argument type: "ImGuiDataType"
 
 static int w_ColorEdit3(lua_State *L)
 {
@@ -2420,7 +3197,7 @@ static int w_ColorPicker3(lua_State *L)
 	return 4;
 }
 
-// skipping function due to unimplemented argument type "const float*": ImGui::ColorPicker4
+// skipping ImGui::ColorPicker4 due to unimplemented argument type: "const float*"
 
 static int w_ColorButton(lua_State *L)
 {
@@ -2428,8 +3205,8 @@ static int w_ColorButton(lua_State *L)
 	ImVec4 col;
 	col.x = luaL_checknumber(L, 2);
 	col.y = luaL_checknumber(L, 3);
-	col.z = luaL_checknumber(L, 3);
-	col.w = luaL_checknumber(L, 3);
+	col.z = luaL_checknumber(L, 4);
+	col.w = luaL_checknumber(L, 5);
 	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
 	auto size = ImVec2(0,0);
 	size.x = luaL_optnumber(L, 7, size.x);
@@ -2450,7 +3227,7 @@ static int w_SetColorEditOptions(lua_State *L)
 	return 0;
 }
 
-static int w_TreeNode(lua_State *L)
+static int w_TreeNode_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	
@@ -2460,11 +3237,20 @@ static int w_TreeNode(lua_State *L)
 	return 1;
 }
 
-// skipping function due to having variable arguments: ImGui::TreeNode
+static int w_TreeNode_Override2(lua_State *L)
+{
+	auto str_id = luaL_checkstring(L, 1);
+	auto fmt = luax_formatargs(L, 2);
+	
+	bool out = ImGui::TreeNode(str_id, "%s", fmt);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
-// skipping function due to having variable arguments: ImGui::TreeNode
+// skipping ImGui::TreeNode due to unimplemented argument type: "const void*"
 
-static int w_TreeNodeEx(lua_State *L)
+static int w_TreeNodeEx_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto flags = luax_optflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 2, 0);
@@ -2475,11 +3261,21 @@ static int w_TreeNodeEx(lua_State *L)
 	return 1;
 }
 
-// skipping function due to having variable arguments: ImGui::TreeNodeEx
+static int w_TreeNodeEx_Override2(lua_State *L)
+{
+	auto str_id = luaL_checkstring(L, 1);
+	auto flags = luax_checkflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 2);
+	auto fmt = luax_formatargs(L, 3);
+	
+	bool out = ImGui::TreeNodeEx(str_id, flags, "%s", fmt);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
-// skipping function due to having variable arguments: ImGui::TreeNodeEx
+// skipping ImGui::TreeNodeEx due to unimplemented argument type: "const void*"
 
-static int w_TreePush(lua_State *L)
+static int w_TreePush_Override1(lua_State *L)
 {
 	auto str_id = luaL_checkstring(L, 1);
 	
@@ -2488,7 +3284,7 @@ static int w_TreePush(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented argument type "const void*": ImGui::TreePush
+// skipping ImGui::TreePush due to unimplemented argument type: "const void*"
 
 static int w_TreePop(lua_State *L)
 {
@@ -2507,7 +3303,7 @@ static int w_GetTreeNodeToLabelSpacing(lua_State *L)
 	return 1;
 }
 
-static int w_CollapsingHeader(lua_State *L)
+static int w_CollapsingHeader_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto flags = luax_optflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 2, 0);
@@ -2518,10 +3314,10 @@ static int w_CollapsingHeader(lua_State *L)
 	return 1;
 }
 
-static int w_CollapsingHeader_EX(lua_State *L)
+static int w_CollapsingHeader_Override2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto p_open = luax_checkboolean(L, 2);
+	bool p_open = luax_checkboolean(L, 2);
 	auto flags = luax_optflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 3, 0);
 	
 	bool out = ImGui::CollapsingHeader(label, &p_open, flags);
@@ -2541,7 +3337,7 @@ static int w_SetNextItemOpen(lua_State *L)
 	return 0;
 }
 
-static int w_Selectable(lua_State *L)
+static int w_Selectable_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto selected = luax_optboolean(L, 2, false);
@@ -2556,10 +3352,10 @@ static int w_Selectable(lua_State *L)
 	return 1;
 }
 
-static int w_Selectable_EX(lua_State *L)
+static int w_Selectable_Override2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto p_selected = luax_checkboolean(L, 2);
+	bool p_selected = luax_checkboolean(L, 2);
 	auto flags = luax_optflags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, L, 3, 0);
 	auto size = ImVec2(0,0);
 	size.x = luaL_optnumber(L, 4, size.x);
@@ -2572,11 +3368,11 @@ static int w_Selectable_EX(lua_State *L)
 	return 2;
 }
 
-// skipping function due to unimplemented argument type "const char* const[]": ImGui::ListBox
+// skipping ImGui::ListBox due to unimplemented argument type: "const char* const[]"
 
-// skipping function due to unimplemented argument type " bool (*items_getter)(void* data, int idx, const char** out_text)": ImGui::ListBox
+// skipping ImGui::ListBox due to unimplemented argument type: " bool (*items_getter)(void* data, int idx, const char** out_text)"
 
-static int w_ListBoxHeader(lua_State *L)
+static int w_ListBoxHeader_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto size = ImVec2(0,0);
@@ -2589,7 +3385,7 @@ static int w_ListBoxHeader(lua_State *L)
 	return 1;
 }
 
-static int w_ListBoxHeader_EX(lua_State *L)
+static int w_ListBoxHeader_Override2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto items_count = luaL_checkint(L, 2);
@@ -2609,15 +3405,15 @@ static int w_ListBoxFooter(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented argument type "const float*": ImGui::PlotLines
+// skipping ImGui::PlotLines due to unimplemented argument type: "const float*"
 
-// skipping function due to unimplemented argument type " float(*values_getter)(void* data, int idx)": ImGui::PlotLines
+// skipping ImGui::PlotLines due to unimplemented argument type: " float(*values_getter)(void* data, int idx)"
 
-// skipping function due to unimplemented argument type "const float*": ImGui::PlotHistogram
+// skipping ImGui::PlotHistogram due to unimplemented argument type: "const float*"
 
-// skipping function due to unimplemented argument type " float(*values_getter)(void* data, int idx)": ImGui::PlotHistogram
+// skipping ImGui::PlotHistogram due to unimplemented argument type: " float(*values_getter)(void* data, int idx)"
 
-static int w_Value(lua_State *L)
+static int w_Value_Override1(lua_State *L)
 {
 	auto prefix = luaL_checkstring(L, 1);
 	auto b = luax_checkboolean(L, 2);
@@ -2627,7 +3423,7 @@ static int w_Value(lua_State *L)
 	return 0;
 }
 
-static int w_Value_EX(lua_State *L)
+static int w_Value_Override2(lua_State *L)
 {
 	auto prefix = luaL_checkstring(L, 1);
 	auto v = luaL_checkint(L, 2);
@@ -2637,7 +3433,7 @@ static int w_Value_EX(lua_State *L)
 	return 0;
 }
 
-static int w_Value_EX_EX(lua_State *L)
+static int w_Value_Override3(lua_State *L)
 {
 	auto prefix = luaL_checkstring(L, 1);
 	auto v = static_cast<unsigned int>(luaL_checklong(L, 2));
@@ -2647,7 +3443,7 @@ static int w_Value_EX_EX(lua_State *L)
 	return 0;
 }
 
-static int w_Value_EX_EX_EX(lua_State *L)
+static int w_Value_Override4(lua_State *L)
 {
 	auto prefix = luaL_checkstring(L, 1);
 	auto v = static_cast<float>(luaL_checknumber(L, 2));
@@ -2711,7 +3507,7 @@ static int w_EndMenu(lua_State *L)
 	return 0;
 }
 
-static int w_MenuItem(lua_State *L)
+static int w_MenuItem_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto shortcut = luaL_optstring(L, 2, NULL);
@@ -2724,11 +3520,11 @@ static int w_MenuItem(lua_State *L)
 	return 1;
 }
 
-static int w_MenuItem_EX(lua_State *L)
+static int w_MenuItem_Override2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto shortcut = luaL_checkstring(L, 2);
-	auto p_selected = luax_checkboolean(L, 3);
+	bool p_selected = luax_checkboolean(L, 3);
 	auto enabled = luax_optboolean(L, 4, true);
 	
 	bool out = ImGui::MenuItem(label, shortcut, &p_selected, enabled);
@@ -2754,7 +3550,14 @@ static int w_EndTooltip(lua_State *L)
 	return 0;
 }
 
-// skipping function due to having variable arguments: ImGui::SetTooltip
+static int w_SetTooltip(lua_State *L)
+{
+	auto fmt = luax_formatargs(L, 1);
+	
+	ImGui::SetTooltip("%s", fmt);
+	
+	return 0;
+}
 
 static int w_OpenPopup(lua_State *L)
 {
@@ -2813,7 +3616,7 @@ static int w_BeginPopupContextVoid(lua_State *L)
 static int w_BeginPopupModal(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
-	auto p_open = luax_optboolean(L, 2, NULL);
+	bool p_open = luax_optboolean(L, 2, NULL);
 	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 3, 0);
 	
 	bool out = ImGui::BeginPopupModal(name, &p_open, flags);
@@ -2959,7 +3762,7 @@ static int w_EndTabBar(lua_State *L)
 static int w_BeginTabItem(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto p_open = luax_optboolean(L, 2, NULL);
+	bool p_open = luax_optboolean(L, 2, NULL);
 	auto flags = luax_optflags<ImGuiTabItemFlags>(getImGuiTabItemFlagsFromString, L, 3, 0);
 	
 	bool out = ImGui::BeginTabItem(label, &p_open, flags);
@@ -2984,6 +3787,62 @@ static int w_SetTabItemClosed(lua_State *L)
 	ImGui::SetTabItemClosed(tab_or_docked_window_label);
 	
 	return 0;
+}
+
+static int w_DockSpace(lua_State *L)
+{
+	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
+	auto size = ImVec2(0, 0);
+	size.x = luaL_optnumber(L, 2, size.x);
+	size.y = luaL_optnumber(L, 3, size.y);
+	auto flags = luax_optflags<ImGuiDockNodeFlags>(getImGuiDockNodeFlagsFromString, L, 4, 0);
+	const ImGuiWindowClass* window_class = NULL; // skipping
+	
+	ImGui::DockSpace(id, size, flags, window_class);
+	
+	return 0;
+}
+
+static int w_DockSpaceOverViewport(lua_State *L)
+{
+	ImGuiViewport* viewport = NULL; // skipping
+	auto flags = luax_optflags<ImGuiDockNodeFlags>(getImGuiDockNodeFlagsFromString, L, 1, 0);
+	const ImGuiWindowClass* window_class = NULL; // skipping
+	
+	ImGuiID out = ImGui::DockSpaceOverViewport(viewport, flags, window_class);
+	
+	lua_pushinteger(L, out);
+	return 1;
+}
+
+static int w_SetNextWindowDockID(lua_State *L)
+{
+	auto dock_id = static_cast<ImGuiID>(luaL_checkint(L, 1));
+	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 2, 0);
+	
+	ImGui::SetNextWindowDockID(dock_id, cond);
+	
+	return 0;
+}
+
+// skipping ImGui::SetNextWindowClass due to unimplemented argument type: "const ImGuiWindowClass*"
+
+static int w_GetWindowDockID(lua_State *L)
+{
+	
+	ImGuiID out = ImGui::GetWindowDockID();
+	
+	lua_pushinteger(L, out);
+	return 1;
+}
+
+static int w_IsWindowDocked(lua_State *L)
+{
+	
+	bool out = ImGui::IsWindowDocked();
+	
+	lua_pushboolean(L, out);
+	return 1;
 }
 
 static int w_LogToTTY(lua_State *L)
@@ -3030,7 +3889,14 @@ static int w_LogButtons(lua_State *L)
 	return 0;
 }
 
-// skipping function due to having variable arguments: ImGui::LogText
+static int w_LogText(lua_State *L)
+{
+	auto fmt = luax_formatargs(L, 1);
+	
+	ImGui::LogText("%s", fmt);
+	
+	return 0;
+}
 
 static int w_BeginDragDropSource(lua_State *L)
 {
@@ -3042,7 +3908,7 @@ static int w_BeginDragDropSource(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented argument type "const void*": ImGui::SetDragDropPayload
+// skipping ImGui::SetDragDropPayload due to unimplemented argument type: "(TODO) const buf*"
 
 static int w_EndDragDropSource(lua_State *L)
 {
@@ -3061,7 +3927,7 @@ static int w_BeginDragDropTarget(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented return type "const ImGuiPayload*": ImGui::AcceptDragDropPayload
+// skipping ImGui::AcceptDragDropPayload due to unimplemented return type: "const ImGuiPayload*"
 
 static int w_EndDragDropTarget(lua_State *L)
 {
@@ -3071,7 +3937,7 @@ static int w_EndDragDropTarget(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented return type "const ImGuiPayload*": ImGui::GetDragDropPayload
+// skipping ImGui::GetDragDropPayload due to unimplemented return type: "const ImGuiPayload*"
 
 static int w_PushClipRect(lua_State *L)
 {
@@ -3270,7 +4136,7 @@ static int w_SetItemAllowOverlap(lua_State *L)
 	return 0;
 }
 
-static int w_IsRectVisible(lua_State *L)
+static int w_IsRectVisible_Override1(lua_State *L)
 {
 	ImVec2 size;
 	size.x = luaL_checknumber(L, 1);
@@ -3282,7 +4148,7 @@ static int w_IsRectVisible(lua_State *L)
 	return 1;
 }
 
-static int w_IsRectVisible_EX(lua_State *L)
+static int w_IsRectVisible_Override2(lua_State *L)
 {
 	ImVec2 rect_min;
 	rect_min.x = luaL_checknumber(L, 1);
@@ -3315,11 +4181,15 @@ static int w_GetFrameCount(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented return type "ImDrawList*": ImGui::GetBackgroundDrawList
+// skipping ImGui::GetBackgroundDrawList due to unimplemented return type: "ImDrawList*"
 
-// skipping function due to unimplemented return type "ImDrawList*": ImGui::GetForegroundDrawList
+// skipping ImGui::GetForegroundDrawList due to unimplemented return type: "ImDrawList*"
 
-// skipping function due to unimplemented return type "ImDrawListSharedData*": ImGui::GetDrawListSharedData
+// skipping ImGui::GetBackgroundDrawList due to unimplemented argument type: "ImGuiViewport*"
+
+// skipping ImGui::GetForegroundDrawList due to unimplemented argument type: "ImGuiViewport*"
+
+// skipping ImGui::GetDrawListSharedData due to unimplemented return type: "ImDrawListSharedData*"
 
 static int w_GetStyleColorName(lua_State *L)
 {
@@ -3331,9 +4201,9 @@ static int w_GetStyleColorName(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented argument type "ImGuiStorage*": ImGui::SetStateStorage
+// skipping ImGui::SetStateStorage due to unimplemented argument type: "ImGuiStorage*"
 
-// skipping function due to unimplemented return type "ImGuiStorage*": ImGui::GetStateStorage
+// skipping ImGui::GetStateStorage due to unimplemented return type: "ImGuiStorage*"
 
 static int w_CalcTextSize(lua_State *L)
 {
@@ -3353,8 +4223,8 @@ static int w_CalcListClipping(lua_State *L)
 {
 	auto items_count = luaL_checkint(L, 1);
 	auto items_height = static_cast<float>(luaL_checknumber(L, 2));
-	auto out_items_display_start = luaL_checkint(L, 3);
-	auto out_items_display_end = luaL_checkint(L, 4);
+	int out_items_display_start = luaL_checkint(L, 3);
+	int out_items_display_end = luaL_checkint(L, 4);
 	
 	ImGui::CalcListClipping(items_count, items_height, &out_items_display_start, &out_items_display_end);
 	
@@ -3385,23 +4255,18 @@ static int w_EndChildFrame(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented return type "ImVec4": ImGui::ColorConvertU32ToFloat4
-
-static int w_ColorConvertFloat4ToU32(lua_State *L)
+static int w_ColorConvertU32ToFloat4(lua_State *L)
 {
-	ImVec4 in;
-	in.x = luaL_checknumber(L, 1);
-	in.y = luaL_checknumber(L, 2);
-	in.z = luaL_checknumber(L, 2);
-	in.w = luaL_checknumber(L, 2);
+	auto in = static_cast<unsigned int>(luaL_checklong(L, 1));
 	
-	ImU32 out = ImGui::ColorConvertFloat4ToU32(in);
+	ImVec4 out = ImGui::ColorConvertU32ToFloat4(in);
 	
-	lua_pushinteger(L, out);
-	return 1;
+	lua_pushnumber(L, out.x);
+	lua_pushnumber(L, out.y);
+	lua_pushnumber(L, out.z);
+	lua_pushnumber(L, out.w);
+	return 2;
 }
-
-// skipping function due to unimplemented argument type "float&": ImGui::ColorConvertHSVtoRGB
 
 static int w_GetKeyIndex(lua_State *L)
 {
@@ -3522,7 +4387,20 @@ static int w_IsMouseHoveringRect(lua_State *L)
 	return 1;
 }
 
-// skipping function due to unimplemented argument type "const ImVec2*": ImGui::IsMousePosValid
+static int w_IsMousePosValid(lua_State *L)
+{
+	ImVec2* mouse_pos = NULL;
+	ImVec2 mouse_pos_buf;
+	if(!lua_isnoneornil(L, 2)) {
+		mouse_pos_buf.x = luaL_checknumber(L, 1);
+		mouse_pos_buf.y = luaL_checknumber(L, 2);
+	}
+	
+	bool out = ImGui::IsMousePosValid(mouse_pos);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
 static int w_IsAnyMouseDown(lua_State *L)
 {
@@ -3585,7 +4463,14 @@ static int w_ResetMouseDragDelta(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented return type "ImGuiMouseCursor": ImGui::GetMouseCursor
+static int w_GetMouseCursor(lua_State *L)
+{
+	
+	ImGuiMouseCursor out = ImGui::GetMouseCursor();
+	
+	lua_pushstring(L, getStringFromImGuiMouseCursor(out));
+	return 1;
+}
 
 static int w_SetMouseCursor(lua_State *L)
 {
@@ -3632,7 +4517,7 @@ static int w_LoadIniSettingsFromDisk(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented argument type "size_t": ImGui::LoadIniSettingsFromMemory
+// skipping ImGui::LoadIniSettingsFromMemory due to unimplemented argument type: "(TODO) const buf*"
 
 static int w_SaveIniSettingsToDisk(lua_State *L)
 {
@@ -3643,17 +4528,286 @@ static int w_SaveIniSettingsToDisk(lua_State *L)
 	return 0;
 }
 
-// skipping function due to unimplemented argument type "size_t*": ImGui::SaveIniSettingsToMemory
+// skipping ImGui::SaveIniSettingsToMemory due to unimplemented argument type: "size_t*"
 
-// skipping function due to unimplemented argument type "void* (*alloc_func)(size_t sz, void* user_data)": ImGui::SetAllocatorFunctions
+// skipping ImGui::GetPlatformIO due to unimplemented return type: "ImGuiPlatformIO&"
 
-// skipping function due to unimplemented argument type "size_t": ImGui::MemAlloc
+// skipping ImGui::GetMainViewport due to unimplemented return type: "ImGuiViewport*"
 
-// skipping function due to unimplemented argument type "void*": ImGui::MemFree
+static int w_UpdatePlatformWindows(lua_State *L)
+{
+	
+	ImGui::UpdatePlatformWindows();
+	
+	return 0;
+}
 
+// skipping ImGui::RenderPlatformWindowsDefault due to unimplemented argument type: "void*"
+
+static int w_DestroyPlatformWindows(lua_State *L)
+{
+	
+	ImGui::DestroyPlatformWindows();
+	
+	return 0;
+}
+
+// skipping ImGui::FindViewportByID due to unimplemented return type: "ImGuiViewport*"
+
+// skipping ImGui::FindViewportByPlatformHandle due to unimplemented argument type: "void*"
+
+static int w_InputText_Override2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	std::string str = luaL_checkstring(L, 2);
+	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 3, 0);
+	ImGuiInputTextCallback callback = callLuaInputTextCallback;
+	void* user_data = luax_getImguiInputTextCallback(L, 4);
+	if (!user_data) { callback = nullptr; }
+	
+	bool out = ImGui::InputText(label, &str, flags, callback, user_data);
+	
+	lua_pushlstring(L, str.c_str(), str.size());
+	lua_pushboolean(L, out);
+	return 2;
+}
+
+static int w_InputTextMultiline_Override2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	std::string str = luaL_checkstring(L, 2);
+	auto size = ImVec2(0, 0);
+	size.x = luaL_optnumber(L, 3, size.x);
+	size.y = luaL_optnumber(L, 4, size.y);
+	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 5, 0);
+	ImGuiInputTextCallback callback = callLuaInputTextCallback;
+	void* user_data = luax_getImguiInputTextCallback(L, 6);
+	if (!user_data) { callback = nullptr; }
+	
+	bool out = ImGui::InputTextMultiline(label, &str, size, flags, callback, user_data);
+	
+	lua_pushlstring(L, str.c_str(), str.size());
+	lua_pushboolean(L, out);
+	return 2;
+}
+
+static int w_InputTextWithHint_Override2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	auto hint = luaL_checkstring(L, 2);
+	std::string str = luaL_checkstring(L, 3);
+	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 4, 0);
+	ImGuiInputTextCallback callback = callLuaInputTextCallback;
+	void* user_data = luax_getImguiInputTextCallback(L, 5);
+	if (!user_data) { callback = nullptr; }
+	
+	bool out = ImGui::InputTextWithHint(label, hint, &str, flags, callback, user_data);
+	
+	lua_pushlstring(L, str.c_str(), str.size());
+	lua_pushboolean(L, out);
+	return 2;
+}
+
+// End Functions }}}
+
+// Function Overrides (manually written) {{{
+// FIXME: these overrides create a a source of breakage when the imgui API
+// changes. if IMGUI ever changes the order of function overrides on their end,
+// or removes one of the API calls, we're in trouble!
+
+static int w_Value(lua_State* L)
+{
+	if (lua_isboolean(L, 2)) {
+		return w_Value_Override1(L); // prefix, b
+	} else {
+		return w_Value_Override4(L); // prefix, v, float_format=nil
+	}
+}
+
+static int w_MenuItem(lua_State* L)
+{
+	// Only one interesting override
+	return w_MenuItem_Override2(L); // label, shortcut, p_selected, enabled
+}
+
+static int w_IsRectVisible(lua_State* L)
+{
+	if (lua_gettop(L) > 2) {
+		return w_IsRectVisible_Override1(L); // rect_min, rect_max
+	} else {
+		return w_IsRectVisible_Override1(L); // size
+	}
+}
+
+static int w_BeginChild(lua_State* L)
+{
+	if (lua_isstring(L, 1)) {
+		return w_BeginChild_Override1(L); // str_id, size, border, flags
+	} else {
+		return w_BeginChild_Override2(L); // id, size, border, flags
+	}
+}
+
+static int w_InputText(lua_State* L)
+{
+	return w_InputText_Override2(L); // std::string variant
+}
+
+static int w_InputTextMultiline(lua_State* L)
+{
+	return w_InputTextMultiline_Override2(L); // std::string variant
+}
+
+static int w_InputTextWithHint(lua_State* L)
+{
+	return w_InputTextWithHint_Override2(L); // std::string variant
+}
+
+
+static int w_SetWindowPos(lua_State* L)
+{
+	if (lua_isstring(L, 1)) {
+		return w_SetWindowPos_Override2(L); // with window name
+	} else {
+		return w_SetWindowPos_Override1(L); // no window name
+	}
+}
+
+static int w_SetWindowSize(lua_State* L)
+{
+	if (lua_isstring(L, 1)) {
+		return w_SetWindowSize_Override2(L); // with window name
+	} else {
+		return w_SetWindowSize_Override1(L); // no window name
+	}
+}
+
+static int w_SetWindowCollapsed(lua_State* L)
+{
+	if (lua_isstring(L, 1)) {
+		return w_SetWindowCollapsed_Override2(L); // with window name
+	} else {
+		return w_SetWindowCollapsed_Override1(L); // no window name
+	}
+}
+
+static int w_SetWindowFocus(lua_State* L)
+{
+	if (lua_isstring(L, 1)) {
+		return w_SetWindowFocus_Override2(L); // with window name
+	} else {
+		return w_SetWindowFocus_Override1(L); // no window name
+	}
+}
+
+
+static int w_PushStyleColor(lua_State* L)
+{
+	// Only one interesting override
+	return w_PushStyleColor_Override2(L); // idx, col
+}
+
+static int w_PushStyleVar(lua_State* L)
+{
+	if (lua_isnumber(L, 3)) {
+		return w_PushStyleColor_Override2(L); // idx, val (vec2)
+	} 
+
+	return w_PushStyleColor_Override1(L); // idx, val (float)
+}
+
+static int w_PushID(lua_State* L)
+{
+	if (lua_isstring(L, 2)) {
+		return w_PushID_Override2(L); // str_id_begin, str_id_end
+	} else if (lua_isstring(L, 1)) {
+		return w_PushID_Override1(L); // str_id
+	} 
+
+	return w_PushID_Override4(L); // id
+}
+
+static int w_GetID(lua_State* L)
+{
+	if (lua_isstring(L, 2)) {
+		return w_GetID_Override2(L); // str_id_begin, str_id_end
+	}
+
+	return w_GetID_Override1(L); // str_id
+}
+
+static int w_RadioButton(lua_State* L)
+{
+	if (lua_isboolean(L, 2)) {
+		return w_RadioButton_Override1(L); // label, active
+	} else {
+		return w_RadioButton_Override2(L); // label, v, v_button
+	}
+}
+
+static int w_TreeNode(lua_State* L)
+{
+	// TODO: Override2, Override3
+	return w_TreeNode_Override1(L); // label
+}
+
+static int w_TreeNodeEx(lua_State* L)
+{
+	// TODO: Override2, Override3
+	return w_TreeNodeEx_Override1(L); // label, flags
+}
+
+static int w_TreePush(lua_State* L)
+{
+	// intentionally only one override
+	return w_TreePush_Override1(L); // str_id
+}
+
+static int w_CollapsingHeader(lua_State* L)
+{
+	if (lua_isboolean(L, 2)) {
+		return w_CollapsingHeader_Override2(L); // label, p_open, flags
+	} else {
+		return w_CollapsingHeader_Override1(L); // label, flags
+	}
+}
+
+static int w_Selectable(lua_State* L)
+{
+	// Only one interesting override
+	return w_Selectable_Override2(L); // label, p_selected, flags, size
+}
+
+static int w_ListBoxHeaderXY(lua_State* L)
+{
+	// There's no way to distinguish these two
+	return w_ListBoxHeader_Override1(L); // label, size
+}
+
+static int w_ListBoxHeaderItems(lua_State* L)
+{
+	// There's no way to distinguish these two
+	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
+}
+
+// End Function Overrides }}}
+
+// API entry points {{{
 
 void addImguiWrappers(lua_State* L)
 {
+
+	lua_pushcfunction(L, w_CreateContext);
+	lua_setfield(L, -2, "CreateContext");
+
+	lua_pushcfunction(L, w_DestroyContext);
+	lua_setfield(L, -2, "DestroyContext");
+
+	lua_pushcfunction(L, w_GetCurrentContext);
+	lua_setfield(L, -2, "GetCurrentContext");
+
+	lua_pushcfunction(L, w_SetCurrentContext);
+	lua_setfield(L, -2, "SetCurrentContext");
 
 	lua_pushcfunction(L, w_NewFrame);
 	lua_setfield(L, -2, "NewFrame");
@@ -3694,9 +4848,6 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_BeginChild);
 	lua_setfield(L, -2, "BeginChild");
 
-	lua_pushcfunction(L, w_BeginChild);
-	lua_setfield(L, -2, "BeginChild");
-
 	lua_pushcfunction(L, w_EndChild);
 	lua_setfield(L, -2, "EndChild");
 
@@ -3711,6 +4862,9 @@ void addImguiWrappers(lua_State* L)
 
 	lua_pushcfunction(L, w_IsWindowHovered);
 	lua_setfield(L, -2, "IsWindowHovered");
+
+	lua_pushcfunction(L, w_GetWindowDpiScale);
+	lua_setfield(L, -2, "GetWindowDpiScale");
 
 	lua_pushcfunction(L, w_GetWindowPos);
 	lua_setfield(L, -2, "GetWindowPos");
@@ -3742,17 +4896,8 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_SetNextWindowBgAlpha);
 	lua_setfield(L, -2, "SetNextWindowBgAlpha");
 
-	lua_pushcfunction(L, w_SetWindowPos);
-	lua_setfield(L, -2, "SetWindowPos");
-
-	lua_pushcfunction(L, w_SetWindowSize);
-	lua_setfield(L, -2, "SetWindowSize");
-
-	lua_pushcfunction(L, w_SetWindowCollapsed);
-	lua_setfield(L, -2, "SetWindowCollapsed");
-
-	lua_pushcfunction(L, w_SetWindowFocus);
-	lua_setfield(L, -2, "SetWindowFocus");
+	lua_pushcfunction(L, w_SetNextWindowViewport);
+	lua_setfield(L, -2, "SetNextWindowViewport");
 
 	lua_pushcfunction(L, w_SetWindowFontScale);
 	lua_setfield(L, -2, "SetWindowFontScale");
@@ -3820,14 +4965,8 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_PushStyleColor);
 	lua_setfield(L, -2, "PushStyleColor");
 
-	lua_pushcfunction(L, w_PushStyleColor);
-	lua_setfield(L, -2, "PushStyleColor");
-
 	lua_pushcfunction(L, w_PopStyleColor);
 	lua_setfield(L, -2, "PopStyleColor");
-
-	lua_pushcfunction(L, w_PushStyleVar);
-	lua_setfield(L, -2, "PushStyleVar");
 
 	lua_pushcfunction(L, w_PushStyleVar);
 	lua_setfield(L, -2, "PushStyleVar");
@@ -3840,15 +4979,6 @@ void addImguiWrappers(lua_State* L)
 
 	lua_pushcfunction(L, w_GetFontTexUvWhitePixel);
 	lua_setfield(L, -2, "GetFontTexUvWhitePixel");
-
-	lua_pushcfunction(L, w_GetColorU32);
-	lua_setfield(L, -2, "GetColorU32");
-
-	lua_pushcfunction(L, w_GetColorU32);
-	lua_setfield(L, -2, "GetColorU32");
-
-	lua_pushcfunction(L, w_GetColorU32);
-	lua_setfield(L, -2, "GetColorU32");
 
 	lua_pushcfunction(L, w_PushItemWidth);
 	lua_setfield(L, -2, "PushItemWidth");
@@ -3952,23 +5082,32 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_PushID);
 	lua_setfield(L, -2, "PushID");
 
-	lua_pushcfunction(L, w_PushID);
-	lua_setfield(L, -2, "PushID");
-
-	lua_pushcfunction(L, w_PushID);
-	lua_setfield(L, -2, "PushID");
-
 	lua_pushcfunction(L, w_PopID);
 	lua_setfield(L, -2, "PopID");
 
 	lua_pushcfunction(L, w_GetID);
 	lua_setfield(L, -2, "GetID");
 
-	lua_pushcfunction(L, w_GetID);
-	lua_setfield(L, -2, "GetID");
-
 	lua_pushcfunction(L, w_TextUnformatted);
 	lua_setfield(L, -2, "TextUnformatted");
+
+	lua_pushcfunction(L, w_Text);
+	lua_setfield(L, -2, "Text");
+
+	lua_pushcfunction(L, w_TextColored);
+	lua_setfield(L, -2, "TextColored");
+
+	lua_pushcfunction(L, w_TextDisabled);
+	lua_setfield(L, -2, "TextDisabled");
+
+	lua_pushcfunction(L, w_TextWrapped);
+	lua_setfield(L, -2, "TextWrapped");
+
+	lua_pushcfunction(L, w_LabelText);
+	lua_setfield(L, -2, "LabelText");
+
+	lua_pushcfunction(L, w_BulletText);
+	lua_setfield(L, -2, "BulletText");
 
 	lua_pushcfunction(L, w_Button);
 	lua_setfield(L, -2, "Button");
@@ -3982,14 +5121,17 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_ArrowButton);
 	lua_setfield(L, -2, "ArrowButton");
 
+	lua_pushcfunction(L, w_Image);
+	lua_setfield(L, -2, "Image");
+
+	lua_pushcfunction(L, w_ImageButton);
+	lua_setfield(L, -2, "ImageButton");
+
 	lua_pushcfunction(L, w_Checkbox);
 	lua_setfield(L, -2, "Checkbox");
 
 	lua_pushcfunction(L, w_CheckboxFlags);
 	lua_setfield(L, -2, "CheckboxFlags");
-
-	lua_pushcfunction(L, w_RadioButton);
-	lua_setfield(L, -2, "RadioButton");
 
 	lua_pushcfunction(L, w_RadioButton);
 	lua_setfield(L, -2, "RadioButton");
@@ -4005,9 +5147,6 @@ void addImguiWrappers(lua_State* L)
 
 	lua_pushcfunction(L, w_EndCombo);
 	lua_setfield(L, -2, "EndCombo");
-
-	lua_pushcfunction(L, w_Combo);
-	lua_setfield(L, -2, "Combo");
 
 	lua_pushcfunction(L, w_DragFloat);
 	lua_setfield(L, -2, "DragFloat");
@@ -4132,35 +5271,14 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_CollapsingHeader);
 	lua_setfield(L, -2, "CollapsingHeader");
 
-	lua_pushcfunction(L, w_CollapsingHeader);
-	lua_setfield(L, -2, "CollapsingHeader");
-
 	lua_pushcfunction(L, w_SetNextItemOpen);
 	lua_setfield(L, -2, "SetNextItemOpen");
 
 	lua_pushcfunction(L, w_Selectable);
 	lua_setfield(L, -2, "Selectable");
 
-	lua_pushcfunction(L, w_Selectable);
-	lua_setfield(L, -2, "Selectable");
-
-	lua_pushcfunction(L, w_ListBoxHeader);
-	lua_setfield(L, -2, "ListBoxHeader");
-
-	lua_pushcfunction(L, w_ListBoxHeader);
-	lua_setfield(L, -2, "ListBoxHeader");
-
 	lua_pushcfunction(L, w_ListBoxFooter);
 	lua_setfield(L, -2, "ListBoxFooter");
-
-	lua_pushcfunction(L, w_Value);
-	lua_setfield(L, -2, "Value");
-
-	lua_pushcfunction(L, w_Value);
-	lua_setfield(L, -2, "Value");
-
-	lua_pushcfunction(L, w_Value);
-	lua_setfield(L, -2, "Value");
 
 	lua_pushcfunction(L, w_Value);
 	lua_setfield(L, -2, "Value");
@@ -4186,14 +5304,14 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_MenuItem);
 	lua_setfield(L, -2, "MenuItem");
 
-	lua_pushcfunction(L, w_MenuItem);
-	lua_setfield(L, -2, "MenuItem");
-
 	lua_pushcfunction(L, w_BeginTooltip);
 	lua_setfield(L, -2, "BeginTooltip");
 
 	lua_pushcfunction(L, w_EndTooltip);
 	lua_setfield(L, -2, "EndTooltip");
+
+	lua_pushcfunction(L, w_SetTooltip);
+	lua_setfield(L, -2, "SetTooltip");
 
 	lua_pushcfunction(L, w_OpenPopup);
 	lua_setfield(L, -2, "OpenPopup");
@@ -4264,6 +5382,21 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_SetTabItemClosed);
 	lua_setfield(L, -2, "SetTabItemClosed");
 
+	lua_pushcfunction(L, w_DockSpace);
+	lua_setfield(L, -2, "DockSpace");
+
+	lua_pushcfunction(L, w_DockSpaceOverViewport);
+	lua_setfield(L, -2, "DockSpaceOverViewport");
+
+	lua_pushcfunction(L, w_SetNextWindowDockID);
+	lua_setfield(L, -2, "SetNextWindowDockID");
+
+	lua_pushcfunction(L, w_GetWindowDockID);
+	lua_setfield(L, -2, "GetWindowDockID");
+
+	lua_pushcfunction(L, w_IsWindowDocked);
+	lua_setfield(L, -2, "IsWindowDocked");
+
 	lua_pushcfunction(L, w_LogToTTY);
 	lua_setfield(L, -2, "LogToTTY");
 
@@ -4278,6 +5411,9 @@ void addImguiWrappers(lua_State* L)
 
 	lua_pushcfunction(L, w_LogButtons);
 	lua_setfield(L, -2, "LogButtons");
+
+	lua_pushcfunction(L, w_LogText);
+	lua_setfield(L, -2, "LogText");
 
 	lua_pushcfunction(L, w_BeginDragDropSource);
 	lua_setfield(L, -2, "BeginDragDropSource");
@@ -4357,9 +5493,6 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_IsRectVisible);
 	lua_setfield(L, -2, "IsRectVisible");
 
-	lua_pushcfunction(L, w_IsRectVisible);
-	lua_setfield(L, -2, "IsRectVisible");
-
 	lua_pushcfunction(L, w_GetTime);
 	lua_setfield(L, -2, "GetTime");
 
@@ -4381,8 +5514,8 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_EndChildFrame);
 	lua_setfield(L, -2, "EndChildFrame");
 
-	lua_pushcfunction(L, w_ColorConvertFloat4ToU32);
-	lua_setfield(L, -2, "ColorConvertFloat4ToU32");
+	lua_pushcfunction(L, w_ColorConvertU32ToFloat4);
+	lua_setfield(L, -2, "ColorConvertU32ToFloat4");
 
 	lua_pushcfunction(L, w_GetKeyIndex);
 	lua_setfield(L, -2, "GetKeyIndex");
@@ -4417,6 +5550,9 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_IsMouseHoveringRect);
 	lua_setfield(L, -2, "IsMouseHoveringRect");
 
+	lua_pushcfunction(L, w_IsMousePosValid);
+	lua_setfield(L, -2, "IsMousePosValid");
+
 	lua_pushcfunction(L, w_IsAnyMouseDown);
 	lua_setfield(L, -2, "IsAnyMouseDown");
 
@@ -4434,6 +5570,9 @@ void addImguiWrappers(lua_State* L)
 
 	lua_pushcfunction(L, w_ResetMouseDragDelta);
 	lua_setfield(L, -2, "ResetMouseDragDelta");
+
+	lua_pushcfunction(L, w_GetMouseCursor);
+	lua_setfield(L, -2, "GetMouseCursor");
 
 	lua_pushcfunction(L, w_SetMouseCursor);
 	lua_setfield(L, -2, "SetMouseCursor");
@@ -4453,10 +5592,33 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_SaveIniSettingsToDisk);
 	lua_setfield(L, -2, "SaveIniSettingsToDisk");
 
+	lua_pushcfunction(L, w_UpdatePlatformWindows);
+	lua_setfield(L, -2, "UpdatePlatformWindows");
+
+	lua_pushcfunction(L, w_DestroyPlatformWindows);
+	lua_setfield(L, -2, "DestroyPlatformWindows");
+
+	lua_pushcfunction(L, w_InputText);
+	lua_setfield(L, -2, "InputText");
+
+	lua_pushcfunction(L, w_InputTextMultiline);
+	lua_setfield(L, -2, "InputTextMultiline");
+
+	lua_pushcfunction(L, w_InputTextWithHint);
+	lua_setfield(L, -2, "InputTextWithHint");
+
+	lua_pushcfunction(L, w_ListBoxHeaderXY);
+	lua_setfield(L, -2, "ListBoxHeaderXY");
+
+	lua_pushcfunction(L, w_ListBoxHeaderItems);
+	lua_setfield(L, -2, "ListBoxHeaderItems");
+
 }
 
 void createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, 266); 
+	lua_createtable(L, 0, 272); 
 	addImguiWrappers(L);
 }
+
+// End API entry points }}}

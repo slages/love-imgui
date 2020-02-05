@@ -76,15 +76,18 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 				luaL_dostring(g_L, "imgui.renderMesh:setTexture(imgui.textureObject)");
 			else
 			{
-				lua_pushnumber(g_L, ((int*)pcmd->TextureId)[0]);
+				ptrdiff_t rawref = reinterpret_cast<ptrdiff_t>(pcmd->TextureId);
+				int ref = static_cast<int>(rawref);
+				lua_rawgeti(g_L, LUA_REGISTRYINDEX, ref);
 				lua_setfield(g_L, -2, "currentTexture");
 				luaL_dostring(g_L, "\
-					local texture = imgui.textures[imgui.currentTexture]\
+					local texture = imgui.currentTexture\
 					if texture:typeOf(\"Canvas\") then\
 						love.graphics.setBlendMode(\"alpha\", \"premultiplied\")\
 					end\
 					imgui.renderMesh:setTexture(texture)\
 				");
+				luaL_unref(g_L, LUA_REGISTRYINDEX, ref);
 			}
 
 			luaL_dostring(g_L, "\
@@ -235,7 +238,6 @@ void NewFrame()
 	luaL_dostring(g_L, "love.mouse.setVisible(not imgui.mouseDrawCursor)");
 
 	// Init lua data
-	luaL_dostring(g_L, "imgui.textures = nil");
 	lua_pop(g_L, 1);
 
 	// Start the frame

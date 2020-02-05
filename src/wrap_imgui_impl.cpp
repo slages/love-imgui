@@ -40,6 +40,15 @@ char *strndup( const char *s1, size_t n)
 
 #endif
 
+// Defined in codegen
+ImTextureID luax_checkTextureID(lua_State* L, int narg)
+{
+	lua_pushvalue(L, narg);
+	// TODO: is this value a love texture?
+	ptrdiff_t r = luaL_ref(L, LUA_REGISTRYINDEX);
+	return reinterpret_cast<ImTextureID>(r);
+}
+
 /*
 ** Love implentation functions
 */
@@ -179,13 +188,6 @@ static int w_GetWantTextInput(lua_State *L)
 ** Custom bindings
 */
 
-static int w_GetStyleColorName(lua_State *L)
-{
-	int idx = luaL_checkint(L, 1);
-	lua_pushstring(L, ImGui::GetStyleColorName(idx - 1));
-	return 1;
-}
-
 static int w_GetStyleColCount(lua_State *L)
 {
 	lua_pushinteger(L, ImGuiCol_COUNT);
@@ -247,171 +249,14 @@ static int w_AddFontFromFileTTF(lua_State *L) {
 }
 
 /*
-** Hand made overrides
-*/
-
-/*
-static int w_Value(lua_State *L)
-{
-	if (lua_isboolean(L, 2))
-	{
-		return impl_Value(L);
-	}
-	return impl_Value_4(L);
-}
-
-static int w_CollapsingHeader(lua_State *L)
-{
-	if (lua_isboolean(L, 2))
-	{
-		return impl_CollapsingHeader_2(L);
-	}
-	return impl_CollapsingHeader(L);
-}
-
-static int w_TreeNodeEx(lua_State *L)
-{
-	if (lua_gettop(L) > 2)
-	{
-		return impl_TreeNodeEx_2(L);
-	}
-	return impl_TreeNodeEx(L);
-}
-
-static int w_TreeNode(lua_State *L)
-{
-	if (lua_gettop(L) > 1)
-	{
-		return impl_TreeNode_2(L);
-	}
-	return impl_TreeNode(L);
-}
-
-static int w_Combo(lua_State *L)
-{
-	if (lua_isstring(L, 3))
-	{
-		return impl_Combo_2(L);
-	}
-	return impl_Combo(L);
-}
-
-static int w_RadioButton(lua_State *L)
-{
-	if (lua_gettop(L) > 2)
-	{
-		return impl_RadioButton_2(L);
-	}
-	return impl_RadioButton(L);
-}
-
-static int w_PushID(lua_State *L)
-{
-	if (lua_gettop(L) > 1)
-	{
-		return impl_PushID_2(L);
-	}
-	return impl_PushID(L);
-}
-
-static int w_GetID(lua_State *L)
-{
-	if (lua_gettop(L) > 1)
-	{
-		return impl_GetID_2(L);
-	}
-	return impl_GetID(L);
-}
-
-static int w_PushStyleVar(lua_State *L)
-{
-	if (lua_gettop(L) > 2)
-	{
-		return impl_PushStyleVar_2(L);
-	}
-	return impl_PushStyleVar(L);
-}
-
-static int w_PushStyleColor(lua_State *L)
-{
-	if (lua_gettop(L) > 2)
-	{
-		return impl_PushStyleColor_2(L);
-	}
-	return impl_PushStyleColor(L);
-}
-
-static int w_SetWindowPos(lua_State *L)
-{
-	if (lua_isstring(L, 1))
-	{
-		return impl_SetWindowPos_2(L);
-	}
-	return impl_SetWindowPos(L);
-}
-
-static int w_SetWindowSize(lua_State *L)
-{
-	if (lua_isstring(L, 1))
-	{
-		return impl_SetWindowSize_2(L);
-	}
-	return impl_SetWindowSize(L);
-}
-
-static int w_SetWindowCollapsed(lua_State *L)
-{
-	if (lua_isstring(L, 1))
-	{
-		return impl_SetWindowCollapsed_2(L);
-	}
-	return impl_SetWindowCollapsed(L);
-}
-
-static int w_SetWindowFocus(lua_State *L)
-{
-	if (lua_isstring(L, 1))
-	{
-		return impl_SetWindowFocus_2(L);
-	}
-	return impl_SetWindowFocus(L);
-}
-
-static int w_BeginChild(lua_State *L)
-{
-	if (lua_isstring(L, 1))
-	{
-		return impl_BeginChild(L);
-	}
-	return impl_BeginChild_2(L);
-}
-*/
-
-/*
 ** Reg
 */
 
 static const struct luaL_Reg imguilib[] = {
 	// Custom
-	{ "GetStyleColName", w_GetStyleColorName },
 	{ "GetStyleColCount", w_GetStyleColCount },
 	{ "SetGlobalFontFromFileTTF", w_SetGlobalFontFromFileTTF },
 	{ "AddFontFromFileTTF", w_AddFontFromFileTTF },
-
-	// Overrides
-	//{ "Value", w_Value },
-	//{ "CollapsingHeader", w_CollapsingHeader },
-	//{ "Combo", w_Combo },
-	//{ "RadioButton", w_RadioButton },
-	//{ "PushID", w_PushID },
-	//{ "GetID", w_GetID },
-	//{ "PushStyleVar", w_PushStyleVar },
-	//{ "PushStyleColor", w_PushStyleColor },
-	//{ "SetWindowPos", w_SetWindowPos },
-	//{ "SetWindowSize", w_SetWindowSize },
-	//{ "SetWindowCollapsed", w_SetWindowCollapsed },
-	//{ "SetWindowFocus", w_SetWindowFocus },
-	//{ "BeginChild", w_BeginChild },
 
 	// Implementation
 	{ "ShutDown", w_ShutDown },
@@ -437,12 +282,8 @@ extern "C" {
 
 extern "C" int luaopen_imgui(lua_State *L)
 {
-
-	// Enums not handled by iterator yet
-	lua_newtable(L);
+	luaL_register(L, "imgui", imguilib);
 	addImguiWrappers(L);
 
-
-	luaL_openlib(L, "imgui", imguilib, 1);
 	return 1;
 }

@@ -1,35 +1,18 @@
 # LOVE-IMGUI
 
-[imgui](https://github.com/ocornut/imgui) module for the [LÖVE](https://love2d.org/) game engine including lua bindings based on this [project](https://github.com/patrickriordan/imgui_lua_bindings).
-**The main difference is that now by default in this version the return values ordering is reverted.** For instance to retrieve the value from a slider, you need to do:
-```lua
-floatValue, status = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
-```
-Or if you're not interested to know if the field was modified, just:
-```lua
-floatValue = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
-```
-To reverse this behavior and receive back the return values from a function first before the modified fields, just call at the beginning of your application:
-```lua
-imgui.SetReturnValueLast(false)
-```
-
-Another notable difference is that enum values are handled using strings (and array of strings) instead of numerical values, for instance to create a window:
-```lua
-imgui.Begin("Test Window", true, { "ImGuiWindowFlags_AlwaysAutoResize", "ImGuiWindowFlags_NoTitleBar" });
-```
-Or for a single flag:
-```lua
-imgui.Begin("Test Window", true, "ImGuiWindowFlags_AlwaysAutoResize");
-```
-
-It uses imgui source head and supports 275 functions (43 unsupported), and is based on LÖVE 11.3.
+A partial rewrite of [slage's](https://github.com/slages/love-imgui) bindings to the [imgui](https://github.com/ocornut/imgui). This is not compatible, and makes deviations in API design!
 
 ## Getting Started
 
 Just build the project, and copy the generated dynamic module next to your love executable or into the LÖVE application data folder (for instance "C:/Users/<user>/AppData/Roaming/LOVE" on Windows or ~/.local/shared/love on Linux).
 
 Pre-built binaries for Windows and Mas OSX are provided in the [releases](https://github.com/slages/love-imgui/releases) page.
+
+## Differences
+
+* New bindings generator implementation. While not an explicit API difference, the output may diverge unintentionally!
+* enums are now string-only. to use, write enums as "MyEnum". For bitflags, try "MyEnum|MyOtherEnum".
+* return order is out-parameters first, return value last. This is not configurable.
 
 ## Examples
 
@@ -87,8 +70,8 @@ function love.draw()
     end
     
     if showAnotherWindow then
-        imgui.SetNextWindowPos(50, 50, "ImGuiCond_FirstUseEver")
-        showAnotherWindow = imgui.Begin("Another Window", true, { "ImGuiWindowFlags_AlwaysAutoResize", "ImGuiWindowFlags_NoTitleBar" });
+        imgui.SetNextWindowPos(50, 50, "FirstUseEver")
+        showAnotherWindow = imgui.Begin("Another Window", true, "AlwaysAutoResize|NoTitleBar");
         imgui.Text("Hello");
         -- Input text
         textValue = imgui.InputTextMultiline("InputText", textValue, 200, 300, 200);
