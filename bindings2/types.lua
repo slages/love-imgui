@@ -107,6 +107,7 @@ do
 		["int"] = simple_arg("luaL_checkint", "luaL_optint"),
 		["double"] = simple_arg("luaL_checknumber", "luaL_optnumber"),
 		["ImTextureID"] = simple_arg("luax_checkTextureID", "luax_checkTextureID"),
+		--TODO ["const char* const[]"] = simple_arg("luax_checkStringArray", "luax_checkStringArray"),
 		["ImGuiContext*"] = static_cast_arg("ImGuiContext*", "luax_checklightuserdata", "luax_optlightuserdata"),
 		["unsigned int"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
 		["float"] = static_cast_arg("float", "luaL_checknumber", "luaL_optnumber"),

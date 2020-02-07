@@ -276,14 +276,13 @@ static const struct luaL_Reg imguilib[] = {
 	{ NULL, NULL }
 };
 
-extern "C" {
-	void luax_register(lua_State *L, const char *name, const luaL_Reg *l);
-}
-
 extern "C" int luaopen_imgui(lua_State *L)
 {
-	luaL_register(L, "imgui", imguilib);
+	lua_newtable(L);
+	lua_pushvalue(L, -1);
+	lua_setglobal(L, "imgui");
 	addImguiWrappers(L);
+	luaL_register(L, nullptr, imguilib);
 
 	return 1;
 }

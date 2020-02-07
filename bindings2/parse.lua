@@ -10,8 +10,6 @@ local SKIP_FUNCTIONS = {
 	["ColorConvertHSVtoRGB"] = true,
 	["ColorConvertFloat4ToU32"] = true,
 	["ColorConvertFloatu32ToFloat4"] = true,
-	-- not convenient convenience function: use begin/endcombo instead
-	["Combo"] = true,
 }
 
 local function trim(s)

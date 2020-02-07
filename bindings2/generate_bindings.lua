@@ -80,6 +80,9 @@ function helpers.genFunctionWrapper(imgui, fnData)
 	local buf = Buffer.new(0)
 	local stop
 
+	if fnData.comment then
+		buf:addf("/* %s */", fnData.comment)
+	end
 	buf:addf("static int %s(lua_State *L)", cname)
 	buf:add("{") buf:indent() do
 		-- arguments

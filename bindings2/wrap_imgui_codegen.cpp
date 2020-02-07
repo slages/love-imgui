@@ -130,6 +130,24 @@ T luax_optflags(U fromString, lua_State* L, int narg, T d)
 	}
 }
 
+const char*[] luax_checkStringArray(lua_State* L, int startarg)
+{
+	int endarg = lua_gettop(L);
+
+	lua_getglobal(L, "string"); // 1
+	lua_getfield(L, -1, "format"); // 2
+	lua_remove(L, -2); // 1, remove string
+	for (int i = startarg; i <= endarg; ++i) {
+		lua_pushvalue(L, i);
+	} // 1 + args
+	// out = string.format(...)
+	lua_call(L, endarg - startarg + 1, 1); // 1
+	const char* out = luaL_checkstring(L, -1); // 1
+	lua_pop(L, 1); // 0
+
+	return out;
+}
+
 // End Helpers }}}
 
 // Enums {{{
@@ -236,25 +254,28 @@ static int w_Value(lua_State* L)
 
 static int w_MenuItem(lua_State* L)
 {
-	// Only one interesting override
-	return w_MenuItem_Override2(L); // label, shortcut, p_selected, enabled
+	if (lua_gettop(L) < 3) {
+		return w_MenuItem_Override1(L); // label, shortcut
+	} else {
+		return w_MenuItem_Override2(L); // label, shortcut, p_selected, enabled
+	}
 }
 
 static int w_IsRectVisible(lua_State* L)
 {
-	if (lua_gettop(L) > 2) {
-		return w_IsRectVisible_Override1(L); // rect_min, rect_max
+	if (lua_gettop(L) <= 2) {
+		return w_IsRectVisible_Override1(L); // size_x, size_y
 	} else {
-		return w_IsRectVisible_Override1(L); // size
+		return w_IsRectVisible_Override2(L); // rect_min_x, rect_min_y, rect_max_x, rect_max_y
 	}
 }
 
 static int w_BeginChild(lua_State* L)
 {
 	if (lua_isstring(L, 1)) {
-		return w_BeginChild_Override1(L); // str_id, size, border, flags
+		return w_BeginChild_Override1(L); // str_id, size_x, size_y, border, flags
 	} else {
-		return w_BeginChild_Override2(L); // id, size, border, flags
+		return w_BeginChild_Override2(L); // id, size_x, size_y, border, flags
 	}
 }
 
@@ -362,6 +383,12 @@ static int w_Selectable(lua_State* L)
 {
 	// Only one interesting override
 	return w_Selectable_Override2(L); // label, p_selected, flags, size
+}
+
+static int w_Combo(lua_State* L)
+{
+	// Override1 is probably better, but not yet implemented
+	return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
 }
 
 <% helpers.removeValidFunction(imgui, "ListBoxHeader") -%>
