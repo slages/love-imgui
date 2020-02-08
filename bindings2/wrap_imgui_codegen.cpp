@@ -450,17 +450,16 @@ static int w_PlotHistogram(lua_State* L)
 void addImguiWrappers(lua_State* L)
 {
 <%
-	helpers.cleanValidFunctions(imgui)
-	for _, fnData in ipairs(imgui.validFunctions) do
+	for name in pairs(imgui.validFunctionNames) do
 %>
-	lua_pushcfunction(L, w_<%- fnData.name %>);
-	lua_setfield(L, -2, "<%- fnData.name %>");
+	lua_pushcfunction(L, w_<%- name %>);
+	lua_setfield(L, -2, "<%- name %>");
 <% end %>
 }
 
 void createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, <%- #imgui.validFunctions %>); 
+	lua_createtable(L, 0, <%- helpers.count(imgui.validFunctionNames) %>); 
 	addImguiWrappers(L);
 }
 

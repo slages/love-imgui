@@ -111,7 +111,8 @@ function helpers.genFunctionWrapper(imgui, fnData)
 		for _, arg in ipairs(fnData.arguments) do
 			lua_arg, stop = Types.check(buf, arg, lua_arg, outParams)
 			if stop then
-				return string.format("// skipping %s due to unimplemented argument type: %q", qualifiedName, arg.type)
+				helpers.addInvalidFunctions(imgui, fnData.name)
+				return string.format("// skipping %s due to unimplemented argument type: %q", cname, arg.type)
 			end
 
 			if arg.preArgs then
@@ -150,7 +151,8 @@ function helpers.genFunctionWrapper(imgui, fnData)
 			local name, ctype = unpack(param)
 			outArg, stop = Types.push(buf, name, ctype, outArg)
 			if stop then
-				return string.format("// skipping %s due to unimplemented return type: %q", qualifiedName, fnData.returnType)
+				helpers.addInvalidFunctions(imgui, fnData.name)
+				return string.format("// skipping %s due to unimplemented return type: %q", cname, fnData.returnType)
 			end
 		end
 
@@ -159,35 +161,37 @@ function helpers.genFunctionWrapper(imgui, fnData)
 		-- output
 	end buf:unindent() buf:add("}")
 
-	table.insert(imgui.validFunctions, fnData)
+	helpers.addValidFunctions(imgui, fnData.name)
 	return buf:done()
 end
 
-function helpers.cleanValidFunctions(imgui)
-	local exists = {}
-	for index = #imgui.validFunctions, 1, -1 do
-		local name = imgui.validFunctions[index].name
-		if exists[name] then
-			table.remove(imgui.validFunctions, index)
-		else
-			exists[name] = true
-		end
-	end
-end
-
 function helpers.removeValidFunction(imgui, toRemove)
-	for index = #imgui.validFunctions, 1, -1 do
-		if imgui.validFunctions[index].name == toRemove then
-			table.remove(imgui.validFunctions, index)
-		end
-	end
+	imgui.validFunctionNames[toRemove] = nil
 end
 
 function helpers.addValidFunctions(imgui, ...)
 	for i = 1, select('#', ...) do
 		local name = select(i, ...)
-		table.insert(imgui.validFunctions, {name = name})
+		imgui.validFunctionNames[name] = true
+		imgui.invalidFunctionNames[name] = nil
 	end
+end
+
+function helpers.addInvalidFunctions(imgui, ...)
+	for i = 1, select('#', ...) do
+		local name = select(i, ...)
+		if not imgui.validFunctionNames[name] then
+			imgui.invalidFunctionNames[name] = true
+		end
+	end
+end
+
+function helpers.count(tbl)
+	local count = 0
+	for _ in pairs(tbl) do
+		count = count + 1
+	end
+	return count
 end
 
 local function generateFile(fname, templateFname, imgui)
@@ -211,10 +215,14 @@ end
 
 local function main()
 	local imgui = Parse.parseHeaders{"src/libimgui/imgui.h", "src/imgui_stdlib.h"}
-	imgui.validFunctions = {}
+	imgui.invalidFunctionNames = {}
+	imgui.validFunctionNames = {}
 	generateFile("src/wrap_imgui_codegen.cpp", "bindings2/wrap_imgui_codegen.cpp", imgui)
 	generateFile("src/wrap_imgui_codegen.h",  "bindings2/wrap_imgui_codegen.h", imgui)
-	util.logf("%d functions implemented, %d functions unimplemented", #imgui.validFunctions, #imgui.functions - #imgui.validFunctions)
+	for name in pairs(imgui.invalidFunctionNames) do
+		util.logf("unimplemented function: %s", name)
+	end
+	util.logf("%d functions implemented, %d functions unimplemented", helpers.count(imgui.validFunctionNames), helpers.count(imgui.invalidFunctionNames))
 end
 
 main(...)
