@@ -91,44 +91,65 @@ T luax_optenum(U fromString, lua_State* L, int narg, T d)
 template<typename T, typename U>
 T luax_checkflags(U fromString, lua_State* L, int narg)
 {
-	const char* s = luaL_checkstring(L, narg);
-	std::vector<std::string> tokens;
-	std::string token;
-	std::istringstream tokenStream(s);
 	T out{};
-	while (std::getline(tokenStream, token, '|')) {
-		std::optional<T> opt = fromString(token.c_str());
-		if (opt) {
+	if (lua_isnumber(L, narg)) {
+		// variant A: raw number
+		out = static_cast<T>(lua_tointeger(L, narg));
+	} else if (lua_isstring(L, narg)) {
+		// variant B: string, split by '|'
+		const char* s = lua_tostring(L, narg);
+		std::vector<std::string> tokens;
+		std::string token;
+		std::istringstream tokenStream(s);
+		while (std::getline(tokenStream, token, '|')) {
+			std::optional<T> opt = fromString(token.c_str());
+			if (!opt) {
+				luaL_error(L, "Unrecognized value in flags parameter %d: %s", narg, token.c_str());
+			}
 			out = out | *opt;
 		}
+	} else if (lua_istable(L, narg)) {
+		// Variant C: table, both [enum] = true, and "enum" are supported
+		lua_pushvalue(L, narg); // t
+		lua_pushnil(L); // t, k(nil)
+		while (lua_next(L, -2)) {// t, k, v
+			lua_pushvalue(L, -2); // t, k, v, k
+			if (lua_isstring(L, -1)) {
+				const char* flagString = lua_tostring(L, -1);
+				std::optional<T> opt = fromString(flagString);
+				if (!opt) {
+					luaL_error(L, "Unrecognized enum in flags parameter %d: %s.", narg);
+				}
+				bool enabled = lua_toboolean(L, -2);
+				if (enabled) {
+					out = out | *opt;
+				}
+			} else if (lua_isnumber(L, -1)) {
+				const char* flagString = lua_tostring(L, -2);
+				std::optional<T> opt = fromString(flagString);
+				if (!opt) {
+					luaL_error(L, "Unrecognized enum in flags parameter %d: %s.", narg);
+				}
+				out = out | *opt;
+			}
+
+			lua_pop(L, 2); // t, k
+		}
+		lua_pop(L, 1); // clean
+	} else {
+		luaL_error(L, "Unrecognized flag parameter %d: must be int, string, or table", narg);
 	}
+
 	return out;
 }
 
 template<typename T, typename U>
 T luax_optflags(U fromString, lua_State* L, int narg, T d)
 {
-	if(!lua_isstring(L, narg)) {
+	if (lua_isnoneornil(L, narg)) {
 		return d;
 	}
-	const char* s = lua_tostring(L, narg);
-	std::vector<std::string> tokens;
-	std::string token;
-	std::istringstream tokenStream(s);
-	bool defined = false;
-	T out{};
-	while (std::getline(tokenStream, token, '|')) {
-		std::optional<T> opt = fromString(token.c_str());
-		if (opt) {
-			out = out | *opt;
-			defined = true;
-		}
-	}
-	if (defined) {
-		return out;
-	} else {
-		return d;
-	}
+	return luax_checkflags<T, U>(fromString, L, narg);
 }
 
 std::vector<const char*> luax_checkstringvector(lua_State* L, int narg)

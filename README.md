@@ -11,8 +11,13 @@ Pre-built binaries for Windows and Mas OSX are provided in the [releases](https:
 ## Differences
 
 * New bindings generator implementation. While not an explicit API difference, the output may diverge unintentionally!
-* enums are now string-only. to use, write enums as "MyEnum". For bitflags, try "MyEnum|MyOtherEnum".
 * return order is out-parameters first, return value last. This is not configurable.
+* We're taking a maximalist approach to enums. All of these are valid and interchangable with no configuration necessary:
+```lua
+imgui.Begin("MyWindow", true, "AlwaysAutoResize|NoTitleBar")
+imgui.Begin("MyWindow", true, {"AlwaysAutoResize", "NoTitleBar"})
+imgui.Begin("MyWindow", true, {AlwaysAutoResize = true, NoTitleBar = true})
+```
 
 ## Examples
 
@@ -22,7 +27,7 @@ require "imgui"
 
 local showTestWindow = false
 local showAnotherWindow = false
-local floatValue = 0;
+local floatValue = 0
 local sliderFloat = { 0.1, 0.5 }
 local clearColor = { 0.2, 0.2, 0.2 }
 local comboSelection = 1
@@ -50,44 +55,44 @@ function love.draw()
     end
 
     -- Debug window
-    imgui.Text("Hello, world!");
-    clearColor[1], clearColor[2], clearColor[3] = imgui.ColorEdit3("Clear color", clearColor[1], clearColor[2], clearColor[3]);
+    imgui.Text("Hello, world!")
+    clearColor[1], clearColor[2], clearColor[3] = imgui.ColorEdit3("Clear color", clearColor[1], clearColor[2], clearColor[3])
     
     -- Sliders
-    floatValue = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0);
-    sliderFloat[1], sliderFloat[2] = imgui.SliderFloat2("SliderFloat2", sliderFloat[1], sliderFloat[2], 0.0, 1.0);
+    floatValue = imgui.SliderFloat("SliderFloat", floatValue, 0.0, 1.0)
+    sliderFloat[1], sliderFloat[2] = imgui.SliderFloat2("SliderFloat2", sliderFloat[1], sliderFloat[2], 0.0, 1.0)
     
     -- Combo
-    comboSelection = imgui.Combo("Combo", comboSelection, { "combo1", "combo2", "combo3", "combo4" }, 4);
+    comboSelection = imgui.Combo("Combo", comboSelection, { "combo1", "combo2", "combo3", "combo4" }, 4)
 
     -- Windows
     if imgui.Button("Test Window") then
-        showTestWindow = not showTestWindow;
+        showTestWindow = not showTestWindow
     end
     
     if imgui.Button("Another Window") then
-        showAnotherWindow = not showAnotherWindow;
+        showAnotherWindow = not showAnotherWindow
     end
     
     if showAnotherWindow then
         imgui.SetNextWindowPos(50, 50, "FirstUseEver")
-        showAnotherWindow = imgui.Begin("Another Window", true, "AlwaysAutoResize|NoTitleBar");
-        imgui.Text("Hello");
+        showAnotherWindow = imgui.Begin("Another Window", true, "AlwaysAutoResize|NoTitleBar")
+        imgui.Text("Hello")
         -- Input text
-        textValue = imgui.InputTextMultiline("InputText", textValue, 200, 300, 200);
-        imgui.End();
+        textValue = imgui.InputTextMultiline("InputText", textValue, 200, 300, 200)
+        imgui.End()
     end
 
     if showTestWindow then
         showTestWindow = imgui.ShowDemoWindow(true)
     end
 
-    love.graphics.clear(clearColor[1], clearColor[2], clearColor[3])
-    imgui.Render();
+    love.graphics.clear(clearColor)
+    imgui.Render()
 end
 
 function love.quit()
-    imgui.ShutDown();
+    imgui.ShutDown()
 end
 
 --
