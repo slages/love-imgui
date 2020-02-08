@@ -129,25 +129,6 @@ T luax_optflags(U fromString, lua_State* L, int narg, T d)
 		return d;
 	}
 }
-
-const char*[] luax_checkStringArray(lua_State* L, int startarg)
-{
-	int endarg = lua_gettop(L);
-
-	lua_getglobal(L, "string"); // 1
-	lua_getfield(L, -1, "format"); // 2
-	lua_remove(L, -2); // 1, remove string
-	for (int i = startarg; i <= endarg; ++i) {
-		lua_pushvalue(L, i);
-	} // 1 + args
-	// out = string.format(...)
-	lua_call(L, endarg - startarg + 1, 1); // 1
-	const char* out = luaL_checkstring(L, -1); // 1
-	lua_pop(L, 1); // 0
-
-	return out;
-}
-
 // End Helpers }}}
 
 // Enums {{{

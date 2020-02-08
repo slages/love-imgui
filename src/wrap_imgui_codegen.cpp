@@ -129,7 +129,6 @@ T luax_optflags(U fromString, lua_State* L, int narg, T d)
 		return d;
 	}
 }
-
 // End Helpers }}}
 
 // Enums {{{
@@ -5008,6 +5007,12 @@ static int w_Selectable(lua_State* L)
 {
 	// Only one interesting override
 	return w_Selectable_Override2(L); // label, p_selected, flags, size
+}
+
+static int w_Combo(lua_State* L)
+{
+	// Override1 is probably better, but not yet implemented
+	return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
 }
 
 static int w_ListBoxHeaderXY(lua_State* L)

@@ -107,7 +107,6 @@ do
 		["int"] = simple_arg("luaL_checkint", "luaL_optint"),
 		["double"] = simple_arg("luaL_checknumber", "luaL_optnumber"),
 		["ImTextureID"] = simple_arg("luax_checkTextureID", "luax_checkTextureID"),
-		--TODO ["const char* const[]"] = simple_arg("luax_checkStringArray", "luax_checkStringArray"),
 		["ImGuiContext*"] = static_cast_arg("ImGuiContext*", "luax_checklightuserdata", "luax_optlightuserdata"),
 		["unsigned int"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
 		["float"] = static_cast_arg("float", "luaL_checknumber", "luaL_optnumber"),
@@ -127,7 +126,7 @@ do
 					buf:addf("%s_buf.x = luaL_checknumber(L, %d);", name, i)
 					buf:addf("%s_buf.y = luaL_checknumber(L, %d);", name, i+1)
 				buf:unindent() buf:add("}")
-				return i+2
+				return i + 2
 			else
 				return i, "stop"
 			end
