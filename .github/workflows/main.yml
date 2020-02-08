@@ -30,6 +30,11 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: love-imgui
+    - name: Checkout submodules
+      shell: cmd
+      run: |
+        cd love-imgui
+        git submodule update --init --recursive
     - name: Configure
       shell: cmd
       env:
@@ -51,11 +56,18 @@ jobs:
     - name: Get Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libluajit-5.1-dev --assume-yes
+        sudo apt-get install libluajit-5.1-dev luajit --assume-yes
     - name: Checkout
       uses: actions/checkout@v2
       with:
         path: love-imgui
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        cd love-imgui
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: Configure
       run: cmake -Bbuild -Hlove-imgui -DCMAKE_INSTALL_PREFIX=$PWD/installdir -DCMAKE_BUILD_TYPE=Release
     - name: Build

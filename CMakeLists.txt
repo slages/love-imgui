@@ -6,8 +6,6 @@ OPTION(EnableCodeGen "automatically recompile the code-generated imgui header. r
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 FIND_PACKAGE(LuaJIT REQUIRED)
 
-SET(LIB_NAME imgui)
-
 IF(EnableCodeGen)
 	SET(BindSource
 		bindings2/generate_bindings.lua
@@ -23,7 +21,7 @@ IF(EnableCodeGen)
 		${CMAKE_SOURCE_DIR}/src/wrap_imgui_codegen.cpp
 	)
 	ADD_CUSTOM_COMMAND(
-		COMMAND lua ${CMAKE_SOURCE_DIR}/bindings2/generate_bindings.lua
+		COMMAND ${LUAJIT_EXE} ${CMAKE_SOURCE_DIR}/bindings2/generate_bindings.lua
 		DEPENDS ${BindSource}
 		OUTPUT ${BindOutput}
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -31,7 +29,7 @@ IF(EnableCodeGen)
 	)
 ENDIF()
 
-ADD_LIBRARY(${LIB_NAME}
+ADD_LIBRARY(love-imgui
 	MODULE
 	src/libimgui/imconfig.h
 	src/libimgui/imgui.cpp
@@ -55,19 +53,17 @@ ADD_LIBRARY(${LIB_NAME}
 	src/wrap_imgui_codegen.h
 )
 
-TARGET_INCLUDE_DIRECTORIES(${LIB_NAME}
+TARGET_INCLUDE_DIRECTORIES(love-imgui
 	PUBLIC
 	${LUAJIT_INCLUDE_DIR}
 	src/libimgui
 )
 
-TARGET_LINK_LIBRARIES(${LIB_NAME}
+TARGET_LINK_LIBRARIES(love-imgui
 	${LUAJIT_LIBRARY}
 )
 
-SET_PROPERTY(TARGET ${LIB_NAME} PROPERTY CXX_STANDARD 17)
-SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES PREFIX "")
+SET_PROPERTY(TARGET love-imgui PROPERTY CXX_STANDARD 17)
+SET_TARGET_PROPERTIES(love-imgui PROPERTIES PREFIX "")
 
-IF(DEFINED "LIB_DIR")
-	INSTALL(TARGETS ${LIB_NAME} LIBRARY DESTINATION ${LIB_DIR})
-ENDIF()
+INSTALL(TARGETS love-imgui LIBRARY DESTINATION lib)

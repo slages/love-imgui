@@ -3,6 +3,7 @@
 # LUAJIT_FOUND
 # LUAJIT_INCLUDE_DIR
 # LUAJIT_LIBRARY
+# LUAJIT_EXE
 
 set(LUAJIT_SEARCH_PATHS
 	/usr/local
@@ -23,7 +24,13 @@ find_library(LUAJIT_LIBRARY
 	PATHS ${LUAJIT_SEARCH_PATHS}
 )
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(LuaJIT DEFAULT_MSG LUAJIT_LIBRARY LUAJIT_INCLUDE_DIR)
+find_program(LUAJIT_EXE
+	NAMES luajit
+	PATH_SUFFIXES bin
+	PATHS ${LUAJIT_SEARCH_PATHS}
+)
 
-mark_as_advanced(LUAJIT_INCLUDE_DIR LUAJIT_LIBRARY)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(LuaJIT DEFAULT_MSG LUAJIT_LIBRARY LUAJIT_INCLUDE_DIR LUAJIT_EXE)
+
+mark_as_advanced(LUAJIT_INCLUDE_DIR LUAJIT_LIBRARY LUAJIT_EXE)
