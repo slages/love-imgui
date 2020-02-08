@@ -11,9 +11,10 @@
 #include <locale>
 #include <codecvt>
 
-// Helpers {{{
 extern ImTextureID luax_checkTextureID(lua_State* L, int narg); // define in your application
 
+namespace {
+// Helpers {{{
 bool luax_optboolean(lua_State* L, int narg, bool d)
 {
 	if(lua_isnoneornil(L, narg)) {
@@ -94,7 +95,7 @@ T luax_checkflags(U fromString, lua_State* L, int narg)
 	std::vector<std::string> tokens;
 	std::string token;
 	std::istringstream tokenStream(s);
-	T out;
+	T out{};
 	while (std::getline(tokenStream, token, '|')) {
 		std::optional<T> opt = fromString(token.c_str());
 		if (opt) {
@@ -115,7 +116,7 @@ T luax_optflags(U fromString, lua_State* L, int narg, T d)
 	std::string token;
 	std::istringstream tokenStream(s);
 	bool defined = false;
-	T out;
+	T out{};
 	while (std::getline(tokenStream, token, '|')) {
 		std::optional<T> opt = fromString(token.c_str());
 		if (opt) {
@@ -330,16 +331,16 @@ static int w_<%-fn%>(lua_State* L)
 static int w_PushStyleColor(lua_State* L)
 {
 	// Only one interesting override
-	return w_PushStyleColor_Override2(L); // idx, col
+	return w_PushStyleColor_Override2(L); // idx, col_r, col_g, col_b, col_a
 }
 
 static int w_PushStyleVar(lua_State* L)
 {
 	if (lua_isnumber(L, 3)) {
-		return w_PushStyleColor_Override2(L); // idx, val (vec2)
+		return w_PushStyleVar_Override2(L); // idx, val_x, val_y
 	} 
 
-	return w_PushStyleColor_Override1(L); // idx, val (float)
+	return w_PushStyleVar_Override1(L); // idx, val_float
 }
 
 static int w_PushID(lua_State* L)
@@ -413,21 +414,6 @@ static int w_Combo(lua_State* L)
 	}
 }
 
-<% helpers.removeValidFunction(imgui, "ListBoxHeader") -%>
-<% helpers.addValidFunctions(imgui, "ListBoxHeaderXY") -%>
-static int w_ListBoxHeaderXY(lua_State* L)
-{
-	// There's no way to distinguish these two
-	return w_ListBoxHeader_Override1(L); // label, size
-}
-
-static int w_ListBoxHeaderItems(lua_State* L)
-{
-	// There's no way to distinguish these two
-	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
-}
-<% helpers.addValidFunctions(imgui, "ListBoxHeaderItems") -%>
-
 static int w_ListBox(lua_State* L)
 {
 	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
@@ -443,21 +429,66 @@ static int w_PlotHistogram(lua_State* L)
 	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
 }
 
+<% helpers.removeValidFunction(imgui, "ListBoxHeader") -%>
+static int w_ListBoxHeaderXY(lua_State* L)
+{
+	<% helpers.addValidFunctions(imgui, "ListBoxHeaderXY") -%>
+	// There's no way to distinguish these two
+	return w_ListBoxHeader_Override1(L); // label, size
+}
+
+static int w_ListBoxHeaderItems(lua_State* L)
+{
+	<% helpers.addValidFunctions(imgui, "ListBoxHeaderItems") -%>
+	// There's no way to distinguish these two
+	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
+}
+
+static int w_ColorPicker4(lua_State* L)
+{
+	// manually implemented to handle ref_col, which is a little goofy
+	<% helpers.addValidFunctions(imgui, "ColorPicker4") -%>
+	auto label = luaL_checkstring(L, 1);
+	float col[4];
+	col[0] = static_cast<float>(luaL_checknumber(L, 2));
+	col[1] = static_cast<float>(luaL_checknumber(L, 3));
+	col[2] = static_cast<float>(luaL_checknumber(L, 4));
+	col[3] = static_cast<float>(luaL_checknumber(L, 5));
+	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
+	float ref_col_data[4];
+	float* ref_col = nullptr;
+	if(lua_gettop(L) > 6) {
+		ref_col_data[0] = static_cast<float>(luaL_checknumber(L, 7));
+		ref_col_data[1] = static_cast<float>(luaL_checknumber(L, 8));
+		ref_col_data[2] = static_cast<float>(luaL_checknumber(L, 9));
+		ref_col_data[3] = static_cast<float>(luaL_checknumber(L, 10));
+		ref_col = ref_col_data;
+	}
+	
+	bool out = ImGui::ColorPicker4(label, col, flags, ref_col);
+	
+	lua_pushnumber(L, col[0]);
+	lua_pushnumber(L, col[1]);
+	lua_pushnumber(L, col[2]);
+	lua_pushnumber(L, col[3]);
+	lua_pushboolean(L, out);
+	return 5;
+}
+
 // End Function Overrides }}}
+}
 
 // API entry points {{{
 
-void addImguiWrappers(lua_State* L)
+void wrap_imgui::addImguiWrappers(lua_State* L)
 {
-<%
-	for name in pairs(imgui.validFunctionNames) do
-%>
+<% for name in pairs(imgui.validFunctionNames) do -%>
 	lua_pushcfunction(L, w_<%- name %>);
 	lua_setfield(L, -2, "<%- name %>");
-<% end %>
+<% end -%>
 }
 
-void createImguiTable(lua_State* L)
+void wrap_imgui::createImguiTable(lua_State* L)
 {
 	lua_createtable(L, 0, <%- helpers.count(imgui.validFunctionNames) %>); 
 	addImguiWrappers(L);

@@ -108,6 +108,7 @@ do
 		["double"] = simple_arg("luaL_checknumber", "luaL_optnumber"),
 		["ImTextureID"] = simple_arg("luax_checkTextureID", "luax_checkTextureID"),
 		["ImGuiContext*"] = static_cast_arg("ImGuiContext*", "luax_checklightuserdata", "luax_optlightuserdata"),
+		["ImGuiStyle*"] = static_cast_arg("ImGuiStyle*", "luax_checklightuserdata", "luax_optlightuserdata"),
 		["unsigned int"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
 		["float"] = static_cast_arg("float", "luaL_checknumber", "luaL_optnumber"),
 		["ImU32"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
@@ -260,6 +261,10 @@ do
 		["double"] = simple_return("lua_pushnumber"),
 		["const char*"] = simple_return("lua_pushstring"),
 		["ImGuiContext*"] = simple_return("lua_pushlightuserdata"),
+		["ImGuiStyle&"] = function(buf, name, i)
+			buf:addf("lua_pushlightuserdata(L, &%s);", name)
+			return i + 1
+		end,
 		["ImGuiMouseCursor"] = enum_return("getStringFromImGuiMouseCursor"),
 		-- custom
 		["std::string"] = function(buf, name, i)
@@ -272,6 +277,13 @@ do
 			return i + 2
 		end,
 		["ImVec4"] = function(buf, name, i)
+			buf:addf("lua_pushnumber(L, %s.x);", name)
+			buf:addf("lua_pushnumber(L, %s.y);", name)
+			buf:addf("lua_pushnumber(L, %s.z);", name)
+			buf:addf("lua_pushnumber(L, %s.w);", name)
+			return i + 2
+		end,
+		["const ImVec4&"] = function(buf, name, i)
 			buf:addf("lua_pushnumber(L, %s.x);", name)
 			buf:addf("lua_pushnumber(L, %s.y);", name)
 			buf:addf("lua_pushnumber(L, %s.z);", name)

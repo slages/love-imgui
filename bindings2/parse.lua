@@ -1,6 +1,8 @@
 local util = require 'bindings2.util'
 
 local SKIP_FUNCTIONS = {
+	-- C++ debug only
+	["DebugCheckVersionAndDataLayout"] = true,
 	-- allocation strategy is a C++ native thing
 	["SetAllocatorFunctions"] = true,
 	["MemAlloc"] = true,

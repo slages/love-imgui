@@ -9,11 +9,10 @@ Non goals:
 - bindings to all struct types
 - Bindings to ImDrawList in particular
 - configurability (edit the script if you would like something different)
-- parser quality :( it's fine tho
+- parser quality :( it's fine ok
 
 TODO:
-* provide user-configurable bindings for ImTextureID
 * manually write bindings for all methods with callbacks
-* manually write bindings for all methods that have type signature overrides
-* manually write bindings for all varargs methods (do the string formatting in lua, then just give me a monolithic string)
-* provide bindings to switch around contexts (shared ptr)
+* provide bindings to ImGuiStyle
+* provide a userdata type for imguiDrawList? maybe
+* resolve the brittleness around overrides issue. Maybe make override names include the argument types ala C++ name mangling?

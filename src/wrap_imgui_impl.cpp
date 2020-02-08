@@ -40,7 +40,7 @@ char *strndup( const char *s1, size_t n)
 
 #endif
 
-// Defined in codegen
+// override points
 ImTextureID luax_checkTextureID(lua_State* L, int narg)
 {
 	lua_pushvalue(L, narg);
@@ -53,7 +53,6 @@ ImTextureID luax_checkTextureID(lua_State* L, int narg)
 ** Love implentation functions
 */
 static bool g_inited = false;
-static int	g_textures[250]; // Should be enough
 
 static int w_ShutDown(lua_State *L)
 {
@@ -188,12 +187,6 @@ static int w_GetWantTextInput(lua_State *L)
 ** Custom bindings
 */
 
-static int w_GetStyleColCount(lua_State *L)
-{
-	lua_pushinteger(L, ImGuiCol_COUNT);
-	return 1;
-}
-
 static int w_SetGlobalFontFromFileTTF(lua_State *L)
 {
 	size_t size;
@@ -254,7 +247,6 @@ static int w_AddFontFromFileTTF(lua_State *L) {
 
 static const struct luaL_Reg imguilib[] = {
 	// Custom
-	{ "GetStyleColCount", w_GetStyleColCount },
 	{ "SetGlobalFontFromFileTTF", w_SetGlobalFontFromFileTTF },
 	{ "AddFontFromFileTTF", w_AddFontFromFileTTF },
 
@@ -281,7 +273,7 @@ extern "C" int luaopen_imgui(lua_State *L)
 	lua_newtable(L);
 	lua_pushvalue(L, -1);
 	lua_setglobal(L, "imgui");
-	addImguiWrappers(L);
+	wrap_imgui::addImguiWrappers(L);
 	luaL_register(L, nullptr, imguilib);
 
 	return 1;

@@ -8,5 +8,7 @@ extern "C" {
 #include <lauxlib.h>
 }
 
+namespace wrap_imgui {
 void addImguiWrappers(lua_State* L);
 void createImguiTable(lua_State* L);
+}

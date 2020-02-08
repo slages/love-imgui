@@ -83,7 +83,7 @@ function helpers.genFunctionWrapper(imgui, fnData)
 	if fnData.comment then
 		buf:addf("/* %s */", fnData.comment)
 	end
-	buf:addf("static int %s(lua_State *L)", cname)
+	buf:addf("int %s(lua_State *L)", cname)
 	buf:add("{") buf:indent() do
 		-- arguments
 		local argnames = {}
@@ -108,12 +108,14 @@ function helpers.genFunctionWrapper(imgui, fnData)
 			end
 		end
 
+		local atLeastOneArgument = false
 		for _, arg in ipairs(fnData.arguments) do
 			lua_arg, stop = Types.check(buf, arg, lua_arg, outParams)
 			if stop then
 				helpers.addInvalidFunctions(imgui, fnData.name)
 				return string.format("// skipping %s due to unimplemented argument type: %q", cname, arg.type)
 			end
+			atLeastOneArgument = true
 
 			if arg.preArgs then
 				for _, preArg in ipairs(arg.preArgs) do
@@ -136,7 +138,7 @@ function helpers.genFunctionWrapper(imgui, fnData)
 		argnames = table.concat(argnames, ", ")
 
 		-- call
-		buf:add("")
+		if atLeastOneArgument then buf:add("") end
 		if fnData.returnType == "void" then
 			buf:addf("%s(%s);", qualifiedName, argnames)
 		else
