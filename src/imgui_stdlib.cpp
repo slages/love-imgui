@@ -78,20 +78,20 @@ bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* 
 
 bool ImGui::Combo(const char* label, int* current_item, const std::vector<const char*>& items, int popup_max_height_in_items)
 {
-	return Combo(label, current_item, items.data(), items.size(), popup_max_height_in_items);
+	return Combo(label, current_item, items.data(), static_cast<int>(items.size()), popup_max_height_in_items);
 }
 
 bool ImGui::ListBox(const char* label, int* current_item, const std::vector<const char*>& items, int height_in_items)
 {
-	return ListBox(label, current_item, items.data(), items.size(), height_in_items);
+	return ListBox(label, current_item, items.data(), static_cast<int>(items.size()), height_in_items);
 }
 
 void ImGui::PlotLines(const char* label, const std::vector<float>& values, int values_offset, const char* overlay_text, float scale_min, float scale_max, ImVec2 graph_size)
 {
-	PlotLines(label, values.data(), values.size(), values_offset, overlay_text, scale_min, scale_max, graph_size);
+	PlotLines(label, values.data(), static_cast<int>(values.size()), values_offset, overlay_text, scale_min, scale_max, graph_size);
 }
 
 void ImGui::PlotHistogram(const char* label, const std::vector<float>& values, int values_offset, const char* overlay_text, float scale_min, float scale_max, ImVec2 graph_size)
 {
-	PlotHistogram(label, values.data(), values.size(), values_offset, overlay_text, scale_min, scale_max, graph_size);
+	PlotHistogram(label, values.data(), static_cast<int>(values.size()), values_offset, overlay_text, scale_min, scale_max, graph_size);
 }

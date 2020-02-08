@@ -244,7 +244,7 @@ int callLuaInputTextCallback(ImGuiInputTextCallbackData *data)
 	}
 
 	lua_call(L, 1, 1);
-	int out = lua_tointeger(L, -1);
+	int out = static_cast<int>(lua_tointeger(L, -1));
 	lua_pop(L, 1);
 
 	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
@@ -261,7 +261,6 @@ int callLuaInputTextCallback(ImGuiInputTextCallbackData *data)
 
 void* luax_getImguiInputTextCallback(lua_State* L, int narg)
 {
-	ptrdiff_t ref = 0;
 	if (lua_isfunction(L, narg)) {
 		auto* ref = new FuncRef;
 		ref->L = L;

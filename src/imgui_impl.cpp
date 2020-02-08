@@ -45,7 +45,7 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 
 		lua_pushlstring(g_L, (char *)&cmd_list->VtxBuffer.front(), cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
 		lua_setfield(g_L, -2, "verticesData");
-		lua_pushnumber(g_L, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
+		lua_pushinteger(g_L, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
 		lua_setfield(g_L, -2, "verticesSize");
 
 		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, 'rgba8', imgui.verticesData), \"triangles\")\
@@ -101,13 +101,13 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 	lua_pop(g_L, 1);
 }
 
-static const char* ImGui_Impl_GetClipboardText(void* user_data)
+static const char* ImGui_Impl_GetClipboardText([[maybe_unused]] void* user_data)
 {
 	luaL_dostring(g_L, "return love.system.getClipboardText()");
 	return luaL_checkstring(g_L, 0);
 }
 
-static void ImGui_Impl_SetClipboardText(void* user_data, const char* text)
+static void ImGui_Impl_SetClipboardText([[maybe_unused]] void* user_data, const char* text)
 {
 	lua_getglobal(g_L, "imgui");
 	lua_pushstring(g_L, text);
@@ -210,9 +210,9 @@ void NewFrame()
 
 	// Setup display size (every frame to accommodate for window resizing)
 	luaL_dostring(g_L, "return love.graphics.getWidth()");
-	float w = luaL_checknumber(g_L, 0);
+	float w = static_cast<float>(luaL_checknumber(g_L, 0));
 	luaL_dostring(g_L, "return love.graphics.getHeight()");
-	float h = luaL_checknumber(g_L, 0);
+	float h = static_cast<float>(luaL_checknumber(g_L, 0));
 	//int display_w, display_h;
 	// SDL_GL_GetDrawableSize(window, &display_w, &display_h);
 	io.DisplaySize = ImVec2(w, h);
@@ -367,8 +367,8 @@ void SetGlobalFontFromFileTTF(const char *path, float size_pixels, float spacing
 {
     ImGuiIO& io = ImGui::GetIO();
     ImFontConfig conf;
-    conf.OversampleH = oversample_x;
-    conf.OversampleV = oversample_y;
+    conf.OversampleH = static_cast<int>(oversample_x);
+    conf.OversampleV = static_cast<int>(oversample_y);
     conf.GlyphExtraSpacing.x = spacing_x;
     conf.GlyphExtraSpacing.y = spacing_y;
     io.Fonts->AddFontFromFileTTF(path, size_pixels, &conf);

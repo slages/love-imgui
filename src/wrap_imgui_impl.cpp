@@ -54,7 +54,7 @@ ImTextureID luax_checkTextureID(lua_State* L, int narg)
 */
 static bool g_inited = false;
 
-static int w_ShutDown(lua_State *L)
+static int w_ShutDown([[maybe_unused]] lua_State *L)
 {
 	ShutDown();
 	return 0;
@@ -71,7 +71,7 @@ static int w_NewFrame(lua_State *L)
 	return 0;
 }
 
-static int w_Render(lua_State *L)
+static int w_Render([[maybe_unused]] lua_State *L)
 {
 	Render();
 	return 0;
@@ -191,11 +191,11 @@ static int w_SetGlobalFontFromFileTTF(lua_State *L)
 {
 	size_t size;
 	const char *path = luaL_checklstring(L, 1, &size);
-	float size_pixels = luaL_checknumber(L, 2);
-	float spacing_x = luaL_optnumber(L, 3, 0);
-	float spacing_y = luaL_optnumber(L, 4, 0);
-	float oversample_x = luaL_optnumber(L, 5, 1);
-	float oversample_y = luaL_optnumber(L, 6, 1);
+	float size_pixels  = static_cast<float>(luaL_checknumber(L, 2));
+	float spacing_x    = static_cast<float>(luaL_optnumber(L, 3, 0));
+	float spacing_y    = static_cast<float>(luaL_optnumber(L, 4, 0));
+	float oversample_x = static_cast<float>(luaL_optnumber(L, 5, 1));
+	float oversample_y = static_cast<float>(luaL_optnumber(L, 6, 1));
 
 	const char* basePath = getRealDirectoryIfExists(L, path);
 	if (basePath == nullptr) {
@@ -215,7 +215,7 @@ static int w_SetGlobalFontFromFileTTF(lua_State *L)
 static int w_AddFontFromFileTTF(lua_State *L) {
     size_t filenameSize;
     const char* filename = luaL_checklstring(L, 1, &filenameSize);
-    float pixelSize = luaL_checknumber(L, 2);
+    float pixelSize = static_cast<float>(luaL_checknumber(L, 2));
 
     const char* basePath = getRealDirectoryIfExists(L, filename);
     if (basePath == nullptr) {
@@ -226,8 +226,6 @@ static int w_AddFontFromFileTTF(lua_State *L) {
 
     char fullPath[4096] = {0};
     snprintf(&(fullPath[0]), sizeof(fullPath) - 1, "%s/%s", basePath, filename);
-
-    ImFontConfig* fontCfg = (ImFontConfig*)lua_touserdata(L, 3);
 
     ImGuiIO& io = ImGui::GetIO();
     ImFont* font = io.Fonts->AddFontFromFileTTF(&(fullPath[0]), pixelSize);

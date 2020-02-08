@@ -29,8 +29,8 @@ IF(EnableCodeGen)
 	)
 ENDIF()
 
-ADD_LIBRARY(love-imgui
-	MODULE
+ADD_LIBRARY(imgui
+	STATIC
 	src/libimgui/imconfig.h
 	src/libimgui/imgui.cpp
 	src/libimgui/imgui.h
@@ -41,7 +41,11 @@ ADD_LIBRARY(love-imgui
 	src/libimgui/imstb_rectpack.h
 	src/libimgui/imstb_textedit.h
 	src/libimgui/imstb_truetype.h
+)
+SET_PROPERTY(TARGET imgui PROPERTY POSITION_INDEPENDENT_CODE ON)
 
+ADD_LIBRARY(love-imgui
+	MODULE
 	src/imgui_impl.cpp
 	src/imgui_impl.h
 	src/imgui_stdlib.cpp
@@ -59,11 +63,15 @@ TARGET_INCLUDE_DIRECTORIES(love-imgui
 	src/libimgui
 )
 
-TARGET_LINK_LIBRARIES(love-imgui
-	${LUAJIT_LIBRARY}
-)
+TARGET_LINK_LIBRARIES(love-imgui ${LUAJIT_LIBRARY} imgui)
 
 SET_PROPERTY(TARGET love-imgui PROPERTY CXX_STANDARD 17)
 SET_TARGET_PROPERTIES(love-imgui PROPERTIES PREFIX "")
+if(MSVC)
+  TARGET_COMPILE_OPTIONS(love-imgui PRIVATE /W4 /WX)
+else()
+  TARGET_COMPILE_OPTIONS(love-imgui PRIVATE -Wall -Wextra -pedantic -Werror -Wconversion)
+  SET_SOURCE_FILES_PROPERTIES(src/wrap_imgui_codegen.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-function -Wno-unused-parameter")
+endif()
 
 INSTALL(TARGETS love-imgui LIBRARY DESTINATION lib)

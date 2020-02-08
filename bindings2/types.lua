@@ -124,8 +124,8 @@ do
 				buf:addf("ImVec2* %s = %s;", name, arg.default)
 				buf:addf("ImVec2 %s_buf;", name)
 				buf:addf("if(!lua_isnoneornil(L, %d)) {", i+1) buf:indent()
-					buf:addf("%s_buf.x = luaL_checknumber(L, %d);", name, i)
-					buf:addf("%s_buf.y = luaL_checknumber(L, %d);", name, i+1)
+					buf:addf("%s_buf.x = static_cast<float>(luaL_checknumber(L, %d));", name, i)
+					buf:addf("%s_buf.y = static_cast<float>(luaL_checknumber(L, %d));", name, i+1)
 				buf:unindent() buf:add("}")
 				return i + 2
 			else
@@ -136,12 +136,12 @@ do
 			local name = arg.name
 			if arg.default then
 				buf:addf("auto %s = %s;", name, arg.default)
-				buf:addf("%s.x = luaL_optnumber(L, %d, %s.x);", name, i, name)
-				buf:addf("%s.y = luaL_optnumber(L, %d, %s.y);", name, i+1, name)
+				buf:addf("%s.x = static_cast<float>(luaL_optnumber(L, %d, %s.x));", name, i, name)
+				buf:addf("%s.y = static_cast<float>(luaL_optnumber(L, %d, %s.y));", name, i+1, name)
 			else
 				buf:addf("ImVec2 %s;", name)
-				buf:addf("%s.x = luaL_checknumber(L, %d);", name, i)
-				buf:addf("%s.y = luaL_checknumber(L, %d);", name, i+1)
+				buf:addf("%s.x = static_cast<float>(luaL_checknumber(L, %d));", name, i)
+				buf:addf("%s.y = static_cast<float>(luaL_checknumber(L, %d));", name, i+1)
 			end
 			return i+2
 		end,
@@ -149,16 +149,16 @@ do
 			local name = arg.name
 			if arg.default then
 				buf:addf("ImVec4 %s = %s;", name, arg.default)
-				buf:addf("%s.x = luaL_optnumber(L, %d, %s.x);", name, i, name)
-				buf:addf("%s.y = luaL_optnumber(L, %d, %s.y);", name, i+1, name)
-				buf:addf("%s.z = luaL_optnumber(L, %d, %s.z);", name, i+2, name)
-				buf:addf("%s.w = luaL_optnumber(L, %d, %s.w);", name, i+3, name)
+				buf:addf("%s.x = static_cast<float>(luaL_optnumber(L, %d, %s.x));", name, i, name)
+				buf:addf("%s.y = static_cast<float>(luaL_optnumber(L, %d, %s.y));", name, i+1, name)
+				buf:addf("%s.z = static_cast<float>(luaL_optnumber(L, %d, %s.z));", name, i+2, name)
+				buf:addf("%s.w = static_cast<float>(luaL_optnumber(L, %d, %s.w));", name, i+3, name)
 			else
 				buf:addf("ImVec4 %s;", name)
-				buf:addf("%s.x = luaL_checknumber(L, %d);", name, i)
-				buf:addf("%s.y = luaL_checknumber(L, %d);", name, i+1)
-				buf:addf("%s.z = luaL_checknumber(L, %d);", name, i+2)
-				buf:addf("%s.w = luaL_checknumber(L, %d);", name, i+3)
+				buf:addf("%s.x = static_cast<float>(luaL_checknumber(L, %d));", name, i)
+				buf:addf("%s.y = static_cast<float>(luaL_checknumber(L, %d));", name, i+1)
+				buf:addf("%s.z = static_cast<float>(luaL_checknumber(L, %d));", name, i+2)
+				buf:addf("%s.w = static_cast<float>(luaL_checknumber(L, %d));", name, i+3)
 			end
 			return i + 4
 		end,
