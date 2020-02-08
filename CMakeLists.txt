@@ -16,11 +16,11 @@ IF(EnableCodeGen)
 		bindings2/wrap_imgui_codegen.cpp
 		bindings2/wrap_imgui_codegen.h
 		src/libimgui/imgui.h
+		src/imgui_stdlib.h
 	)
 	SET(BindOutput
 		${CMAKE_SOURCE_DIR}/src/wrap_imgui_codegen.h
 		${CMAKE_SOURCE_DIR}/src/wrap_imgui_codegen.cpp
-
 	)
 	ADD_CUSTOM_COMMAND(
 		COMMAND lua ${CMAKE_SOURCE_DIR}/bindings2/generate_bindings.lua
@@ -43,12 +43,12 @@ ADD_LIBRARY(${LIB_NAME}
 	src/libimgui/imstb_rectpack.h
 	src/libimgui/imstb_textedit.h
 	src/libimgui/imstb_truetype.h
-	src/libimgui/misc/cpp/imgui_stdlib.cpp
-	src/libimgui/misc/cpp/imgui_stdlib.h
 
 	src/imgui_impl.cpp
-	src/wrap_imgui_impl.cpp
 	src/imgui_impl.h
+	src/imgui_stdlib.cpp
+	src/imgui_stdlib.h
+	src/wrap_imgui_impl.cpp
 	src/wrap_imgui_impl.h
 
 	src/wrap_imgui_codegen.cpp

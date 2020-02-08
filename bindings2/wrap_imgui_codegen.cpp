@@ -2,7 +2,7 @@
 
 #include "wrap_imgui_codegen.h"
 #include "imgui.h"
-#include "misc/cpp/imgui_stdlib.h"
+#include "imgui_stdlib.h"
 
 #include <optional>
 #include <string>
@@ -128,6 +128,44 @@ T luax_optflags(U fromString, lua_State* L, int narg, T d)
 	} else {
 		return d;
 	}
+}
+
+std::vector<const char*> luax_checkstringvector(lua_State* L, int narg)
+{
+	if(!lua_istable(L, narg)) {
+		luaL_error(L, "Invalid table passed as parameter %d", narg);
+	}
+
+	std::vector<const char*> out;
+	int idx = 1;
+	lua_rawgeti(L, narg, idx);
+	while (!lua_isnil(L, -1)) {
+		out.emplace_back(luaL_checkstring(L, -1));
+		lua_pop(L, 1);
+		idx++;
+		lua_rawgeti(L, narg, idx);
+	}
+
+	return out;
+}
+
+std::vector<float> luax_checkfloatvector(lua_State* L, int narg)
+{
+	if(!lua_istable(L, narg)) {
+		luaL_error(L, "Invalid table passed as parameter %d", narg);
+	}
+
+	std::vector<float> out;
+	int idx = 1;
+	lua_rawgeti(L, narg, idx);
+	while (!lua_isnil(L, -1)) {
+		out.emplace_back(static_cast<float>(luaL_checknumber(L, -1)));
+		lua_pop(L, 1);
+		idx++;
+		lua_rawgeti(L, narg, idx);
+	}
+
+	return out;
 }
 // End Helpers }}}
 
@@ -368,8 +406,11 @@ static int w_Selectable(lua_State* L)
 
 static int w_Combo(lua_State* L)
 {
-	// Override1 is probably better, but not yet implemented
-	return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
+	if (lua_istable(L, 3)) {
+		return w_Combo_Override4(L); // label, current_item, items, popup_max_height_in_items
+	} else {
+		return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
+	}
 }
 
 <% helpers.removeValidFunction(imgui, "ListBoxHeader") -%>
@@ -386,6 +427,21 @@ static int w_ListBoxHeaderItems(lua_State* L)
 	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
 }
 <% helpers.addValidFunctions(imgui, "ListBoxHeaderItems") -%>
+
+static int w_ListBox(lua_State* L)
+{
+	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
+}
+
+static int w_PlotLines(lua_State* L)
+{
+	return w_PlotLines_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
+}
+
+static int w_PlotHistogram(lua_State* L)
+{
+	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
+}
 
 // End Function Overrides }}}
 

@@ -2,7 +2,7 @@
 
 #include "wrap_imgui_codegen.h"
 #include "imgui.h"
-#include "misc/cpp/imgui_stdlib.h"
+#include "imgui_stdlib.h"
 
 #include <optional>
 #include <string>
@@ -128,6 +128,44 @@ T luax_optflags(U fromString, lua_State* L, int narg, T d)
 	} else {
 		return d;
 	}
+}
+
+std::vector<const char*> luax_checkstringvector(lua_State* L, int narg)
+{
+	if(!lua_istable(L, narg)) {
+		luaL_error(L, "Invalid table passed as parameter %d", narg);
+	}
+
+	std::vector<const char*> out;
+	int idx = 1;
+	lua_rawgeti(L, narg, idx);
+	while (!lua_isnil(L, -1)) {
+		out.emplace_back(luaL_checkstring(L, -1));
+		lua_pop(L, 1);
+		idx++;
+		lua_rawgeti(L, narg, idx);
+	}
+
+	return out;
+}
+
+std::vector<float> luax_checkfloatvector(lua_State* L, int narg)
+{
+	if(!lua_istable(L, narg)) {
+		luaL_error(L, "Invalid table passed as parameter %d", narg);
+	}
+
+	std::vector<float> out;
+	int idx = 1;
+	lua_rawgeti(L, narg, idx);
+	while (!lua_isnil(L, -1)) {
+		out.emplace_back(static_cast<float>(luaL_checknumber(L, -1)));
+		lua_pop(L, 1);
+		idx++;
+		lua_rawgeti(L, narg, idx);
+	}
+
+	return out;
 }
 // End Helpers }}}
 
@@ -2876,10 +2914,6 @@ static int w_DragIntRange2(lua_State *L)
 	return 3;
 }
 
-// skipping ImGui::DragScalar due to unimplemented argument type: "ImGuiDataType"
-
-// skipping ImGui::DragScalarN due to unimplemented argument type: "ImGuiDataType"
-
 /*  adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. Use power!=1.0 for power curve sliders */
 static int w_SliderFloat(lua_State *L)
 {
@@ -3050,10 +3084,6 @@ static int w_SliderInt4(lua_State *L)
 	return 5;
 }
 
-// skipping ImGui::SliderScalar due to unimplemented argument type: "ImGuiDataType"
-
-// skipping ImGui::SliderScalarN due to unimplemented argument type: "ImGuiDataType"
-
 static int w_VSliderFloat(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
@@ -3090,8 +3120,6 @@ static int w_VSliderInt(lua_State *L)
 	lua_pushboolean(L, out);
 	return 2;
 }
-
-// skipping ImGui::VSliderScalar due to unimplemented argument type: "ImGuiDataType"
 
 // skipping ImGui::InputText due to unimplemented argument type: "(TODO) const buf*"
 
@@ -3256,10 +3284,6 @@ static int w_InputDouble(lua_State *L)
 	lua_pushboolean(L, out);
 	return 2;
 }
-
-// skipping ImGui::InputScalar due to unimplemented argument type: "ImGuiDataType"
-
-// skipping ImGui::InputScalarN due to unimplemented argument type: "ImGuiDataType"
 
 static int w_ColorEdit3(lua_State *L)
 {
@@ -4836,6 +4860,68 @@ static int w_InputTextWithHint_Override2(lua_State *L)
 	return 2;
 }
 
+static int w_Combo_Override4(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int current_item = luaL_checkint(L, 2);
+	std::vector<const char*> items = luax_checkstringvector(L, 3);
+	auto popup_max_height_in_items = luaL_optint(L, 4, -1);
+	
+	bool out = ImGui::Combo(label, &current_item, items, popup_max_height_in_items);
+	
+	lua_pushinteger(L, current_item);
+	lua_pushboolean(L, out);
+	return 2;
+}
+
+static int w_ListBox_Override3(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int current_item = luaL_checkint(L, 2);
+	std::vector<const char*> items = luax_checkstringvector(L, 3);
+	auto height_in_items = luaL_optint(L, 4, -1);
+	
+	bool out = ImGui::ListBox(label, &current_item, items, height_in_items);
+	
+	lua_pushinteger(L, current_item);
+	lua_pushboolean(L, out);
+	return 2;
+}
+
+static int w_PlotLines_Override3(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	std::vector<float> values = luax_checkfloatvector(L, 2);
+	auto values_offset = luaL_optint(L, 3, 0);
+	auto overlay_text = luaL_optstring(L, 4, NULL);
+	auto scale_min = static_cast<float>(luaL_optnumber(L, 5, FLT_MAX));
+	auto scale_max = static_cast<float>(luaL_optnumber(L, 6, FLT_MAX));
+	auto graph_size = ImVec2(0, 0);
+	graph_size.x = luaL_optnumber(L, 7, graph_size.x);
+	graph_size.y = luaL_optnumber(L, 8, graph_size.y);
+	
+	ImGui::PlotLines(label, values, values_offset, overlay_text, scale_min, scale_max, graph_size);
+	
+	return 0;
+}
+
+static int w_PlotHistogram_Override3(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	std::vector<float> values = luax_checkfloatvector(L, 2);
+	auto values_offset = luaL_optint(L, 3, 0);
+	auto overlay_text = luaL_optstring(L, 4, NULL);
+	auto scale_min = static_cast<float>(luaL_optnumber(L, 5, FLT_MAX));
+	auto scale_max = static_cast<float>(luaL_optnumber(L, 6, FLT_MAX));
+	auto graph_size = ImVec2(0, 0);
+	graph_size.x = luaL_optnumber(L, 7, graph_size.x);
+	graph_size.y = luaL_optnumber(L, 8, graph_size.y);
+	
+	ImGui::PlotHistogram(label, values, values_offset, overlay_text, scale_min, scale_max, graph_size);
+	
+	return 0;
+}
+
 // End Functions }}}
 
 // Function Overrides (manually written) {{{
@@ -5011,8 +5097,11 @@ static int w_Selectable(lua_State* L)
 
 static int w_Combo(lua_State* L)
 {
-	// Override1 is probably better, but not yet implemented
-	return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
+	if (lua_istable(L, 3)) {
+		return w_Combo_Override4(L); // label, current_item, items, popup_max_height_in_items
+	} else {
+		return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
+	}
 }
 
 static int w_ListBoxHeaderXY(lua_State* L)
@@ -5025,6 +5114,21 @@ static int w_ListBoxHeaderItems(lua_State* L)
 {
 	// There's no way to distinguish these two
 	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
+}
+
+static int w_ListBox(lua_State* L)
+{
+	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
+}
+
+static int w_PlotLines(lua_State* L)
+{
+	return w_PlotLines_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
+}
+
+static int w_PlotHistogram(lua_State* L)
+{
+	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
 }
 
 // End Function Overrides }}}
@@ -5384,9 +5488,6 @@ void addImguiWrappers(lua_State* L)
 
 	lua_pushcfunction(L, w_EndCombo);
 	lua_setfield(L, -2, "EndCombo");
-
-	lua_pushcfunction(L, w_Combo);
-	lua_setfield(L, -2, "Combo");
 
 	lua_pushcfunction(L, w_DragFloat);
 	lua_setfield(L, -2, "DragFloat");
@@ -5847,6 +5948,18 @@ void addImguiWrappers(lua_State* L)
 	lua_pushcfunction(L, w_InputTextWithHint);
 	lua_setfield(L, -2, "InputTextWithHint");
 
+	lua_pushcfunction(L, w_Combo);
+	lua_setfield(L, -2, "Combo");
+
+	lua_pushcfunction(L, w_ListBox);
+	lua_setfield(L, -2, "ListBox");
+
+	lua_pushcfunction(L, w_PlotLines);
+	lua_setfield(L, -2, "PlotLines");
+
+	lua_pushcfunction(L, w_PlotHistogram);
+	lua_setfield(L, -2, "PlotHistogram");
+
 	lua_pushcfunction(L, w_ListBoxHeaderXY);
 	lua_setfield(L, -2, "ListBoxHeaderXY");
 
@@ -5857,7 +5970,7 @@ void addImguiWrappers(lua_State* L)
 
 void createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, 273); 
+	lua_createtable(L, 0, 276); 
 	addImguiWrappers(L);
 }
 

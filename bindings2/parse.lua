@@ -5,6 +5,14 @@ local SKIP_FUNCTIONS = {
 	["SetAllocatorFunctions"] = true,
 	["MemAlloc"] = true,
 	["MemFree"] = true,
+	-- lua only supports doubles, no need for arbitrary type sizes
+	["DragScalar"] = true,
+	["DragScalarN"] = true,
+	["SliderScalar"] = true,
+	["SliderScalarN"] = true,
+	["VSliderScalar"] = true,
+	["InputScalar"] = true,
+	["InputScalarN"] = true,
 	-- color functions: use platform native equivalents instead
 	["GetColorU32"] = true,
 	["ColorConvertHSVtoRGB"] = true,

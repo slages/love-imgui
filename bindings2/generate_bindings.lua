@@ -210,7 +210,7 @@ local function generateFile(fname, templateFname, imgui)
 end
 
 local function main()
-	local imgui = Parse.parseHeaders{"src/libimgui/imgui.h", "src/libimgui/misc/cpp/imgui_stdlib.h"}
+	local imgui = Parse.parseHeaders{"src/libimgui/imgui.h", "src/imgui_stdlib.h"}
 	imgui.validFunctions = {}
 	generateFile("src/wrap_imgui_codegen.cpp", "bindings2/wrap_imgui_codegen.cpp", imgui)
 	generateFile("src/wrap_imgui_codegen.h",  "bindings2/wrap_imgui_codegen.h", imgui)

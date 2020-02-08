@@ -75,7 +75,7 @@ do
 
 	local function static_cast_out_arg(ctype, getter, defaultGetter)
 		return function(buf, arg, i, outParams)
-			if default then
+			if arg.default then
 				buf:addf("auto %s = static_cast<%s>(%s(L, %d, %s));", arg.name, ctype, defaultGetter, i, arg.default)
 			else
 				buf:addf("auto %s = static_cast<%s>(%s(L, %d));", arg.name, ctype, getter, i)
@@ -159,7 +159,15 @@ do
 				buf:addf("%s.z = luaL_checknumber(L, %d);", name, i+2)
 				buf:addf("%s.w = luaL_checknumber(L, %d);", name, i+3)
 			end
-			return i+4
+			return i + 4
+		end,
+		["const std::vector<const char*>&"] = function(buf, arg, i, _)
+			buf:addf("std::vector<const char*> %s = luax_checkstringvector(L, %d);", arg.name, i)
+			return i + 1
+		end,
+		["const std::vector<float>&"] = function(buf, arg, i, _)
+			buf:addf("std::vector<float> %s = luax_checkfloatvector(L, %d);", arg.name, i)
+			return i+1
 		end,
 		["ImGuiInputTextCallback"] = function(buf, arg, i, _)
 			local name = arg.name
