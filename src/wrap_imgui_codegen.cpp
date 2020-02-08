@@ -1,4 +1,5 @@
 // This is an automatically generated file!!
+#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 
 #include "wrap_imgui_codegen.h"
 #include "imgui.h"
@@ -1238,7 +1239,7 @@ int callLuaInputTextCallback(ImGuiInputTextCallbackData *data)
 	lua_pushlstring(L, data->Buf, data->BufTextLen);
 	lua_setfield(L, -2, "Buf");
 
-	std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+	std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
 	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
 		ImWchar k = data->EventChar;
 		std::string u8str = convert.to_bytes(k);
@@ -1265,7 +1266,7 @@ int callLuaInputTextCallback(ImGuiInputTextCallbackData *data)
 	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
 		lua_getfield(L, -2, "EventChar");
 		const char* k = lua_tostring(L, -1);
-		std::u16string u16str = convert.from_bytes(k);
+		std::basic_string<int16_t> u16str = convert.from_bytes(k);
 		data->EventChar = u16str.at(0);
 		lua_pop(L, 1);
 	}
