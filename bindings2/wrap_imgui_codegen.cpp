@@ -29,6 +29,19 @@ bool luax_checkboolean(lua_State* L, int narg)
 	return lua_toboolean(L, narg);
 }
 
+float luax_optfloat(lua_State* L, int narg, float d)
+{
+	if(lua_isnoneornil(L, narg)) {
+		return d;
+	}
+	return static_cast<float>(lua_tonumber(L, narg));
+}
+
+float luax_checkfloat(lua_State* L, int narg)
+{
+	return static_cast<float>(luaL_checknumber(L, narg));
+}
+
 void* luax_checklightuserdata(lua_State* L, int narg)
 {
 	if(!lua_islightuserdata(L, narg)) {

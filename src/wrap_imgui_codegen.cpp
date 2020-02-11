@@ -29,6 +29,19 @@ bool luax_checkboolean(lua_State* L, int narg)
 	return lua_toboolean(L, narg);
 }
 
+float luax_optfloat(lua_State* L, int narg, float d)
+{
+	if(lua_isnoneornil(L, narg)) {
+		return d;
+	}
+	return static_cast<float>(lua_tonumber(L, narg));
+}
+
+float luax_checkfloat(lua_State* L, int narg)
+{
+	return static_cast<float>(luaL_checknumber(L, narg));
+}
+
 void* luax_checklightuserdata(lua_State* L, int narg)
 {
 	if(!lua_islightuserdata(L, narg)) {
@@ -1239,6 +1252,7 @@ int callLuaInputTextCallback(ImGuiInputTextCallbackData *data)
 	lua_pushlstring(L, data->Buf, data->BufTextLen);
 	lua_setfield(L, -2, "Buf");
 
+	//using int16_t instead of char16_t to avoid a visual studio bug in codecvt
 	std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
 	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
 		ImWchar k = data->EventChar;
@@ -1499,8 +1513,8 @@ int w_BeginChild_Override1(lua_State *L)
 {
 	auto str_id = luaL_checkstring(L, 1);
 	auto size = ImVec2(0,0);
-	size.x = static_cast<float>(luaL_optnumber(L, 2, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 3, size.y));
+	size.x = luax_optfloat(L, 2, size.x);
+	size.y = luax_optfloat(L, 3, size.y);
 	auto border = luax_optboolean(L, 4, false);
 	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 5, 0);
 	
@@ -1514,8 +1528,8 @@ int w_BeginChild_Override2(lua_State *L)
 {
 	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
 	auto size = ImVec2(0,0);
-	size.x = static_cast<float>(luaL_optnumber(L, 2, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 3, size.y));
+	size.x = luax_optfloat(L, 2, size.x);
+	size.y = luax_optfloat(L, 3, size.y);
 	auto border = luax_optboolean(L, 4, false);
 	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 5, 0);
 	
@@ -1625,12 +1639,12 @@ int w_GetWindowHeight(lua_State *L)
 int w_SetNextWindowPos(lua_State *L)
 {
 	ImVec2 pos;
-	pos.x = static_cast<float>(luaL_checknumber(L, 1));
-	pos.y = static_cast<float>(luaL_checknumber(L, 2));
+	pos.x = luax_checkfloat(L, 1);
+	pos.y = luax_checkfloat(L, 2);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
 	auto pivot = ImVec2(0,0);
-	pivot.x = static_cast<float>(luaL_optnumber(L, 4, pivot.x));
-	pivot.y = static_cast<float>(luaL_optnumber(L, 5, pivot.y));
+	pivot.x = luax_optfloat(L, 4, pivot.x);
+	pivot.y = luax_optfloat(L, 5, pivot.y);
 	
 	ImGui::SetNextWindowPos(pos, cond, pivot);
 	
@@ -1641,8 +1655,8 @@ int w_SetNextWindowPos(lua_State *L)
 int w_SetNextWindowSize(lua_State *L)
 {
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 1));
-	size.y = static_cast<float>(luaL_checknumber(L, 2));
+	size.x = luax_checkfloat(L, 1);
+	size.y = luax_checkfloat(L, 2);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
 	
 	ImGui::SetNextWindowSize(size, cond);
@@ -1656,8 +1670,8 @@ int w_SetNextWindowSize(lua_State *L)
 int w_SetNextWindowContentSize(lua_State *L)
 {
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 1));
-	size.y = static_cast<float>(luaL_checknumber(L, 2));
+	size.x = luax_checkfloat(L, 1);
+	size.y = luax_checkfloat(L, 2);
 	
 	ImGui::SetNextWindowContentSize(size);
 	
@@ -1686,7 +1700,7 @@ int w_SetNextWindowFocus(lua_State *L)
 /*  set next window background color alpha. helper to easily override the Alpha component of ImGuiCol_WindowBg/ChildBg/PopupBg. you may also use ImGuiWindowFlags_NoBackground. */
 int w_SetNextWindowBgAlpha(lua_State *L)
 {
-	auto alpha = static_cast<float>(luaL_checknumber(L, 1));
+	auto alpha = luax_checkfloat(L, 1);
 	
 	ImGui::SetNextWindowBgAlpha(alpha);
 	
@@ -1707,8 +1721,8 @@ int w_SetNextWindowViewport(lua_State *L)
 int w_SetWindowPos_Override1(lua_State *L)
 {
 	ImVec2 pos;
-	pos.x = static_cast<float>(luaL_checknumber(L, 1));
-	pos.y = static_cast<float>(luaL_checknumber(L, 2));
+	pos.x = luax_checkfloat(L, 1);
+	pos.y = luax_checkfloat(L, 2);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
 	
 	ImGui::SetWindowPos(pos, cond);
@@ -1720,8 +1734,8 @@ int w_SetWindowPos_Override1(lua_State *L)
 int w_SetWindowSize_Override1(lua_State *L)
 {
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 1));
-	size.y = static_cast<float>(luaL_checknumber(L, 2));
+	size.x = luax_checkfloat(L, 1);
+	size.y = luax_checkfloat(L, 2);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
 	
 	ImGui::SetWindowSize(size, cond);
@@ -1751,7 +1765,7 @@ int w_SetWindowFocus_Override1(lua_State *L)
 /*  set font scale. Adjust IO.FontGlobalScale if you want to scale all windows. This is an old API! For correct scaling, prefer to reload font + rebuild ImFontAtlas + call style.ScaleAllSizes(). */
 int w_SetWindowFontScale(lua_State *L)
 {
-	auto scale = static_cast<float>(luaL_checknumber(L, 1));
+	auto scale = luax_checkfloat(L, 1);
 	
 	ImGui::SetWindowFontScale(scale);
 	
@@ -1763,8 +1777,8 @@ int w_SetWindowPos_Override2(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
 	ImVec2 pos;
-	pos.x = static_cast<float>(luaL_checknumber(L, 2));
-	pos.y = static_cast<float>(luaL_checknumber(L, 3));
+	pos.x = luax_checkfloat(L, 2);
+	pos.y = luax_checkfloat(L, 3);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 4, 0);
 	
 	ImGui::SetWindowPos(name, pos, cond);
@@ -1777,8 +1791,8 @@ int w_SetWindowSize_Override2(lua_State *L)
 {
 	auto name = luaL_checkstring(L, 1);
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 2));
-	size.y = static_cast<float>(luaL_checknumber(L, 3));
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 4, 0);
 	
 	ImGui::SetWindowSize(name, size, cond);
@@ -1895,7 +1909,7 @@ int w_GetScrollMaxY(lua_State *L)
 /*  set scrolling amount [0..GetScrollMaxX()] */
 int w_SetScrollX(lua_State *L)
 {
-	auto scroll_x = static_cast<float>(luaL_checknumber(L, 1));
+	auto scroll_x = luax_checkfloat(L, 1);
 	
 	ImGui::SetScrollX(scroll_x);
 	
@@ -1905,7 +1919,7 @@ int w_SetScrollX(lua_State *L)
 /*  set scrolling amount [0..GetScrollMaxY()] */
 int w_SetScrollY(lua_State *L)
 {
-	auto scroll_y = static_cast<float>(luaL_checknumber(L, 1));
+	auto scroll_y = luax_checkfloat(L, 1);
 	
 	ImGui::SetScrollY(scroll_y);
 	
@@ -1915,7 +1929,7 @@ int w_SetScrollY(lua_State *L)
 /*  adjust scrolling amount to make current cursor position visible. center_x_ratio=0.0: left, 0.5: center, 1.0: right. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead. */
 int w_SetScrollHereX(lua_State *L)
 {
-	auto center_x_ratio = static_cast<float>(luaL_optnumber(L, 1, 0.5f));
+	auto center_x_ratio = luax_optfloat(L, 1, 0.5f);
 	
 	ImGui::SetScrollHereX(center_x_ratio);
 	
@@ -1925,7 +1939,7 @@ int w_SetScrollHereX(lua_State *L)
 /*  adjust scrolling amount to make current cursor position visible. center_y_ratio=0.0: top, 0.5: center, 1.0: bottom. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead. */
 int w_SetScrollHereY(lua_State *L)
 {
-	auto center_y_ratio = static_cast<float>(luaL_optnumber(L, 1, 0.5f));
+	auto center_y_ratio = luax_optfloat(L, 1, 0.5f);
 	
 	ImGui::SetScrollHereY(center_y_ratio);
 	
@@ -1935,8 +1949,8 @@ int w_SetScrollHereY(lua_State *L)
 /*  adjust scrolling amount to make given position visible. Generally GetCursorStartPos() + offset to compute a valid position. */
 int w_SetScrollFromPosX(lua_State *L)
 {
-	auto local_x = static_cast<float>(luaL_checknumber(L, 1));
-	auto center_x_ratio = static_cast<float>(luaL_optnumber(L, 2, 0.5f));
+	auto local_x = luax_checkfloat(L, 1);
+	auto center_x_ratio = luax_optfloat(L, 2, 0.5f);
 	
 	ImGui::SetScrollFromPosX(local_x, center_x_ratio);
 	
@@ -1946,8 +1960,8 @@ int w_SetScrollFromPosX(lua_State *L)
 /*  adjust scrolling amount to make given position visible. Generally GetCursorStartPos() + offset to compute a valid position. */
 int w_SetScrollFromPosY(lua_State *L)
 {
-	auto local_y = static_cast<float>(luaL_checknumber(L, 1));
-	auto center_y_ratio = static_cast<float>(luaL_optnumber(L, 2, 0.5f));
+	auto local_y = luax_checkfloat(L, 1);
+	auto center_y_ratio = luax_optfloat(L, 2, 0.5f);
 	
 	ImGui::SetScrollFromPosY(local_y, center_y_ratio);
 	
@@ -1966,7 +1980,7 @@ int w_PopFont(lua_State *L)
 int w_PushStyleColor_Override1(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
-	auto col = static_cast<unsigned int>(luaL_checklong(L, 2));
+	auto col = static_cast<ImU32>(luaL_checklong(L, 2));
 	
 	ImGui::PushStyleColor(idx, col);
 	
@@ -1977,10 +1991,10 @@ int w_PushStyleColor_Override2(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
 	ImVec4 col;
-	col.x = static_cast<float>(luaL_checknumber(L, 2));
-	col.y = static_cast<float>(luaL_checknumber(L, 3));
-	col.z = static_cast<float>(luaL_checknumber(L, 4));
-	col.w = static_cast<float>(luaL_checknumber(L, 5));
+	col.x = luax_checkfloat(L, 2);
+	col.y = luax_checkfloat(L, 3);
+	col.z = luax_checkfloat(L, 4);
+	col.w = luax_checkfloat(L, 5);
 	
 	ImGui::PushStyleColor(idx, col);
 	
@@ -1999,7 +2013,7 @@ int w_PopStyleColor(lua_State *L)
 int w_PushStyleVar_Override1(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
-	auto val = static_cast<float>(luaL_checknumber(L, 2));
+	auto val = luax_checkfloat(L, 2);
 	
 	ImGui::PushStyleVar(idx, val);
 	
@@ -2010,8 +2024,8 @@ int w_PushStyleVar_Override2(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
 	ImVec2 val;
-	val.x = static_cast<float>(luaL_checknumber(L, 2));
-	val.y = static_cast<float>(luaL_checknumber(L, 3));
+	val.x = luax_checkfloat(L, 2);
+	val.y = luax_checkfloat(L, 3);
 	
 	ImGui::PushStyleVar(idx, val);
 	
@@ -2065,7 +2079,7 @@ int w_GetFontTexUvWhitePixel(lua_State *L)
 /*  set width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
 int w_PushItemWidth(lua_State *L)
 {
-	auto item_width = static_cast<float>(luaL_checknumber(L, 1));
+	auto item_width = luax_checkfloat(L, 1);
 	
 	ImGui::PushItemWidth(item_width);
 	
@@ -2082,7 +2096,7 @@ int w_PopItemWidth(lua_State *L)
 /*  set width of the _next_ common large "item+label" widget. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side) */
 int w_SetNextItemWidth(lua_State *L)
 {
-	auto item_width = static_cast<float>(luaL_checknumber(L, 1));
+	auto item_width = luax_checkfloat(L, 1);
 	
 	ImGui::SetNextItemWidth(item_width);
 	
@@ -2101,7 +2115,7 @@ int w_CalcItemWidth(lua_State *L)
 /*  word-wrapping for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
 int w_PushTextWrapPos(lua_State *L)
 {
-	auto wrap_local_pos_x = static_cast<float>(luaL_optnumber(L, 1, 0.0f));
+	auto wrap_local_pos_x = luax_optfloat(L, 1, 0.0f);
 	
 	ImGui::PushTextWrapPos(wrap_local_pos_x);
 	
@@ -2160,8 +2174,8 @@ int w_Separator(lua_State *L)
 /*  call between widgets or groups to layout them horizontally. X position given in window coordinates. */
 int w_SameLine(lua_State *L)
 {
-	auto offset_from_start_x = static_cast<float>(luaL_optnumber(L, 1, 0.0f));
-	auto spacing = static_cast<float>(luaL_optnumber(L, 2, -1.0f));
+	auto offset_from_start_x = luax_optfloat(L, 1, 0.0f);
+	auto spacing = luax_optfloat(L, 2, -1.0f);
 	
 	ImGui::SameLine(offset_from_start_x, spacing);
 	
@@ -2188,8 +2202,8 @@ int w_Spacing(lua_State *L)
 int w_Dummy(lua_State *L)
 {
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 1));
-	size.y = static_cast<float>(luaL_checknumber(L, 2));
+	size.x = luax_checkfloat(L, 1);
+	size.y = luax_checkfloat(L, 2);
 	
 	ImGui::Dummy(size);
 	
@@ -2199,7 +2213,7 @@ int w_Dummy(lua_State *L)
 /*  move content position toward the right, by style.IndentSpacing or indent_w if != 0 */
 int w_Indent(lua_State *L)
 {
-	auto indent_w = static_cast<float>(luaL_optnumber(L, 1, 0.0f));
+	auto indent_w = luax_optfloat(L, 1, 0.0f);
 	
 	ImGui::Indent(indent_w);
 	
@@ -2209,7 +2223,7 @@ int w_Indent(lua_State *L)
 /*  move content position back to the left, by style.IndentSpacing or indent_w if != 0 */
 int w_Unindent(lua_State *L)
 {
-	auto indent_w = static_cast<float>(luaL_optnumber(L, 1, 0.0f));
+	auto indent_w = luax_optfloat(L, 1, 0.0f);
 	
 	ImGui::Unindent(indent_w);
 	
@@ -2264,8 +2278,8 @@ int w_GetCursorPosY(lua_State *L)
 int w_SetCursorPos(lua_State *L)
 {
 	ImVec2 local_pos;
-	local_pos.x = static_cast<float>(luaL_checknumber(L, 1));
-	local_pos.y = static_cast<float>(luaL_checknumber(L, 2));
+	local_pos.x = luax_checkfloat(L, 1);
+	local_pos.y = luax_checkfloat(L, 2);
 	
 	ImGui::SetCursorPos(local_pos);
 	
@@ -2275,7 +2289,7 @@ int w_SetCursorPos(lua_State *L)
 /*     GetWindowPos() + GetCursorPos() == GetCursorScreenPos() etc.) */
 int w_SetCursorPosX(lua_State *L)
 {
-	auto local_x = static_cast<float>(luaL_checknumber(L, 1));
+	auto local_x = luax_checkfloat(L, 1);
 	
 	ImGui::SetCursorPosX(local_x);
 	
@@ -2284,7 +2298,7 @@ int w_SetCursorPosX(lua_State *L)
 
 int w_SetCursorPosY(lua_State *L)
 {
-	auto local_y = static_cast<float>(luaL_checknumber(L, 1));
+	auto local_y = luax_checkfloat(L, 1);
 	
 	ImGui::SetCursorPosY(local_y);
 	
@@ -2315,8 +2329,8 @@ int w_GetCursorScreenPos(lua_State *L)
 int w_SetCursorScreenPos(lua_State *L)
 {
 	ImVec2 pos;
-	pos.x = static_cast<float>(luaL_checknumber(L, 1));
-	pos.y = static_cast<float>(luaL_checknumber(L, 2));
+	pos.x = luax_checkfloat(L, 1);
+	pos.y = luax_checkfloat(L, 2);
 	
 	ImGui::SetCursorScreenPos(pos);
 	
@@ -2457,10 +2471,10 @@ int w_Text(lua_State *L)
 int w_TextColored(lua_State *L)
 {
 	ImVec4 col;
-	col.x = static_cast<float>(luaL_checknumber(L, 1));
-	col.y = static_cast<float>(luaL_checknumber(L, 2));
-	col.z = static_cast<float>(luaL_checknumber(L, 3));
-	col.w = static_cast<float>(luaL_checknumber(L, 4));
+	col.x = luax_checkfloat(L, 1);
+	col.y = luax_checkfloat(L, 2);
+	col.z = luax_checkfloat(L, 3);
+	col.w = luax_checkfloat(L, 4);
 	auto fmt = luax_formatargs(L, 5);
 	
 	ImGui::TextColored(col, "%s", fmt);
@@ -2514,8 +2528,8 @@ int w_Button(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto size = ImVec2(0,0);
-	size.x = static_cast<float>(luaL_optnumber(L, 2, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 3, size.y));
+	size.x = luax_optfloat(L, 2, size.x);
+	size.y = luax_optfloat(L, 3, size.y);
 	
 	bool out = ImGui::Button(label, size);
 	
@@ -2539,8 +2553,8 @@ int w_InvisibleButton(lua_State *L)
 {
 	auto str_id = luaL_checkstring(L, 1);
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 2));
-	size.y = static_cast<float>(luaL_checknumber(L, 3));
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
 	
 	bool out = ImGui::InvisibleButton(str_id, size);
 	
@@ -2564,24 +2578,24 @@ int w_Image(lua_State *L)
 {
 	auto user_texture_id = luax_checkTextureID(L, 1);
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 2));
-	size.y = static_cast<float>(luaL_checknumber(L, 3));
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
 	auto uv0 = ImVec2(0,0);
-	uv0.x = static_cast<float>(luaL_optnumber(L, 4, uv0.x));
-	uv0.y = static_cast<float>(luaL_optnumber(L, 5, uv0.y));
+	uv0.x = luax_optfloat(L, 4, uv0.x);
+	uv0.y = luax_optfloat(L, 5, uv0.y);
 	auto uv1 = ImVec2(1,1);
-	uv1.x = static_cast<float>(luaL_optnumber(L, 6, uv1.x));
-	uv1.y = static_cast<float>(luaL_optnumber(L, 7, uv1.y));
+	uv1.x = luax_optfloat(L, 6, uv1.x);
+	uv1.y = luax_optfloat(L, 7, uv1.y);
 	ImVec4 tint_col = ImVec4(1,1,1,1);
-	tint_col.x = static_cast<float>(luaL_optnumber(L, 8, tint_col.x));
-	tint_col.y = static_cast<float>(luaL_optnumber(L, 9, tint_col.y));
-	tint_col.z = static_cast<float>(luaL_optnumber(L, 10, tint_col.z));
-	tint_col.w = static_cast<float>(luaL_optnumber(L, 11, tint_col.w));
+	tint_col.x = luax_optfloat(L, 8, tint_col.x);
+	tint_col.y = luax_optfloat(L, 9, tint_col.y);
+	tint_col.z = luax_optfloat(L, 10, tint_col.z);
+	tint_col.w = luax_optfloat(L, 11, tint_col.w);
 	ImVec4 border_col = ImVec4(0,0,0,0);
-	border_col.x = static_cast<float>(luaL_optnumber(L, 12, border_col.x));
-	border_col.y = static_cast<float>(luaL_optnumber(L, 13, border_col.y));
-	border_col.z = static_cast<float>(luaL_optnumber(L, 14, border_col.z));
-	border_col.w = static_cast<float>(luaL_optnumber(L, 15, border_col.w));
+	border_col.x = luax_optfloat(L, 12, border_col.x);
+	border_col.y = luax_optfloat(L, 13, border_col.y);
+	border_col.z = luax_optfloat(L, 14, border_col.z);
+	border_col.w = luax_optfloat(L, 15, border_col.w);
 	
 	ImGui::Image(user_texture_id, size, uv0, uv1, tint_col, border_col);
 	
@@ -2593,25 +2607,25 @@ int w_ImageButton(lua_State *L)
 {
 	auto user_texture_id = luax_checkTextureID(L, 1);
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 2));
-	size.y = static_cast<float>(luaL_checknumber(L, 3));
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
 	auto uv0 = ImVec2(0,0);
-	uv0.x = static_cast<float>(luaL_optnumber(L, 4, uv0.x));
-	uv0.y = static_cast<float>(luaL_optnumber(L, 5, uv0.y));
+	uv0.x = luax_optfloat(L, 4, uv0.x);
+	uv0.y = luax_optfloat(L, 5, uv0.y);
 	auto uv1 = ImVec2(1,1);
-	uv1.x = static_cast<float>(luaL_optnumber(L, 6, uv1.x));
-	uv1.y = static_cast<float>(luaL_optnumber(L, 7, uv1.y));
+	uv1.x = luax_optfloat(L, 6, uv1.x);
+	uv1.y = luax_optfloat(L, 7, uv1.y);
 	auto frame_padding = luaL_optint(L, 8, -1);
 	ImVec4 bg_col = ImVec4(0,0,0,0);
-	bg_col.x = static_cast<float>(luaL_optnumber(L, 9, bg_col.x));
-	bg_col.y = static_cast<float>(luaL_optnumber(L, 10, bg_col.y));
-	bg_col.z = static_cast<float>(luaL_optnumber(L, 11, bg_col.z));
-	bg_col.w = static_cast<float>(luaL_optnumber(L, 12, bg_col.w));
+	bg_col.x = luax_optfloat(L, 9, bg_col.x);
+	bg_col.y = luax_optfloat(L, 10, bg_col.y);
+	bg_col.z = luax_optfloat(L, 11, bg_col.z);
+	bg_col.w = luax_optfloat(L, 12, bg_col.w);
 	ImVec4 tint_col = ImVec4(1,1,1,1);
-	tint_col.x = static_cast<float>(luaL_optnumber(L, 13, tint_col.x));
-	tint_col.y = static_cast<float>(luaL_optnumber(L, 14, tint_col.y));
-	tint_col.z = static_cast<float>(luaL_optnumber(L, 15, tint_col.z));
-	tint_col.w = static_cast<float>(luaL_optnumber(L, 16, tint_col.w));
+	tint_col.x = luax_optfloat(L, 13, tint_col.x);
+	tint_col.y = luax_optfloat(L, 14, tint_col.y);
+	tint_col.z = luax_optfloat(L, 15, tint_col.z);
+	tint_col.w = luax_optfloat(L, 16, tint_col.w);
 	
 	bool out = ImGui::ImageButton(user_texture_id, size, uv0, uv1, frame_padding, bg_col, tint_col);
 	
@@ -2672,10 +2686,10 @@ int w_RadioButton_Override2(lua_State *L)
 
 int w_ProgressBar(lua_State *L)
 {
-	auto fraction = static_cast<float>(luaL_checknumber(L, 1));
+	auto fraction = luax_checkfloat(L, 1);
 	auto size_arg = ImVec2(-1,0);
-	size_arg.x = static_cast<float>(luaL_optnumber(L, 2, size_arg.x));
-	size_arg.y = static_cast<float>(luaL_optnumber(L, 3, size_arg.y));
+	size_arg.x = luax_optfloat(L, 2, size_arg.x);
+	size_arg.y = luax_optfloat(L, 3, size_arg.y);
 	auto overlay = luaL_optstring(L, 4, NULL);
 	
 	ImGui::ProgressBar(fraction, size_arg, overlay);
@@ -2735,11 +2749,11 @@ int w_DragFloat(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto v = static_cast<float>(luaL_checknumber(L, 2));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 3, 1.0f));
-	auto v_min = static_cast<float>(luaL_optnumber(L, 4, 0.0f));
-	auto v_max = static_cast<float>(luaL_optnumber(L, 5, 0.0f));
+	auto v_speed = luax_optfloat(L, 3, 1.0f);
+	auto v_min = luax_optfloat(L, 4, 0.0f);
+	auto v_max = luax_optfloat(L, 5, 0.0f);
 	auto format = luaL_optstring(L, 6, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 7, 1.0f));
+	auto power = luax_optfloat(L, 7, 1.0f);
 	
 	bool out = ImGui::DragFloat(label, &v, v_speed, v_min, v_max, format, power);
 	
@@ -2754,11 +2768,11 @@ int w_DragFloat2(lua_State *L)
 	float v[2];
 	v[0] = static_cast<float>(luaL_checknumber(L, 2));
 	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 4, 1.0f));
-	auto v_min = static_cast<float>(luaL_optnumber(L, 5, 0.0f));
-	auto v_max = static_cast<float>(luaL_optnumber(L, 6, 0.0f));
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
+	auto v_min = luax_optfloat(L, 5, 0.0f);
+	auto v_max = luax_optfloat(L, 6, 0.0f);
 	auto format = luaL_optstring(L, 7, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 8, 1.0f));
+	auto power = luax_optfloat(L, 8, 1.0f);
 	
 	bool out = ImGui::DragFloat2(label, v, v_speed, v_min, v_max, format, power);
 	
@@ -2775,11 +2789,11 @@ int w_DragFloat3(lua_State *L)
 	v[0] = static_cast<float>(luaL_checknumber(L, 2));
 	v[1] = static_cast<float>(luaL_checknumber(L, 3));
 	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 5, 1.0f));
-	auto v_min = static_cast<float>(luaL_optnumber(L, 6, 0.0f));
-	auto v_max = static_cast<float>(luaL_optnumber(L, 7, 0.0f));
+	auto v_speed = luax_optfloat(L, 5, 1.0f);
+	auto v_min = luax_optfloat(L, 6, 0.0f);
+	auto v_max = luax_optfloat(L, 7, 0.0f);
 	auto format = luaL_optstring(L, 8, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 9, 1.0f));
+	auto power = luax_optfloat(L, 9, 1.0f);
 	
 	bool out = ImGui::DragFloat3(label, v, v_speed, v_min, v_max, format, power);
 	
@@ -2798,11 +2812,11 @@ int w_DragFloat4(lua_State *L)
 	v[1] = static_cast<float>(luaL_checknumber(L, 3));
 	v[2] = static_cast<float>(luaL_checknumber(L, 4));
 	v[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 6, 1.0f));
-	auto v_min = static_cast<float>(luaL_optnumber(L, 7, 0.0f));
-	auto v_max = static_cast<float>(luaL_optnumber(L, 8, 0.0f));
+	auto v_speed = luax_optfloat(L, 6, 1.0f);
+	auto v_min = luax_optfloat(L, 7, 0.0f);
+	auto v_max = luax_optfloat(L, 8, 0.0f);
 	auto format = luaL_optstring(L, 9, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 10, 1.0f));
+	auto power = luax_optfloat(L, 10, 1.0f);
 	
 	bool out = ImGui::DragFloat4(label, v, v_speed, v_min, v_max, format, power);
 	
@@ -2819,12 +2833,12 @@ int w_DragFloatRange2(lua_State *L)
 	auto label = luaL_checkstring(L, 1);
 	auto v_current_min = static_cast<float>(luaL_checknumber(L, 2));
 	auto v_current_max = static_cast<float>(luaL_checknumber(L, 3));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 4, 1.0f));
-	auto v_min = static_cast<float>(luaL_optnumber(L, 5, 0.0f));
-	auto v_max = static_cast<float>(luaL_optnumber(L, 6, 0.0f));
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
+	auto v_min = luax_optfloat(L, 5, 0.0f);
+	auto v_max = luax_optfloat(L, 6, 0.0f);
 	auto format = luaL_optstring(L, 7, "%.3f");
 	auto format_max = luaL_optstring(L, 8, NULL);
-	auto power = static_cast<float>(luaL_optnumber(L, 9, 1.0f));
+	auto power = luax_optfloat(L, 9, 1.0f);
 	
 	bool out = ImGui::DragFloatRange2(label, &v_current_min, &v_current_max, v_speed, v_min, v_max, format, format_max, power);
 	
@@ -2839,7 +2853,7 @@ int w_DragInt(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	int v = luaL_checkint(L, 2);
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 3, 1.0f));
+	auto v_speed = luax_optfloat(L, 3, 1.0f);
 	auto v_min = luaL_optint(L, 4, 0);
 	auto v_max = luaL_optint(L, 5, 0);
 	auto format = luaL_optstring(L, 6, "%d");
@@ -2857,7 +2871,7 @@ int w_DragInt2(lua_State *L)
 	int v[2];
 	v[0] = static_cast<int>(luaL_checkint(L, 2));
 	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 4, 1.0f));
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
 	auto v_min = luaL_optint(L, 5, 0);
 	auto v_max = luaL_optint(L, 6, 0);
 	auto format = luaL_optstring(L, 7, "%d");
@@ -2877,7 +2891,7 @@ int w_DragInt3(lua_State *L)
 	v[0] = static_cast<int>(luaL_checkint(L, 2));
 	v[1] = static_cast<int>(luaL_checkint(L, 3));
 	v[2] = static_cast<int>(luaL_checkint(L, 4));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 5, 1.0f));
+	auto v_speed = luax_optfloat(L, 5, 1.0f);
 	auto v_min = luaL_optint(L, 6, 0);
 	auto v_max = luaL_optint(L, 7, 0);
 	auto format = luaL_optstring(L, 8, "%d");
@@ -2899,7 +2913,7 @@ int w_DragInt4(lua_State *L)
 	v[1] = static_cast<int>(luaL_checkint(L, 3));
 	v[2] = static_cast<int>(luaL_checkint(L, 4));
 	v[3] = static_cast<int>(luaL_checkint(L, 5));
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 6, 1.0f));
+	auto v_speed = luax_optfloat(L, 6, 1.0f);
 	auto v_min = luaL_optint(L, 7, 0);
 	auto v_max = luaL_optint(L, 8, 0);
 	auto format = luaL_optstring(L, 9, "%d");
@@ -2919,7 +2933,7 @@ int w_DragIntRange2(lua_State *L)
 	auto label = luaL_checkstring(L, 1);
 	int v_current_min = luaL_checkint(L, 2);
 	int v_current_max = luaL_checkint(L, 3);
-	auto v_speed = static_cast<float>(luaL_optnumber(L, 4, 1.0f));
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
 	auto v_min = luaL_optint(L, 5, 0);
 	auto v_max = luaL_optint(L, 6, 0);
 	auto format = luaL_optstring(L, 7, "%d");
@@ -2938,10 +2952,10 @@ int w_SliderFloat(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto v = static_cast<float>(luaL_checknumber(L, 2));
-	auto v_min = static_cast<float>(luaL_checknumber(L, 3));
-	auto v_max = static_cast<float>(luaL_checknumber(L, 4));
+	auto v_min = luax_checkfloat(L, 3);
+	auto v_max = luax_checkfloat(L, 4);
 	auto format = luaL_optstring(L, 5, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 6, 1.0f));
+	auto power = luax_optfloat(L, 6, 1.0f);
 	
 	bool out = ImGui::SliderFloat(label, &v, v_min, v_max, format, power);
 	
@@ -2956,10 +2970,10 @@ int w_SliderFloat2(lua_State *L)
 	float v[2];
 	v[0] = static_cast<float>(luaL_checknumber(L, 2));
 	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	auto v_min = static_cast<float>(luaL_checknumber(L, 4));
-	auto v_max = static_cast<float>(luaL_checknumber(L, 5));
+	auto v_min = luax_checkfloat(L, 4);
+	auto v_max = luax_checkfloat(L, 5);
 	auto format = luaL_optstring(L, 6, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 7, 1.0f));
+	auto power = luax_optfloat(L, 7, 1.0f);
 	
 	bool out = ImGui::SliderFloat2(label, v, v_min, v_max, format, power);
 	
@@ -2976,10 +2990,10 @@ int w_SliderFloat3(lua_State *L)
 	v[0] = static_cast<float>(luaL_checknumber(L, 2));
 	v[1] = static_cast<float>(luaL_checknumber(L, 3));
 	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	auto v_min = static_cast<float>(luaL_checknumber(L, 5));
-	auto v_max = static_cast<float>(luaL_checknumber(L, 6));
+	auto v_min = luax_checkfloat(L, 5);
+	auto v_max = luax_checkfloat(L, 6);
 	auto format = luaL_optstring(L, 7, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 8, 1.0f));
+	auto power = luax_optfloat(L, 8, 1.0f);
 	
 	bool out = ImGui::SliderFloat3(label, v, v_min, v_max, format, power);
 	
@@ -2998,10 +3012,10 @@ int w_SliderFloat4(lua_State *L)
 	v[1] = static_cast<float>(luaL_checknumber(L, 3));
 	v[2] = static_cast<float>(luaL_checknumber(L, 4));
 	v[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto v_min = static_cast<float>(luaL_checknumber(L, 6));
-	auto v_max = static_cast<float>(luaL_checknumber(L, 7));
+	auto v_min = luax_checkfloat(L, 6);
+	auto v_max = luax_checkfloat(L, 7);
 	auto format = luaL_optstring(L, 8, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 9, 1.0f));
+	auto power = luax_optfloat(L, 9, 1.0f);
 	
 	bool out = ImGui::SliderFloat4(label, v, v_min, v_max, format, power);
 	
@@ -3017,8 +3031,8 @@ int w_SliderAngle(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto v_rad = static_cast<float>(luaL_checknumber(L, 2));
-	auto v_degrees_min = static_cast<float>(luaL_optnumber(L, 3, -360.0f));
-	auto v_degrees_max = static_cast<float>(luaL_optnumber(L, 4, +360.0f));
+	auto v_degrees_min = luax_optfloat(L, 3, -360.0f);
+	auto v_degrees_max = luax_optfloat(L, 4, +360.0f);
 	auto format = luaL_optstring(L, 5, "%.0f deg");
 	
 	bool out = ImGui::SliderAngle(label, &v_rad, v_degrees_min, v_degrees_max, format);
@@ -3107,13 +3121,13 @@ int w_VSliderFloat(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 2));
-	size.y = static_cast<float>(luaL_checknumber(L, 3));
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
 	auto v = static_cast<float>(luaL_checknumber(L, 4));
-	auto v_min = static_cast<float>(luaL_checknumber(L, 5));
-	auto v_max = static_cast<float>(luaL_checknumber(L, 6));
+	auto v_min = luax_checkfloat(L, 5);
+	auto v_max = luax_checkfloat(L, 6);
 	auto format = luaL_optstring(L, 7, "%.3f");
-	auto power = static_cast<float>(luaL_optnumber(L, 8, 1.0f));
+	auto power = luax_optfloat(L, 8, 1.0f);
 	
 	bool out = ImGui::VSliderFloat(label, size, &v, v_min, v_max, format, power);
 	
@@ -3126,8 +3140,8 @@ int w_VSliderInt(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 2));
-	size.y = static_cast<float>(luaL_checknumber(L, 3));
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
 	int v = luaL_checkint(L, 4);
 	auto v_min = luaL_checkint(L, 5);
 	auto v_max = luaL_checkint(L, 6);
@@ -3150,8 +3164,8 @@ int w_InputFloat(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto v = static_cast<float>(luaL_checknumber(L, 2));
-	auto step = static_cast<float>(luaL_optnumber(L, 3, 0.0f));
-	auto step_fast = static_cast<float>(luaL_optnumber(L, 4, 0.0f));
+	auto step = luax_optfloat(L, 3, 0.0f);
+	auto step_fast = luax_optfloat(L, 4, 0.0f);
 	auto format = luaL_optstring(L, 5, "%.3f");
 	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 6, 0);
 	
@@ -3367,14 +3381,14 @@ int w_ColorButton(lua_State *L)
 {
 	auto desc_id = luaL_checkstring(L, 1);
 	ImVec4 col;
-	col.x = static_cast<float>(luaL_checknumber(L, 2));
-	col.y = static_cast<float>(luaL_checknumber(L, 3));
-	col.z = static_cast<float>(luaL_checknumber(L, 4));
-	col.w = static_cast<float>(luaL_checknumber(L, 5));
+	col.x = luax_checkfloat(L, 2);
+	col.y = luax_checkfloat(L, 3);
+	col.z = luax_checkfloat(L, 4);
+	col.w = luax_checkfloat(L, 5);
 	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
 	auto size = ImVec2(0,0);
-	size.x = static_cast<float>(luaL_optnumber(L, 7, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 8, size.y));
+	size.x = luax_optfloat(L, 7, size.x);
+	size.y = luax_optfloat(L, 8, size.y);
 	
 	bool out = ImGui::ColorButton(desc_id, col, flags, size);
 	
@@ -3514,8 +3528,8 @@ int w_Selectable_Override1(lua_State *L)
 	auto selected = luax_optboolean(L, 2, false);
 	auto flags = luax_optflags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, L, 3, 0);
 	auto size = ImVec2(0,0);
-	size.x = static_cast<float>(luaL_optnumber(L, 4, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 5, size.y));
+	size.x = luax_optfloat(L, 4, size.x);
+	size.y = luax_optfloat(L, 5, size.y);
 	
 	bool out = ImGui::Selectable(label, selected, flags, size);
 	
@@ -3530,8 +3544,8 @@ int w_Selectable_Override2(lua_State *L)
 	bool p_selected = luax_checkboolean(L, 2);
 	auto flags = luax_optflags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, L, 3, 0);
 	auto size = ImVec2(0,0);
-	size.x = static_cast<float>(luaL_optnumber(L, 4, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 5, size.y));
+	size.x = luax_optfloat(L, 4, size.x);
+	size.y = luax_optfloat(L, 5, size.y);
 	
 	bool out = ImGui::Selectable(label, &p_selected, flags, size);
 	
@@ -3549,8 +3563,8 @@ int w_ListBoxHeader_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto size = ImVec2(0,0);
-	size.x = static_cast<float>(luaL_optnumber(L, 2, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 3, size.y));
+	size.x = luax_optfloat(L, 2, size.x);
+	size.y = luax_optfloat(L, 3, size.y);
 	
 	bool out = ImGui::ListBoxHeader(label, size);
 	
@@ -3620,7 +3634,7 @@ int w_Value_Override3(lua_State *L)
 int w_Value_Override4(lua_State *L)
 {
 	auto prefix = luaL_checkstring(L, 1);
-	auto v = static_cast<float>(luaL_checknumber(L, 2));
+	auto v = luax_checkfloat(L, 2);
 	auto float_format = luaL_optstring(L, 3, NULL);
 	
 	ImGui::Value(prefix, v, float_format);
@@ -3891,7 +3905,7 @@ int w_GetColumnWidth(lua_State *L)
 int w_SetColumnWidth(lua_State *L)
 {
 	auto column_index = luaL_checkint(L, 1);
-	auto width = static_cast<float>(luaL_checknumber(L, 2));
+	auto width = luax_checkfloat(L, 2);
 	
 	ImGui::SetColumnWidth(column_index, width);
 	
@@ -3913,7 +3927,7 @@ int w_GetColumnOffset(lua_State *L)
 int w_SetColumnOffset(lua_State *L)
 {
 	auto column_index = luaL_checkint(L, 1);
-	auto offset_x = static_cast<float>(luaL_checknumber(L, 2));
+	auto offset_x = luax_checkfloat(L, 2);
 	
 	ImGui::SetColumnOffset(column_index, offset_x);
 	
@@ -3984,8 +3998,8 @@ int w_DockSpace(lua_State *L)
 {
 	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
 	auto size = ImVec2(0, 0);
-	size.x = static_cast<float>(luaL_optnumber(L, 2, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 3, size.y));
+	size.x = luax_optfloat(L, 2, size.x);
+	size.y = luax_optfloat(L, 3, size.y);
 	auto flags = luax_optflags<ImGuiDockNodeFlags>(getImGuiDockNodeFlagsFromString, L, 4, 0);
 	const ImGuiWindowClass* window_class = NULL; // skipping
 	
@@ -4138,11 +4152,11 @@ int w_EndDragDropTarget(lua_State *L)
 int w_PushClipRect(lua_State *L)
 {
 	ImVec2 clip_rect_min;
-	clip_rect_min.x = static_cast<float>(luaL_checknumber(L, 1));
-	clip_rect_min.y = static_cast<float>(luaL_checknumber(L, 2));
+	clip_rect_min.x = luax_checkfloat(L, 1);
+	clip_rect_min.y = luax_checkfloat(L, 2);
 	ImVec2 clip_rect_max;
-	clip_rect_max.x = static_cast<float>(luaL_checknumber(L, 3));
-	clip_rect_max.y = static_cast<float>(luaL_checknumber(L, 4));
+	clip_rect_max.x = luax_checkfloat(L, 3);
+	clip_rect_max.y = luax_checkfloat(L, 4);
 	auto intersect_with_current_clip_rect = luax_checkboolean(L, 5);
 	
 	ImGui::PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect);
@@ -4338,8 +4352,8 @@ int w_SetItemAllowOverlap(lua_State *L)
 int w_IsRectVisible_Override1(lua_State *L)
 {
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 1));
-	size.y = static_cast<float>(luaL_checknumber(L, 2));
+	size.x = luax_checkfloat(L, 1);
+	size.y = luax_checkfloat(L, 2);
 	
 	bool out = ImGui::IsRectVisible(size);
 	
@@ -4351,11 +4365,11 @@ int w_IsRectVisible_Override1(lua_State *L)
 int w_IsRectVisible_Override2(lua_State *L)
 {
 	ImVec2 rect_min;
-	rect_min.x = static_cast<float>(luaL_checknumber(L, 1));
-	rect_min.y = static_cast<float>(luaL_checknumber(L, 2));
+	rect_min.x = luax_checkfloat(L, 1);
+	rect_min.y = luax_checkfloat(L, 2);
 	ImVec2 rect_max;
-	rect_max.x = static_cast<float>(luaL_checknumber(L, 3));
-	rect_max.y = static_cast<float>(luaL_checknumber(L, 4));
+	rect_max.x = luax_checkfloat(L, 3);
+	rect_max.y = luax_checkfloat(L, 4);
 	
 	bool out = ImGui::IsRectVisible(rect_min, rect_max);
 	
@@ -4411,7 +4425,7 @@ int w_CalcTextSize(lua_State *L)
 	auto text = luaL_checkstring(L, 1);
 	auto text_end = luaL_optstring(L, 2, NULL);
 	auto hide_text_after_double_hash = luax_optboolean(L, 3, false);
-	auto wrap_width = static_cast<float>(luaL_optnumber(L, 4, -1.0f));
+	auto wrap_width = luax_optfloat(L, 4, -1.0f);
 	
 	ImVec2 out = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
 	
@@ -4424,7 +4438,7 @@ int w_CalcTextSize(lua_State *L)
 int w_CalcListClipping(lua_State *L)
 {
 	auto items_count = luaL_checkint(L, 1);
-	auto items_height = static_cast<float>(luaL_checknumber(L, 2));
+	auto items_height = luax_checkfloat(L, 2);
 	int out_items_display_start = luaL_checkint(L, 3);
 	int out_items_display_end = luaL_checkint(L, 4);
 	
@@ -4440,8 +4454,8 @@ int w_BeginChildFrame(lua_State *L)
 {
 	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
 	ImVec2 size;
-	size.x = static_cast<float>(luaL_checknumber(L, 2));
-	size.y = static_cast<float>(luaL_checknumber(L, 3));
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
 	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 4, 0);
 	
 	bool out = ImGui::BeginChildFrame(id, size, flags);
@@ -4460,7 +4474,7 @@ int w_EndChildFrame(lua_State *L)
 
 int w_ColorConvertU32ToFloat4(lua_State *L)
 {
-	auto in = static_cast<unsigned int>(luaL_checklong(L, 1));
+	auto in = static_cast<ImU32>(luaL_checklong(L, 1));
 	
 	ImVec4 out = ImGui::ColorConvertU32ToFloat4(in);
 	
@@ -4520,8 +4534,8 @@ int w_IsKeyReleased(lua_State *L)
 int w_GetKeyPressedAmount(lua_State *L)
 {
 	auto key_index = luaL_checkint(L, 1);
-	auto repeat_delay = static_cast<float>(luaL_checknumber(L, 2));
-	auto rate = static_cast<float>(luaL_checknumber(L, 3));
+	auto repeat_delay = luax_checkfloat(L, 2);
+	auto rate = luax_checkfloat(L, 3);
 	
 	int out = ImGui::GetKeyPressedAmount(key_index, repeat_delay, rate);
 	
@@ -4588,11 +4602,11 @@ int w_IsMouseDoubleClicked(lua_State *L)
 int w_IsMouseHoveringRect(lua_State *L)
 {
 	ImVec2 r_min;
-	r_min.x = static_cast<float>(luaL_checknumber(L, 1));
-	r_min.y = static_cast<float>(luaL_checknumber(L, 2));
+	r_min.x = luax_checkfloat(L, 1);
+	r_min.y = luax_checkfloat(L, 2);
 	ImVec2 r_max;
-	r_max.x = static_cast<float>(luaL_checknumber(L, 3));
-	r_max.y = static_cast<float>(luaL_checknumber(L, 4));
+	r_max.x = luax_checkfloat(L, 3);
+	r_max.y = luax_checkfloat(L, 4);
 	auto clip = luax_optboolean(L, 5, true);
 	
 	bool out = ImGui::IsMouseHoveringRect(r_min, r_max, clip);
@@ -4607,8 +4621,8 @@ int w_IsMousePosValid(lua_State *L)
 	ImVec2* mouse_pos = NULL;
 	ImVec2 mouse_pos_buf;
 	if(!lua_isnoneornil(L, 2)) {
-		mouse_pos_buf.x = static_cast<float>(luaL_checknumber(L, 1));
-		mouse_pos_buf.y = static_cast<float>(luaL_checknumber(L, 2));
+		mouse_pos_buf.x = luax_checkfloat(L, 1);
+		mouse_pos_buf.y = luax_checkfloat(L, 2);
 	}
 	
 	bool out = ImGui::IsMousePosValid(mouse_pos);
@@ -4650,7 +4664,7 @@ int w_GetMousePosOnOpeningCurrentPopup(lua_State *L)
 int w_IsMouseDragging(lua_State *L)
 {
 	auto button = luax_checkenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1);
-	auto lock_threshold = static_cast<float>(luaL_optnumber(L, 2, -1.0f));
+	auto lock_threshold = luax_optfloat(L, 2, -1.0f);
 	
 	bool out = ImGui::IsMouseDragging(button, lock_threshold);
 	
@@ -4662,7 +4676,7 @@ int w_IsMouseDragging(lua_State *L)
 int w_GetMouseDragDelta(lua_State *L)
 {
 	auto button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1, 0);
-	auto lock_threshold = static_cast<float>(luaL_optnumber(L, 2, -1.0f));
+	auto lock_threshold = luax_optfloat(L, 2, -1.0f);
 	
 	ImVec2 out = ImGui::GetMouseDragDelta(button, lock_threshold);
 	
@@ -4797,8 +4811,8 @@ int w_InputTextMultiline_Override2(lua_State *L)
 	auto label = luaL_checkstring(L, 1);
 	std::string str = luaL_checkstring(L, 2);
 	auto size = ImVec2(0, 0);
-	size.x = static_cast<float>(luaL_optnumber(L, 3, size.x));
-	size.y = static_cast<float>(luaL_optnumber(L, 4, size.y));
+	size.x = luax_optfloat(L, 3, size.x);
+	size.y = luax_optfloat(L, 4, size.y);
 	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 5, 0);
 	ImGuiInputTextCallback callback = callLuaInputTextCallback;
 	void* user_data = luax_getImguiInputTextCallback(L, 6);
@@ -4832,7 +4846,7 @@ int w_Combo_Override4(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	int current_item = luaL_checkint(L, 2);
-	std::vector<const char*> items = luax_checkstringvector(L, 3);
+	auto items = luax_checkstringvector(L, 3);
 	auto popup_max_height_in_items = luaL_optint(L, 4, -1);
 	
 	bool out = ImGui::Combo(label, &current_item, items, popup_max_height_in_items);
@@ -4846,7 +4860,7 @@ int w_ListBox_Override3(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	int current_item = luaL_checkint(L, 2);
-	std::vector<const char*> items = luax_checkstringvector(L, 3);
+	auto items = luax_checkstringvector(L, 3);
 	auto height_in_items = luaL_optint(L, 4, -1);
 	
 	bool out = ImGui::ListBox(label, &current_item, items, height_in_items);
@@ -4862,11 +4876,11 @@ int w_PlotLines_Override3(lua_State *L)
 	std::vector<float> values = luax_checkfloatvector(L, 2);
 	auto values_offset = luaL_optint(L, 3, 0);
 	auto overlay_text = luaL_optstring(L, 4, NULL);
-	auto scale_min = static_cast<float>(luaL_optnumber(L, 5, FLT_MAX));
-	auto scale_max = static_cast<float>(luaL_optnumber(L, 6, FLT_MAX));
+	auto scale_min = luax_optfloat(L, 5, FLT_MAX);
+	auto scale_max = luax_optfloat(L, 6, FLT_MAX);
 	auto graph_size = ImVec2(0, 0);
-	graph_size.x = static_cast<float>(luaL_optnumber(L, 7, graph_size.x));
-	graph_size.y = static_cast<float>(luaL_optnumber(L, 8, graph_size.y));
+	graph_size.x = luax_optfloat(L, 7, graph_size.x);
+	graph_size.y = luax_optfloat(L, 8, graph_size.y);
 	
 	ImGui::PlotLines(label, values, values_offset, overlay_text, scale_min, scale_max, graph_size);
 	
@@ -4879,11 +4893,11 @@ int w_PlotHistogram_Override3(lua_State *L)
 	std::vector<float> values = luax_checkfloatvector(L, 2);
 	auto values_offset = luaL_optint(L, 3, 0);
 	auto overlay_text = luaL_optstring(L, 4, NULL);
-	auto scale_min = static_cast<float>(luaL_optnumber(L, 5, FLT_MAX));
-	auto scale_max = static_cast<float>(luaL_optnumber(L, 6, FLT_MAX));
+	auto scale_min = luax_optfloat(L, 5, FLT_MAX);
+	auto scale_max = luax_optfloat(L, 6, FLT_MAX);
 	auto graph_size = ImVec2(0, 0);
-	graph_size.x = static_cast<float>(luaL_optnumber(L, 7, graph_size.x));
-	graph_size.y = static_cast<float>(luaL_optnumber(L, 8, graph_size.y));
+	graph_size.x = luax_optfloat(L, 7, graph_size.x);
+	graph_size.y = luax_optfloat(L, 8, graph_size.y);
 	
 	ImGui::PlotHistogram(label, values, values_offset, overlay_text, scale_min, scale_max, graph_size);
 	

@@ -110,8 +110,8 @@ do
 		["ImGuiContext*"] = static_cast_arg("ImGuiContext*", "luax_checklightuserdata", "luax_optlightuserdata"),
 		["ImGuiStyle*"] = static_cast_arg("ImGuiStyle*", "luax_checklightuserdata", "luax_optlightuserdata"),
 		["unsigned int"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
-		["float"] = static_cast_arg("float", "luaL_checknumber", "luaL_optnumber"),
-		["ImU32"] = static_cast_arg("unsigned int", "luaL_checklong", "luaL_optlong"),
+		["float"] = simple_arg("luax_checkfloat", "luax_optfloat"),
+		["ImU32"] = static_cast_arg("ImU32", "luaL_checklong", "luaL_optlong"),
 		["ImGuiID"] = static_cast_arg("ImGuiID", "luaL_checkint", "luaL_optint"),
 		["const fmt*"] = function(buf, arg, i)
 			-- get format string
@@ -124,8 +124,8 @@ do
 				buf:addf("ImVec2* %s = %s;", name, arg.default)
 				buf:addf("ImVec2 %s_buf;", name)
 				buf:addf("if(!lua_isnoneornil(L, %d)) {", i+1) buf:indent()
-					buf:addf("%s_buf.x = static_cast<float>(luaL_checknumber(L, %d));", name, i)
-					buf:addf("%s_buf.y = static_cast<float>(luaL_checknumber(L, %d));", name, i+1)
+					buf:addf("%s_buf.x = luax_checkfloat(L, %d);", name, i)
+					buf:addf("%s_buf.y = luax_checkfloat(L, %d);", name, i+1)
 				buf:unindent() buf:add("}")
 				return i + 2
 			else
@@ -136,12 +136,12 @@ do
 			local name = arg.name
 			if arg.default then
 				buf:addf("auto %s = %s;", name, arg.default)
-				buf:addf("%s.x = static_cast<float>(luaL_optnumber(L, %d, %s.x));", name, i, name)
-				buf:addf("%s.y = static_cast<float>(luaL_optnumber(L, %d, %s.y));", name, i+1, name)
+				buf:addf("%s.x = luax_optfloat(L, %d, %s.x);", name, i, name)
+				buf:addf("%s.y = luax_optfloat(L, %d, %s.y);", name, i+1, name)
 			else
 				buf:addf("ImVec2 %s;", name)
-				buf:addf("%s.x = static_cast<float>(luaL_checknumber(L, %d));", name, i)
-				buf:addf("%s.y = static_cast<float>(luaL_checknumber(L, %d));", name, i+1)
+				buf:addf("%s.x = luax_checkfloat(L, %d);", name, i)
+				buf:addf("%s.y = luax_checkfloat(L, %d);", name, i+1)
 			end
 			return i+2
 		end,
@@ -149,21 +149,21 @@ do
 			local name = arg.name
 			if arg.default then
 				buf:addf("ImVec4 %s = %s;", name, arg.default)
-				buf:addf("%s.x = static_cast<float>(luaL_optnumber(L, %d, %s.x));", name, i, name)
-				buf:addf("%s.y = static_cast<float>(luaL_optnumber(L, %d, %s.y));", name, i+1, name)
-				buf:addf("%s.z = static_cast<float>(luaL_optnumber(L, %d, %s.z));", name, i+2, name)
-				buf:addf("%s.w = static_cast<float>(luaL_optnumber(L, %d, %s.w));", name, i+3, name)
+				buf:addf("%s.x = luax_optfloat(L, %d, %s.x);", name, i, name)
+				buf:addf("%s.y = luax_optfloat(L, %d, %s.y);", name, i+1, name)
+				buf:addf("%s.z = luax_optfloat(L, %d, %s.z);", name, i+2, name)
+				buf:addf("%s.w = luax_optfloat(L, %d, %s.w);", name, i+3, name)
 			else
 				buf:addf("ImVec4 %s;", name)
-				buf:addf("%s.x = static_cast<float>(luaL_checknumber(L, %d));", name, i)
-				buf:addf("%s.y = static_cast<float>(luaL_checknumber(L, %d));", name, i+1)
-				buf:addf("%s.z = static_cast<float>(luaL_checknumber(L, %d));", name, i+2)
-				buf:addf("%s.w = static_cast<float>(luaL_checknumber(L, %d));", name, i+3)
+				buf:addf("%s.x = luax_checkfloat(L, %d);", name, i)
+				buf:addf("%s.y = luax_checkfloat(L, %d);", name, i+1)
+				buf:addf("%s.z = luax_checkfloat(L, %d);", name, i+2)
+				buf:addf("%s.w = luax_checkfloat(L, %d);", name, i+3)
 			end
 			return i + 4
 		end,
 		["const std::vector<const char*>&"] = function(buf, arg, i, _)
-			buf:addf("std::vector<const char*> %s = luax_checkstringvector(L, %d);", arg.name, i)
+			buf:addf("auto %s = luax_checkstringvector(L, %d);", arg.name, i)
 			return i + 1
 		end,
 		["const std::vector<float>&"] = function(buf, arg, i, _)
