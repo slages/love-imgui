@@ -184,6 +184,7 @@ do
 		["ImGuiCond"] = enum_arg("ImGuiCond", "getImGuiCondFromString"),
 		["ImGuiStyleVar"] = enum_arg("ImGuiStyleVar", "getImGuiStyleVarFromString"),
 		["ImGuiKey"] = enum_arg("ImGuiKey", "getImGuiKeyFromString"),
+		["ImDrawCornerFlags"] = enum_arg("ImDrawCornerFlags", "getImDrawCornerFlagsFromString"),
 
 		["ImGuiWindowFlags"] = flags_arg("ImGuiWindowFlags", "getImGuiWindowFlagsFromString"),
 		["ImGuiFocusedFlags"] = flags_arg("ImGuiFocusedFlags", "getImGuiFocusedFlagsFromString"),
@@ -251,6 +252,17 @@ do
 			return i + 1
 		end
 	end
+	local function udata_return(cppClass, luaClass)
+		return function(buf, name, i)
+			-- TODO: could we cache this userdata off somehow?
+			buf:addf("auto* %s_udata = static_cast<%s*>(lua_newuserdata(L, sizeof(%s)));", name, cppClass, cppClass)
+			buf:addf("%s_udata->value = %s;", name, name)
+			buf:addf("%s_udata->init();", name)
+			buf:addf("luaL_getmetatable(L, %q);", luaClass)
+			buf:add("lua_setmetatable(L, -2);")
+			return i + 1
+		end
+	end
 	local typePushers = {
 		["bool"] = simple_return("lua_pushboolean"),
 		["int"] = simple_return("lua_pushinteger"),
@@ -261,6 +273,7 @@ do
 		["double"] = simple_return("lua_pushnumber"),
 		["const char*"] = simple_return("lua_pushstring"),
 		["ImGuiContext*"] = simple_return("lua_pushlightuserdata"),
+		["ImDrawList*"] = udata_return("WrapImDrawList", "ImDrawList"),
 		["ImGuiStyle&"] = function(buf, name, i)
 			buf:addf("lua_pushlightuserdata(L, &%s);", name)
 			return i + 1

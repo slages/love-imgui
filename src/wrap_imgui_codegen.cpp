@@ -15,6 +15,8 @@
 extern ImTextureID luax_checkTextureID(lua_State* L, int narg); // define in your application
 
 namespace {
+	long g_currentFrameNumber = 0;
+
 // Helpers {{{
 bool luax_optboolean(lua_State* L, int narg, bool d)
 {
@@ -1226,7 +1228,7 @@ const char* getStringFromImGuiViewportFlags(ImGuiViewportFlags in)
 
 // End Enums }}}
 
-// Callbacks {{{
+// Manually Implemented Wrappers {{{
 struct FuncRef {
 	lua_State* L = nullptr;
 	int index = 0;
@@ -1300,10 +1302,56 @@ void* luax_getImguiInputTextCallback(lua_State* L, int narg)
 	}
 	return nullptr;
 }
-// End Callbacks }}}
+
+struct WrapImDrawList
+{
+	ImDrawList* value;
+	long frameNumber;
+	void init() { frameNumber = 0L; }
+	bool isValid() { return g_currentFrameNumber == frameNumber; }
+};
+
+int w_ColorPicker4(lua_State* L)
+{
+	// manually implemented to handle ref_col, which is a little goofy
+		auto label = luaL_checkstring(L, 1);
+	float col[4];
+	col[0] = static_cast<float>(luaL_checknumber(L, 2));
+	col[1] = static_cast<float>(luaL_checknumber(L, 3));
+	col[2] = static_cast<float>(luaL_checknumber(L, 4));
+	col[3] = static_cast<float>(luaL_checknumber(L, 5));
+	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
+	float ref_col_data[4];
+	float* ref_col = nullptr;
+	if(lua_gettop(L) > 6) {
+		ref_col_data[0] = static_cast<float>(luaL_checknumber(L, 7));
+		ref_col_data[1] = static_cast<float>(luaL_checknumber(L, 8));
+		ref_col_data[2] = static_cast<float>(luaL_checknumber(L, 9));
+		ref_col_data[3] = static_cast<float>(luaL_checknumber(L, 10));
+		ref_col = ref_col_data;
+	}
+	
+	bool out = ImGui::ColorPicker4(label, col, flags, ref_col);
+	
+	lua_pushnumber(L, col[0]);
+	lua_pushnumber(L, col[1]);
+	lua_pushnumber(L, col[2]);
+	lua_pushnumber(L, col[3]);
+	lua_pushboolean(L, out);
+	return 5;
+}
+
+int w_NewFrame(lua_State* L)
+{
+	// manually implemented to track new frames
+	ImGui::NewFrame();
+	g_currentFrameNumber++;
+	return 0;
+}
+
+// End Manually Implemented Wrappers }}}
 
 // Functions {{{
-
 int w_CreateContext(lua_State *L)
 {
 	ImFontAtlas* shared_font_atlas = NULL; // skipping
@@ -1352,13 +1400,7 @@ int w_GetStyle(lua_State *L)
 	return 1;
 }
 
-/*  start a new Dear ImGui frame, you can submit any command from this point until Render()/EndFrame(). */
-int w_NewFrame(lua_State *L)
-{
-	ImGui::NewFrame();
-	
-	return 0;
-}
+// skipping w_NewFrame: already implemented
 
 /*  ends the Dear ImGui frame. automatically called by Render(), you likely don't need to call that yourself directly. If you don't need to render data (skipping rendering) you may call EndFrame() but you'll have wasted CPU already! If you don't need to render, better to not create any imgui windows and not call NewFrame() at all! */
 int w_EndFrame(lua_State *L)
@@ -1584,7 +1626,18 @@ int w_IsWindowHovered(lua_State *L)
 	return 1;
 }
 
-// skipping w_GetWindowDrawList due to unimplemented return type: "ImDrawList*"
+/*  get draw list associated to the current window, to append your own drawing primitives */
+int w_GetWindowDrawList(lua_State *L)
+{
+	ImDrawList* out = ImGui::GetWindowDrawList();
+	
+	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
+	out_udata->value = out;
+	out_udata->init();
+	luaL_getmetatable(L, "ImDrawList");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 
 /*  get DPI scale currently associated to the current window's viewport. */
 int w_GetWindowDpiScale(lua_State *L)
@@ -3374,7 +3427,7 @@ int w_ColorPicker3(lua_State *L)
 	return 4;
 }
 
-// skipping w_ColorPicker4 due to unimplemented argument type: "const float*"
+// skipping w_ColorPicker4: already implemented
 
 /*  display a colored square/button, hover for details, return true when pressed. */
 int w_ColorButton(lua_State *L)
@@ -4395,9 +4448,31 @@ int w_GetFrameCount(lua_State *L)
 	return 1;
 }
 
-// skipping w_GetBackgroundDrawList_Override1 due to unimplemented return type: "ImDrawList*"
+/*  get background draw list for the viewport associated to the current window. this draw list will be the first rendering one. Useful to quickly draw shapes/text behind dear imgui contents. */
+int w_GetBackgroundDrawList_Override1(lua_State *L)
+{
+	ImDrawList* out = ImGui::GetBackgroundDrawList();
+	
+	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
+	out_udata->value = out;
+	out_udata->init();
+	luaL_getmetatable(L, "ImDrawList");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 
-// skipping w_GetForegroundDrawList_Override1 due to unimplemented return type: "ImDrawList*"
+/*  get foreground draw list for the viewport associated to the current window. this draw list will be the last rendered one. Useful to quickly draw shapes/text over dear imgui contents. */
+int w_GetForegroundDrawList_Override1(lua_State *L)
+{
+	ImDrawList* out = ImGui::GetForegroundDrawList();
+	
+	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
+	out_udata->value = out;
+	out_udata->init();
+	luaL_getmetatable(L, "ImDrawList");
+	lua_setmetatable(L, -2);
+	return 1;
+}
 
 // skipping w_GetBackgroundDrawList_Override2 due to unimplemented argument type: "ImGuiViewport*"
 
@@ -4904,6 +4979,640 @@ int w_PlotHistogram_Override3(lua_State *L)
 	return 0;
 }
 
+/*  Render-level scissoring. This is passed down to your render function but not used for CPU-side coarse clipping. Prefer using higher-level ImGui::PushClipRect() to affect logic (hit-testing and widget culling) */
+int w_ImDrawList_PushClipRect(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 clip_rect_min;
+	clip_rect_min.x = luax_checkfloat(L, 2);
+	clip_rect_min.y = luax_checkfloat(L, 3);
+	ImVec2 clip_rect_max;
+	clip_rect_max.x = luax_checkfloat(L, 4);
+	clip_rect_max.y = luax_checkfloat(L, 5);
+	auto intersect_with_current_clip_rect = luax_optboolean(L, 6, false);
+	
+	self->PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect);
+	
+	return 0;
+}
+
+int w_ImDrawList_PushClipRectFullScreen(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->PushClipRectFullScreen();
+	
+	return 0;
+}
+
+int w_ImDrawList_PopClipRect(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->PopClipRect();
+	
+	return 0;
+}
+
+int w_ImDrawList_PushTextureID(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	auto texture_id = luax_checkTextureID(L, 2);
+	
+	self->PushTextureID(texture_id);
+	
+	return 0;
+}
+
+int w_ImDrawList_PopTextureID(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->PopTextureID();
+	
+	return 0;
+}
+
+int w_ImDrawList_AddLine(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 2);
+	p1.y = luax_checkfloat(L, 3);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 4);
+	p2.y = luax_checkfloat(L, 5);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
+	auto thickness = luax_optfloat(L, 7, 1.0f);
+	
+	self->AddLine(p1, p2, col, thickness);
+	
+	return 0;
+}
+
+/*  a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4 bits corresponding to which corner to round */
+int w_ImDrawList_AddRect(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p_min;
+	p_min.x = luax_checkfloat(L, 2);
+	p_min.y = luax_checkfloat(L, 3);
+	ImVec2 p_max;
+	p_max.x = luax_checkfloat(L, 4);
+	p_max.y = luax_checkfloat(L, 5);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
+	auto rounding = luax_optfloat(L, 7, 0.0f);
+	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
+	auto thickness = luax_optfloat(L, 9, 1.0f);
+	
+	self->AddRect(p_min, p_max, col, rounding, rounding_corners, thickness);
+	
+	return 0;
+}
+
+/*  a: upper-left, b: lower-right (== upper-left + size) */
+int w_ImDrawList_AddRectFilled(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p_min;
+	p_min.x = luax_checkfloat(L, 2);
+	p_min.y = luax_checkfloat(L, 3);
+	ImVec2 p_max;
+	p_max.x = luax_checkfloat(L, 4);
+	p_max.y = luax_checkfloat(L, 5);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
+	auto rounding = luax_optfloat(L, 7, 0.0f);
+	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
+	
+	self->AddRectFilled(p_min, p_max, col, rounding, rounding_corners);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddRectFilledMultiColor(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p_min;
+	p_min.x = luax_checkfloat(L, 2);
+	p_min.y = luax_checkfloat(L, 3);
+	ImVec2 p_max;
+	p_max.x = luax_checkfloat(L, 4);
+	p_max.y = luax_checkfloat(L, 5);
+	auto col_upr_left = static_cast<ImU32>(luaL_checklong(L, 6));
+	auto col_upr_right = static_cast<ImU32>(luaL_checklong(L, 7));
+	auto col_bot_right = static_cast<ImU32>(luaL_checklong(L, 8));
+	auto col_bot_left = static_cast<ImU32>(luaL_checklong(L, 9));
+	
+	self->AddRectFilledMultiColor(p_min, p_max, col_upr_left, col_upr_right, col_bot_right, col_bot_left);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddQuad(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 2);
+	p1.y = luax_checkfloat(L, 3);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 4);
+	p2.y = luax_checkfloat(L, 5);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 6);
+	p3.y = luax_checkfloat(L, 7);
+	ImVec2 p4;
+	p4.x = luax_checkfloat(L, 8);
+	p4.y = luax_checkfloat(L, 9);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 10));
+	auto thickness = luax_optfloat(L, 11, 1.0f);
+	
+	self->AddQuad(p1, p2, p3, p4, col, thickness);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddQuadFilled(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 2);
+	p1.y = luax_checkfloat(L, 3);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 4);
+	p2.y = luax_checkfloat(L, 5);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 6);
+	p3.y = luax_checkfloat(L, 7);
+	ImVec2 p4;
+	p4.x = luax_checkfloat(L, 8);
+	p4.y = luax_checkfloat(L, 9);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 10));
+	
+	self->AddQuadFilled(p1, p2, p3, p4, col);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddTriangle(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 2);
+	p1.y = luax_checkfloat(L, 3);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 4);
+	p2.y = luax_checkfloat(L, 5);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 6);
+	p3.y = luax_checkfloat(L, 7);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 8));
+	auto thickness = luax_optfloat(L, 9, 1.0f);
+	
+	self->AddTriangle(p1, p2, p3, col, thickness);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddTriangleFilled(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 2);
+	p1.y = luax_checkfloat(L, 3);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 4);
+	p2.y = luax_checkfloat(L, 5);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 6);
+	p3.y = luax_checkfloat(L, 7);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 8));
+	
+	self->AddTriangleFilled(p1, p2, p3, col);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddCircle(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 center;
+	center.x = luax_checkfloat(L, 2);
+	center.y = luax_checkfloat(L, 3);
+	auto radius = luax_checkfloat(L, 4);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
+	auto num_segments = luaL_optint(L, 6, 12);
+	auto thickness = luax_optfloat(L, 7, 1.0f);
+	
+	self->AddCircle(center, radius, col, num_segments, thickness);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddCircleFilled(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 center;
+	center.x = luax_checkfloat(L, 2);
+	center.y = luax_checkfloat(L, 3);
+	auto radius = luax_checkfloat(L, 4);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
+	auto num_segments = luaL_optint(L, 6, 12);
+	
+	self->AddCircleFilled(center, radius, col, num_segments);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddNgon(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 center;
+	center.x = luax_checkfloat(L, 2);
+	center.y = luax_checkfloat(L, 3);
+	auto radius = luax_checkfloat(L, 4);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
+	auto num_segments = luaL_checkint(L, 6);
+	auto thickness = luax_optfloat(L, 7, 1.0f);
+	
+	self->AddNgon(center, radius, col, num_segments, thickness);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddNgonFilled(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 center;
+	center.x = luax_checkfloat(L, 2);
+	center.y = luax_checkfloat(L, 3);
+	auto radius = luax_checkfloat(L, 4);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
+	auto num_segments = luaL_checkint(L, 6);
+	
+	self->AddNgonFilled(center, radius, col, num_segments);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddText_Override1(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 pos;
+	pos.x = luax_checkfloat(L, 2);
+	pos.y = luax_checkfloat(L, 3);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 4));
+	auto text_begin = luaL_checkstring(L, 5);
+	auto text_end = luaL_optstring(L, 6, NULL);
+	
+	self->AddText(pos, col, text_begin, text_end);
+	
+	return 0;
+}
+
+// skipping w_ImDrawList_AddText_Override2 due to unimplemented argument type: "const ImFont*"
+
+// skipping w_ImDrawList_AddPolyline due to unimplemented argument type: "const ImVec2*"
+
+// skipping w_ImDrawList_AddConvexPolyFilled due to unimplemented argument type: "const ImVec2*"
+
+int w_ImDrawList_AddBezierCurve(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 2);
+	p1.y = luax_checkfloat(L, 3);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 4);
+	p2.y = luax_checkfloat(L, 5);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 6);
+	p3.y = luax_checkfloat(L, 7);
+	ImVec2 p4;
+	p4.x = luax_checkfloat(L, 8);
+	p4.y = luax_checkfloat(L, 9);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 10));
+	auto thickness = luax_checkfloat(L, 11);
+	auto num_segments = luaL_optint(L, 12, 0);
+	
+	self->AddBezierCurve(p1, p2, p3, p4, col, thickness, num_segments);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddImage(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	auto user_texture_id = luax_checkTextureID(L, 2);
+	ImVec2 p_min;
+	p_min.x = luax_checkfloat(L, 3);
+	p_min.y = luax_checkfloat(L, 4);
+	ImVec2 p_max;
+	p_max.x = luax_checkfloat(L, 5);
+	p_max.y = luax_checkfloat(L, 6);
+	auto uv_min = ImVec2(0, 0);
+	uv_min.x = luax_optfloat(L, 7, uv_min.x);
+	uv_min.y = luax_optfloat(L, 8, uv_min.y);
+	auto uv_max = ImVec2(1, 1);
+	uv_max.x = luax_optfloat(L, 9, uv_max.x);
+	uv_max.y = luax_optfloat(L, 10, uv_max.y);
+	auto col = static_cast<ImU32>(luaL_optlong(L, 11, IM_COL32_WHITE));
+	
+	self->AddImage(user_texture_id, p_min, p_max, uv_min, uv_max, col);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddImageQuad(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	auto user_texture_id = luax_checkTextureID(L, 2);
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 3);
+	p1.y = luax_checkfloat(L, 4);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 5);
+	p2.y = luax_checkfloat(L, 6);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 7);
+	p3.y = luax_checkfloat(L, 8);
+	ImVec2 p4;
+	p4.x = luax_checkfloat(L, 9);
+	p4.y = luax_checkfloat(L, 10);
+	auto uv1 = ImVec2(0, 0);
+	uv1.x = luax_optfloat(L, 11, uv1.x);
+	uv1.y = luax_optfloat(L, 12, uv1.y);
+	auto uv2 = ImVec2(1, 0);
+	uv2.x = luax_optfloat(L, 13, uv2.x);
+	uv2.y = luax_optfloat(L, 14, uv2.y);
+	auto uv3 = ImVec2(1, 1);
+	uv3.x = luax_optfloat(L, 15, uv3.x);
+	uv3.y = luax_optfloat(L, 16, uv3.y);
+	auto uv4 = ImVec2(0, 1);
+	uv4.x = luax_optfloat(L, 17, uv4.x);
+	uv4.y = luax_optfloat(L, 18, uv4.y);
+	auto col = static_cast<ImU32>(luaL_optlong(L, 19, IM_COL32_WHITE));
+	
+	self->AddImageQuad(user_texture_id, p1, p2, p3, p4, uv1, uv2, uv3, uv4, col);
+	
+	return 0;
+}
+
+int w_ImDrawList_AddImageRounded(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	auto user_texture_id = luax_checkTextureID(L, 2);
+	ImVec2 p_min;
+	p_min.x = luax_checkfloat(L, 3);
+	p_min.y = luax_checkfloat(L, 4);
+	ImVec2 p_max;
+	p_max.x = luax_checkfloat(L, 5);
+	p_max.y = luax_checkfloat(L, 6);
+	ImVec2 uv_min;
+	uv_min.x = luax_checkfloat(L, 7);
+	uv_min.y = luax_checkfloat(L, 8);
+	ImVec2 uv_max;
+	uv_max.x = luax_checkfloat(L, 9);
+	uv_max.y = luax_checkfloat(L, 10);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 11));
+	auto rounding = luax_checkfloat(L, 12);
+	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 13, ImDrawCornerFlags_All);
+	
+	self->AddImageRounded(user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners);
+	
+	return 0;
+}
+
+int w_ImDrawList_PathArcTo(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 center;
+	center.x = luax_checkfloat(L, 2);
+	center.y = luax_checkfloat(L, 3);
+	auto radius = luax_checkfloat(L, 4);
+	auto a_min = luax_checkfloat(L, 5);
+	auto a_max = luax_checkfloat(L, 6);
+	auto num_segments = luaL_optint(L, 7, 10);
+	
+	self->PathArcTo(center, radius, a_min, a_max, num_segments);
+	
+	return 0;
+}
+
+/*  Use precomputed angles for a 12 steps circle */
+int w_ImDrawList_PathArcToFast(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 center;
+	center.x = luax_checkfloat(L, 2);
+	center.y = luax_checkfloat(L, 3);
+	auto radius = luax_checkfloat(L, 4);
+	auto a_min_of_12 = luaL_checkint(L, 5);
+	auto a_max_of_12 = luaL_checkint(L, 6);
+	
+	self->PathArcToFast(center, radius, a_min_of_12, a_max_of_12);
+	
+	return 0;
+}
+
+int w_ImDrawList_PathBezierCurveTo(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 2);
+	p2.y = luax_checkfloat(L, 3);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 4);
+	p3.y = luax_checkfloat(L, 5);
+	ImVec2 p4;
+	p4.x = luax_checkfloat(L, 6);
+	p4.y = luax_checkfloat(L, 7);
+	auto num_segments = luaL_optint(L, 8, 0);
+	
+	self->PathBezierCurveTo(p2, p3, p4, num_segments);
+	
+	return 0;
+}
+
+int w_ImDrawList_PathRect(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 rect_min;
+	rect_min.x = luax_checkfloat(L, 2);
+	rect_min.y = luax_checkfloat(L, 3);
+	ImVec2 rect_max;
+	rect_max.x = luax_checkfloat(L, 4);
+	rect_max.y = luax_checkfloat(L, 5);
+	auto rounding = luax_optfloat(L, 6, 0.0f);
+	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 7, ImDrawCornerFlags_All);
+	
+	self->PathRect(rect_min, rect_max, rounding, rounding_corners);
+	
+	return 0;
+}
+
+// skipping w_ImDrawList_AddCallback due to unimplemented argument type: "ImDrawCallback"
+
+/*  This is useful if you need to forcefully create a new draw call (to allow for dependent rendering / blending). Otherwise primitives are merged into the same draw-call as much as possible */
+int w_ImDrawList_AddDrawCmd(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->AddDrawCmd();
+	
+	return 0;
+}
+
+/*  Create a clone of the CmdBuffer/IdxBuffer/VtxBuffer. */
+int w_ImDrawList_CloneOutput(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImDrawList* out = self->CloneOutput();
+	
+	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
+	out_udata->value = out;
+	out_udata->init();
+	luaL_getmetatable(L, "ImDrawList");
+	lua_setmetatable(L, -2);
+	return 1;
+}
+
+int w_ImDrawList_Clear(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->Clear();
+	
+	return 0;
+}
+
+int w_ImDrawList_ClearFreeMemory(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->ClearFreeMemory();
+	
+	return 0;
+}
+
+int w_ImDrawList_PrimReserve(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	auto idx_count = luaL_checkint(L, 2);
+	auto vtx_count = luaL_checkint(L, 3);
+	
+	self->PrimReserve(idx_count, vtx_count);
+	
+	return 0;
+}
+
+int w_ImDrawList_PrimUnreserve(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	auto idx_count = luaL_checkint(L, 2);
+	auto vtx_count = luaL_checkint(L, 3);
+	
+	self->PrimUnreserve(idx_count, vtx_count);
+	
+	return 0;
+}
+
+/*  Axis aligned rectangle (composed of two triangles) */
+int w_ImDrawList_PrimRect(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 a;
+	a.x = luax_checkfloat(L, 2);
+	a.y = luax_checkfloat(L, 3);
+	ImVec2 b;
+	b.x = luax_checkfloat(L, 4);
+	b.y = luax_checkfloat(L, 5);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
+	
+	self->PrimRect(a, b, col);
+	
+	return 0;
+}
+
+int w_ImDrawList_UpdateClipRect(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->UpdateClipRect();
+	
+	return 0;
+}
+
+int w_ImDrawList_UpdateTextureID(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->UpdateTextureID();
+	
+	return 0;
+}
+
 // End Functions }}}
 
 // Function Overrides (manually written) {{{
@@ -4911,7 +5620,7 @@ int w_PlotHistogram_Override3(lua_State *L)
 // changes. if IMGUI ever changes the order of function overrides on their end,
 // or removes one of the API calls, we're in trouble!
 
-static int w_Value(lua_State* L)
+int w_Value(lua_State* L)
 {
 	if (lua_isboolean(L, 2)) {
 		return w_Value_Override1(L); // prefix, b
@@ -4920,7 +5629,7 @@ static int w_Value(lua_State* L)
 	}
 }
 
-static int w_MenuItem(lua_State* L)
+int w_MenuItem(lua_State* L)
 {
 	if (lua_gettop(L) < 3) {
 		return w_MenuItem_Override1(L); // label, shortcut
@@ -4929,7 +5638,7 @@ static int w_MenuItem(lua_State* L)
 	}
 }
 
-static int w_IsRectVisible(lua_State* L)
+int w_IsRectVisible(lua_State* L)
 {
 	if (lua_gettop(L) <= 2) {
 		return w_IsRectVisible_Override1(L); // size_x, size_y
@@ -4938,7 +5647,7 @@ static int w_IsRectVisible(lua_State* L)
 	}
 }
 
-static int w_BeginChild(lua_State* L)
+int w_BeginChild(lua_State* L)
 {
 	if (lua_isstring(L, 1)) {
 		return w_BeginChild_Override1(L); // str_id, size_x, size_y, border, flags
@@ -4947,23 +5656,23 @@ static int w_BeginChild(lua_State* L)
 	}
 }
 
-static int w_InputText(lua_State* L)
+int w_InputText(lua_State* L)
 {
 	return w_InputText_Override2(L); // std::string variant
 }
 
-static int w_InputTextMultiline(lua_State* L)
+int w_InputTextMultiline(lua_State* L)
 {
 	return w_InputTextMultiline_Override2(L); // std::string variant
 }
 
-static int w_InputTextWithHint(lua_State* L)
+int w_InputTextWithHint(lua_State* L)
 {
 	return w_InputTextWithHint_Override2(L); // std::string variant
 }
 
 
-static int w_SetWindowPos(lua_State* L)
+int w_SetWindowPos(lua_State* L)
 {
 	if (lua_isstring(L, 1)) {
 		return w_SetWindowPos_Override2(L); // with window name
@@ -4972,7 +5681,7 @@ static int w_SetWindowPos(lua_State* L)
 	}
 }
 
-static int w_SetWindowSize(lua_State* L)
+int w_SetWindowSize(lua_State* L)
 {
 	if (lua_isstring(L, 1)) {
 		return w_SetWindowSize_Override2(L); // with window name
@@ -4981,7 +5690,7 @@ static int w_SetWindowSize(lua_State* L)
 	}
 }
 
-static int w_SetWindowCollapsed(lua_State* L)
+int w_SetWindowCollapsed(lua_State* L)
 {
 	if (lua_isstring(L, 1)) {
 		return w_SetWindowCollapsed_Override2(L); // with window name
@@ -4990,7 +5699,7 @@ static int w_SetWindowCollapsed(lua_State* L)
 	}
 }
 
-static int w_SetWindowFocus(lua_State* L)
+int w_SetWindowFocus(lua_State* L)
 {
 	if (lua_isstring(L, 1)) {
 		return w_SetWindowFocus_Override2(L); // with window name
@@ -5000,13 +5709,13 @@ static int w_SetWindowFocus(lua_State* L)
 }
 
 
-static int w_PushStyleColor(lua_State* L)
+int w_PushStyleColor(lua_State* L)
 {
 	// Only one interesting override
 	return w_PushStyleColor_Override2(L); // idx, col_r, col_g, col_b, col_a
 }
 
-static int w_PushStyleVar(lua_State* L)
+int w_PushStyleVar(lua_State* L)
 {
 	if (lua_isnumber(L, 3)) {
 		return w_PushStyleVar_Override2(L); // idx, val_x, val_y
@@ -5015,7 +5724,7 @@ static int w_PushStyleVar(lua_State* L)
 	return w_PushStyleVar_Override1(L); // idx, val_float
 }
 
-static int w_PushID(lua_State* L)
+int w_PushID(lua_State* L)
 {
 	if (lua_isstring(L, 2)) {
 		return w_PushID_Override2(L); // str_id_begin, str_id_end
@@ -5026,7 +5735,7 @@ static int w_PushID(lua_State* L)
 	return w_PushID_Override4(L); // id
 }
 
-static int w_GetID(lua_State* L)
+int w_GetID(lua_State* L)
 {
 	if (lua_isstring(L, 2)) {
 		return w_GetID_Override2(L); // str_id_begin, str_id_end
@@ -5035,7 +5744,7 @@ static int w_GetID(lua_State* L)
 	return w_GetID_Override1(L); // str_id
 }
 
-static int w_RadioButton(lua_State* L)
+int w_RadioButton(lua_State* L)
 {
 	if (lua_isboolean(L, 2)) {
 		return w_RadioButton_Override1(L); // label, active
@@ -5044,25 +5753,25 @@ static int w_RadioButton(lua_State* L)
 	}
 }
 
-static int w_TreeNode(lua_State* L)
+int w_TreeNode(lua_State* L)
 {
 	// TODO: Override2, Override3
 	return w_TreeNode_Override1(L); // label
 }
 
-static int w_TreeNodeEx(lua_State* L)
+int w_TreeNodeEx(lua_State* L)
 {
 	// TODO: Override2, Override3
 	return w_TreeNodeEx_Override1(L); // label, flags
 }
 
-static int w_TreePush(lua_State* L)
+int w_TreePush(lua_State* L)
 {
 	// intentionally only one override
 	return w_TreePush_Override1(L); // str_id
 }
 
-static int w_CollapsingHeader(lua_State* L)
+int w_CollapsingHeader(lua_State* L)
 {
 	if (lua_isboolean(L, 2)) {
 		return w_CollapsingHeader_Override2(L); // label, p_open, flags
@@ -5071,13 +5780,13 @@ static int w_CollapsingHeader(lua_State* L)
 	}
 }
 
-static int w_Selectable(lua_State* L)
+int w_Selectable(lua_State* L)
 {
 	// Only one interesting override
 	return w_Selectable_Override2(L); // label, p_selected, flags, size
 }
 
-static int w_Combo(lua_State* L)
+int w_Combo(lua_State* L)
 {
 	if (lua_istable(L, 3)) {
 		return w_Combo_Override4(L); // label, current_item, items, popup_max_height_in_items
@@ -5086,61 +5795,46 @@ static int w_Combo(lua_State* L)
 	}
 }
 
-static int w_ListBox(lua_State* L)
+int w_ListBox(lua_State* L)
 {
 	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
 }
 
-static int w_PlotLines(lua_State* L)
+int w_PlotLines(lua_State* L)
 {
 	return w_PlotLines_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
 }
 
-static int w_PlotHistogram(lua_State* L)
+int w_PlotHistogram(lua_State* L)
 {
 	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
 }
 
-static int w_ListBoxHeaderXY(lua_State* L)
+int w_ListBoxHeaderXY(lua_State* L)
 {
 		// There's no way to distinguish these two
 	return w_ListBoxHeader_Override1(L); // label, size
 }
 
-static int w_ListBoxHeaderItems(lua_State* L)
+int w_ListBoxHeaderItems(lua_State* L)
 {
 		// There's no way to distinguish these two
 	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
 }
 
-static int w_ColorPicker4(lua_State* L)
+int w_GetForegroundDrawList(lua_State* L)
 {
-	// manually implemented to handle ref_col, which is a little goofy
-		auto label = luaL_checkstring(L, 1);
-	float col[4];
-	col[0] = static_cast<float>(luaL_checknumber(L, 2));
-	col[1] = static_cast<float>(luaL_checknumber(L, 3));
-	col[2] = static_cast<float>(luaL_checknumber(L, 4));
-	col[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
-	float ref_col_data[4];
-	float* ref_col = nullptr;
-	if(lua_gettop(L) > 6) {
-		ref_col_data[0] = static_cast<float>(luaL_checknumber(L, 7));
-		ref_col_data[1] = static_cast<float>(luaL_checknumber(L, 8));
-		ref_col_data[2] = static_cast<float>(luaL_checknumber(L, 9));
-		ref_col_data[3] = static_cast<float>(luaL_checknumber(L, 10));
-		ref_col = ref_col_data;
-	}
-	
-	bool out = ImGui::ColorPicker4(label, col, flags, ref_col);
-	
-	lua_pushnumber(L, col[0]);
-	lua_pushnumber(L, col[1]);
-	lua_pushnumber(L, col[2]);
-	lua_pushnumber(L, col[3]);
-	lua_pushboolean(L, out);
-	return 5;
+	return w_GetForegroundDrawList_Override1(L);
+}
+
+int w_GetBackgroundDrawList(lua_State* L)
+{
+	return w_GetBackgroundDrawList_Override1(L);
+}
+
+int w_ImDrawList_AddText(lua_State* L)
+{
+	return w_ImDrawList_AddText_Override1(L);
 }
 
 // End Function Overrides }}}
@@ -5162,6 +5856,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "EndDragDropSource");
 	lua_pushcfunction(L, w_GetMousePos);
 	lua_setfield(L, -2, "GetMousePos");
+	lua_pushcfunction(L, w_GetForegroundDrawList);
+	lua_setfield(L, -2, "GetForegroundDrawList");
 	lua_pushcfunction(L, w_GetID);
 	lua_setfield(L, -2, "GetID");
 	lua_pushcfunction(L, w_ColorButton);
@@ -5202,8 +5898,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "IsKeyPressed");
 	lua_pushcfunction(L, w_GetFontSize);
 	lua_setfield(L, -2, "GetFontSize");
-	lua_pushcfunction(L, w_GetContentRegionAvail);
-	lua_setfield(L, -2, "GetContentRegionAvail");
+	lua_pushcfunction(L, w_Render);
+	lua_setfield(L, -2, "Render");
 	lua_pushcfunction(L, w_DockSpaceOverViewport);
 	lua_setfield(L, -2, "DockSpaceOverViewport");
 	lua_pushcfunction(L, w_BeginChildFrame);
@@ -5318,14 +6014,16 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "SetCursorScreenPos");
 	lua_pushcfunction(L, w_InputInt2);
 	lua_setfield(L, -2, "InputInt2");
-	lua_pushcfunction(L, w_ShowDemoWindow);
-	lua_setfield(L, -2, "ShowDemoWindow");
+	lua_pushcfunction(L, w_Bullet);
+	lua_setfield(L, -2, "Bullet");
 	lua_pushcfunction(L, w_InputInt);
 	lua_setfield(L, -2, "InputInt");
-	lua_pushcfunction(L, w_TextColored);
-	lua_setfield(L, -2, "TextColored");
-	lua_pushcfunction(L, w_StyleColorsDark);
-	lua_setfield(L, -2, "StyleColorsDark");
+	lua_pushcfunction(L, w_SliderAngle);
+	lua_setfield(L, -2, "SliderAngle");
+	lua_pushcfunction(L, w_GetWindowDrawList);
+	lua_setfield(L, -2, "GetWindowDrawList");
+	lua_pushcfunction(L, w_ColorConvertU32ToFloat4);
+	lua_setfield(L, -2, "ColorConvertU32ToFloat4");
 	lua_pushcfunction(L, w_GetWindowDpiScale);
 	lua_setfield(L, -2, "GetWindowDpiScale");
 	lua_pushcfunction(L, w_GetColumnsCount);
@@ -5340,8 +6038,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "TreePop");
 	lua_pushcfunction(L, w_MenuItem);
 	lua_setfield(L, -2, "MenuItem");
-	lua_pushcfunction(L, w_SetCurrentContext);
-	lua_setfield(L, -2, "SetCurrentContext");
+	lua_pushcfunction(L, w_GetFontTexUvWhitePixel);
+	lua_setfield(L, -2, "GetFontTexUvWhitePixel");
 	lua_pushcfunction(L, w_LogButtons);
 	lua_setfield(L, -2, "LogButtons");
 	lua_pushcfunction(L, w_GetWindowDockID);
@@ -5382,8 +6080,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "SetNextItemOpen");
 	lua_pushcfunction(L, w_GetWindowWidth);
 	lua_setfield(L, -2, "GetWindowWidth");
-	lua_pushcfunction(L, w_IsAnyItemFocused);
-	lua_setfield(L, -2, "IsAnyItemFocused");
+	lua_pushcfunction(L, w_SetNextWindowCollapsed);
+	lua_setfield(L, -2, "SetNextWindowCollapsed");
 	lua_pushcfunction(L, w_TextWrapped);
 	lua_setfield(L, -2, "TextWrapped");
 	lua_pushcfunction(L, w_GetStyleColorName);
@@ -5446,8 +6144,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "IsItemHovered");
 	lua_pushcfunction(L, w_GetTextLineHeightWithSpacing);
 	lua_setfield(L, -2, "GetTextLineHeightWithSpacing");
-	lua_pushcfunction(L, w_GetKeyPressedAmount);
-	lua_setfield(L, -2, "GetKeyPressedAmount");
+	lua_pushcfunction(L, w_BeginTabBar);
+	lua_setfield(L, -2, "BeginTabBar");
 	lua_pushcfunction(L, w_SetTabItemClosed);
 	lua_setfield(L, -2, "SetTabItemClosed");
 	lua_pushcfunction(L, w_GetStyle);
@@ -5478,8 +6176,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "NextColumn");
 	lua_pushcfunction(L, w_EndFrame);
 	lua_setfield(L, -2, "EndFrame");
-	lua_pushcfunction(L, w_PushItemWidth);
-	lua_setfield(L, -2, "PushItemWidth");
+	lua_pushcfunction(L, w_PopItemWidth);
+	lua_setfield(L, -2, "PopItemWidth");
 	lua_pushcfunction(L, w_IsWindowAppearing);
 	lua_setfield(L, -2, "IsWindowAppearing");
 	lua_pushcfunction(L, w_EndCombo);
@@ -5494,76 +6192,78 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "BeginDragDropSource");
 	lua_pushcfunction(L, w_Columns);
 	lua_setfield(L, -2, "Columns");
-	lua_pushcfunction(L, w_ColorPicker4);
-	lua_setfield(L, -2, "ColorPicker4");
-	lua_pushcfunction(L, w_GetTime);
-	lua_setfield(L, -2, "GetTime");
-	lua_pushcfunction(L, w_SetNextWindowDockID);
-	lua_setfield(L, -2, "SetNextWindowDockID");
 	lua_pushcfunction(L, w_ListBoxHeaderItems);
 	lua_setfield(L, -2, "ListBoxHeaderItems");
 	lua_pushcfunction(L, w_ListBoxHeaderXY);
 	lua_setfield(L, -2, "ListBoxHeaderXY");
-	lua_pushcfunction(L, w_SetCursorPosY);
-	lua_setfield(L, -2, "SetCursorPosY");
+	lua_pushcfunction(L, w_GetTime);
+	lua_setfield(L, -2, "GetTime");
+	lua_pushcfunction(L, w_SetNextWindowDockID);
+	lua_setfield(L, -2, "SetNextWindowDockID");
+	lua_pushcfunction(L, w_GetColumnWidth);
+	lua_setfield(L, -2, "GetColumnWidth");
 	lua_pushcfunction(L, w_InputTextWithHint);
 	lua_setfield(L, -2, "InputTextWithHint");
+	lua_pushcfunction(L, w_InputTextMultiline);
+	lua_setfield(L, -2, "InputTextMultiline");
+	lua_pushcfunction(L, w_InputText);
+	lua_setfield(L, -2, "InputText");
 	lua_pushcfunction(L, w_IsItemFocused);
 	lua_setfield(L, -2, "IsItemFocused");
 	lua_pushcfunction(L, w_PopButtonRepeat);
 	lua_setfield(L, -2, "PopButtonRepeat");
-	lua_pushcfunction(L, w_InputTextMultiline);
-	lua_setfield(L, -2, "InputTextMultiline");
-	lua_pushcfunction(L, w_IsWindowFocused);
-	lua_setfield(L, -2, "IsWindowFocused");
+	lua_pushcfunction(L, w_BeginTooltip);
+	lua_setfield(L, -2, "BeginTooltip");
+	lua_pushcfunction(L, w_SetNextWindowContentSize);
+	lua_setfield(L, -2, "SetNextWindowContentSize");
 	lua_pushcfunction(L, w_SetScrollFromPosX);
 	lua_setfield(L, -2, "SetScrollFromPosX");
 	lua_pushcfunction(L, w_ResetMouseDragDelta);
 	lua_setfield(L, -2, "ResetMouseDragDelta");
 	lua_pushcfunction(L, w_End);
 	lua_setfield(L, -2, "End");
-	lua_pushcfunction(L, w_InputText);
-	lua_setfield(L, -2, "InputText");
+	lua_pushcfunction(L, w_LoadIniSettingsFromDisk);
+	lua_setfield(L, -2, "LoadIniSettingsFromDisk");
 	lua_pushcfunction(L, w_StyleColorsLight);
 	lua_setfield(L, -2, "StyleColorsLight");
 	lua_pushcfunction(L, w_SetScrollY);
 	lua_setfield(L, -2, "SetScrollY");
-	lua_pushcfunction(L, w_GetCursorPosY);
-	lua_setfield(L, -2, "GetCursorPosY");
-	lua_pushcfunction(L, w_LoadIniSettingsFromDisk);
-	lua_setfield(L, -2, "LoadIniSettingsFromDisk");
-	lua_pushcfunction(L, w_LogFinish);
-	lua_setfield(L, -2, "LogFinish");
-	lua_pushcfunction(L, w_SetItemDefaultFocus);
-	lua_setfield(L, -2, "SetItemDefaultFocus");
+	lua_pushcfunction(L, w_IsWindowFocused);
+	lua_setfield(L, -2, "IsWindowFocused");
 	lua_pushcfunction(L, w_GetMouseDragDelta);
 	lua_setfield(L, -2, "GetMouseDragDelta");
-	lua_pushcfunction(L, w_SetScrollFromPosY);
-	lua_setfield(L, -2, "SetScrollFromPosY");
-	lua_pushcfunction(L, w_SetNextWindowCollapsed);
-	lua_setfield(L, -2, "SetNextWindowCollapsed");
-	lua_pushcfunction(L, w_BulletText);
-	lua_setfield(L, -2, "BulletText");
+	lua_pushcfunction(L, w_TextColored);
+	lua_setfield(L, -2, "TextColored");
+	lua_pushcfunction(L, w_SetItemDefaultFocus);
+	lua_setfield(L, -2, "SetItemDefaultFocus");
+	lua_pushcfunction(L, w_GetKeyPressedAmount);
+	lua_setfield(L, -2, "GetKeyPressedAmount");
+	lua_pushcfunction(L, w_SetItemAllowOverlap);
+	lua_setfield(L, -2, "SetItemAllowOverlap");
 	lua_pushcfunction(L, w_LabelText);
 	lua_setfield(L, -2, "LabelText");
-	lua_pushcfunction(L, w_SetNextWindowContentSize);
-	lua_setfield(L, -2, "SetNextWindowContentSize");
+	lua_pushcfunction(L, w_ShowDemoWindow);
+	lua_setfield(L, -2, "ShowDemoWindow");
+	lua_pushcfunction(L, w_StyleColorsDark);
+	lua_setfield(L, -2, "StyleColorsDark");
+	lua_pushcfunction(L, w_SetCursorPosY);
+	lua_setfield(L, -2, "SetCursorPosY");
 	lua_pushcfunction(L, w_IsItemActive);
 	lua_setfield(L, -2, "IsItemActive");
 	lua_pushcfunction(L, w_Spacing);
 	lua_setfield(L, -2, "Spacing");
-	lua_pushcfunction(L, w_TextUnformatted);
-	lua_setfield(L, -2, "TextUnformatted");
 	lua_pushcfunction(L, w_Button);
 	lua_setfield(L, -2, "Button");
-	lua_pushcfunction(L, w_Image);
-	lua_setfield(L, -2, "Image");
+	lua_pushcfunction(L, w_BeginMenuBar);
+	lua_setfield(L, -2, "BeginMenuBar");
 	lua_pushcfunction(L, w_Dummy);
 	lua_setfield(L, -2, "Dummy");
+	lua_pushcfunction(L, w_SetNextItemWidth);
+	lua_setfield(L, -2, "SetNextItemWidth");
 	lua_pushcfunction(L, w_PushButtonRepeat);
 	lua_setfield(L, -2, "PushButtonRepeat");
-	lua_pushcfunction(L, w_Indent);
-	lua_setfield(L, -2, "Indent");
+	lua_pushcfunction(L, w_PushItemWidth);
+	lua_setfield(L, -2, "PushItemWidth");
 	lua_pushcfunction(L, w_CalcItemWidth);
 	lua_setfield(L, -2, "CalcItemWidth");
 	lua_pushcfunction(L, w_BeginPopupModal);
@@ -5572,26 +6272,26 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "OpenPopupOnItemClick");
 	lua_pushcfunction(L, w_CaptureMouseFromApp);
 	lua_setfield(L, -2, "CaptureMouseFromApp");
-	lua_pushcfunction(L, w_PopItemWidth);
-	lua_setfield(L, -2, "PopItemWidth");
-	lua_pushcfunction(L, w_DestroyPlatformWindows);
-	lua_setfield(L, -2, "DestroyPlatformWindows");
 	lua_pushcfunction(L, w_Separator);
 	lua_setfield(L, -2, "Separator");
-	lua_pushcfunction(L, w_SetNextItemWidth);
-	lua_setfield(L, -2, "SetNextItemWidth");
+	lua_pushcfunction(L, w_DestroyPlatformWindows);
+	lua_setfield(L, -2, "DestroyPlatformWindows");
 	lua_pushcfunction(L, w_BeginGroup);
 	lua_setfield(L, -2, "BeginGroup");
-	lua_pushcfunction(L, w_GetFontTexUvWhitePixel);
-	lua_setfield(L, -2, "GetFontTexUvWhitePixel");
-	lua_pushcfunction(L, w_EndTooltip);
-	lua_setfield(L, -2, "EndTooltip");
-	lua_pushcfunction(L, w_ColorEdit3);
-	lua_setfield(L, -2, "ColorEdit3");
 	lua_pushcfunction(L, w_SetNextWindowViewport);
 	lua_setfield(L, -2, "SetNextWindowViewport");
 	lua_pushcfunction(L, w_GetStyleColorVec4);
 	lua_setfield(L, -2, "GetStyleColorVec4");
+	lua_pushcfunction(L, w_ShowMetricsWindow);
+	lua_setfield(L, -2, "ShowMetricsWindow");
+	lua_pushcfunction(L, w_EndTooltip);
+	lua_setfield(L, -2, "EndTooltip");
+	lua_pushcfunction(L, w_ColorEdit3);
+	lua_setfield(L, -2, "ColorEdit3");
+	lua_pushcfunction(L, w_GetScrollMaxX);
+	lua_setfield(L, -2, "GetScrollMaxX");
+	lua_pushcfunction(L, w_GetContentRegionAvail);
+	lua_setfield(L, -2, "GetContentRegionAvail");
 	lua_pushcfunction(L, w_BeginPopup);
 	lua_setfield(L, -2, "BeginPopup");
 	lua_pushcfunction(L, w_IsItemVisible);
@@ -5600,62 +6300,62 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "IsAnyItemActive");
 	lua_pushcfunction(L, w_GetFrameCount);
 	lua_setfield(L, -2, "GetFrameCount");
-	lua_pushcfunction(L, w_Render);
-	lua_setfield(L, -2, "Render");
+	lua_pushcfunction(L, w_Indent);
+	lua_setfield(L, -2, "Indent");
 	lua_pushcfunction(L, w_CalcListClipping);
 	lua_setfield(L, -2, "CalcListClipping");
 	lua_pushcfunction(L, w_DestroyContext);
 	lua_setfield(L, -2, "DestroyContext");
-	lua_pushcfunction(L, w_Bullet);
-	lua_setfield(L, -2, "Bullet");
+	lua_pushcfunction(L, w_TextUnformatted);
+	lua_setfield(L, -2, "TextUnformatted");
 	lua_pushcfunction(L, w_EndMainMenuBar);
 	lua_setfield(L, -2, "EndMainMenuBar");
 	lua_pushcfunction(L, w_ListBox);
 	lua_setfield(L, -2, "ListBox");
-	lua_pushcfunction(L, w_ShowMetricsWindow);
-	lua_setfield(L, -2, "ShowMetricsWindow");
+	lua_pushcfunction(L, w_ArrowButton);
+	lua_setfield(L, -2, "ArrowButton");
 	lua_pushcfunction(L, w_BeginPopupContextItem);
 	lua_setfield(L, -2, "BeginPopupContextItem");
 	lua_pushcfunction(L, w_GetCursorStartPos);
 	lua_setfield(L, -2, "GetCursorStartPos");
-	lua_pushcfunction(L, w_PopStyleColor);
-	lua_setfield(L, -2, "PopStyleColor");
-	lua_pushcfunction(L, w_ArrowButton);
-	lua_setfield(L, -2, "ArrowButton");
+	lua_pushcfunction(L, w_SetWindowFontScale);
+	lua_setfield(L, -2, "SetWindowFontScale");
+	lua_pushcfunction(L, w_GetBackgroundDrawList);
+	lua_setfield(L, -2, "GetBackgroundDrawList");
 	lua_pushcfunction(L, w_IsItemToggledOpen);
 	lua_setfield(L, -2, "IsItemToggledOpen");
-	lua_pushcfunction(L, w_ShowStyleSelector);
-	lua_setfield(L, -2, "ShowStyleSelector");
+	lua_pushcfunction(L, w_SetCurrentContext);
+	lua_setfield(L, -2, "SetCurrentContext");
 	lua_pushcfunction(L, w_GetWindowContentRegionWidth);
 	lua_setfield(L, -2, "GetWindowContentRegionWidth");
 	lua_pushcfunction(L, w_TreeNode);
 	lua_setfield(L, -2, "TreeNode");
 	lua_pushcfunction(L, w_LogText);
 	lua_setfield(L, -2, "LogText");
-	lua_pushcfunction(L, w_GetScrollMaxX);
-	lua_setfield(L, -2, "GetScrollMaxX");
+	lua_pushcfunction(L, w_BulletText);
+	lua_setfield(L, -2, "BulletText");
 	lua_pushcfunction(L, w_Selectable);
 	lua_setfield(L, -2, "Selectable");
 	lua_pushcfunction(L, w_DragInt4);
 	lua_setfield(L, -2, "DragInt4");
-	lua_pushcfunction(L, w_SliderAngle);
-	lua_setfield(L, -2, "SliderAngle");
-	lua_pushcfunction(L, w_SetTooltip);
-	lua_setfield(L, -2, "SetTooltip");
+	lua_pushcfunction(L, w_ShowStyleSelector);
+	lua_setfield(L, -2, "ShowStyleSelector");
 	lua_pushcfunction(L, w_GetCursorScreenPos);
 	lua_setfield(L, -2, "GetCursorScreenPos");
 	lua_pushcfunction(L, w_GetScrollMaxY);
 	lua_setfield(L, -2, "GetScrollMaxY");
 	lua_pushcfunction(L, w_PushID);
 	lua_setfield(L, -2, "PushID");
+	lua_pushcfunction(L, w_PopStyleColor);
+	lua_setfield(L, -2, "PopStyleColor");
 	lua_pushcfunction(L, w_BeginPopupContextVoid);
 	lua_setfield(L, -2, "BeginPopupContextVoid");
-	lua_pushcfunction(L, w_GetColumnWidth);
-	lua_setfield(L, -2, "GetColumnWidth");
+	lua_pushcfunction(L, w_SetScrollFromPosY);
+	lua_setfield(L, -2, "SetScrollFromPosY");
 	lua_pushcfunction(L, w_GetMousePosOnOpeningCurrentPopup);
 	lua_setfield(L, -2, "GetMousePosOnOpeningCurrentPopup");
-	lua_pushcfunction(L, w_InputInt3);
-	lua_setfield(L, -2, "InputInt3");
+	lua_pushcfunction(L, w_SetCursorPos);
+	lua_setfield(L, -2, "SetCursorPos");
 	lua_pushcfunction(L, w_DragInt);
 	lua_setfield(L, -2, "DragInt");
 	lua_pushcfunction(L, w_NewFrame);
@@ -5666,61 +6366,133 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "EndChild");
 	lua_pushcfunction(L, w_TreePush);
 	lua_setfield(L, -2, "TreePush");
-	lua_pushcfunction(L, w_BeginTooltip);
-	lua_setfield(L, -2, "BeginTooltip");
-	lua_pushcfunction(L, w_SetWindowFontScale);
-	lua_setfield(L, -2, "SetWindowFontScale");
+	lua_pushcfunction(L, w_DragFloat4);
+	lua_setfield(L, -2, "DragFloat4");
+	lua_pushcfunction(L, w_EndMenu);
+	lua_setfield(L, -2, "EndMenu");
 	lua_pushcfunction(L, w_SliderInt);
 	lua_setfield(L, -2, "SliderInt");
 	lua_pushcfunction(L, w_EndTabItem);
 	lua_setfield(L, -2, "EndTabItem");
-	lua_pushcfunction(L, w_TextDisabled);
-	lua_setfield(L, -2, "TextDisabled");
+	lua_pushcfunction(L, w_InputInt3);
+	lua_setfield(L, -2, "InputInt3");
 	lua_pushcfunction(L, w_GetTextLineHeight);
 	lua_setfield(L, -2, "GetTextLineHeight");
-	lua_pushcfunction(L, w_GetColumnIndex);
-	lua_setfield(L, -2, "GetColumnIndex");
+	lua_pushcfunction(L, w_SetTooltip);
+	lua_setfield(L, -2, "SetTooltip");
+	lua_pushcfunction(L, w_TextDisabled);
+	lua_setfield(L, -2, "TextDisabled");
+	lua_pushcfunction(L, w_GetCursorPosY);
+	lua_setfield(L, -2, "GetCursorPosY");
 	lua_pushcfunction(L, w_SetNextWindowSize);
 	lua_setfield(L, -2, "SetNextWindowSize");
-	lua_pushcfunction(L, w_BeginMenuBar);
-	lua_setfield(L, -2, "BeginMenuBar");
-	lua_pushcfunction(L, w_GetScrollX);
-	lua_setfield(L, -2, "GetScrollX");
-	lua_pushcfunction(L, w_BeginTabBar);
-	lua_setfield(L, -2, "BeginTabBar");
+	lua_pushcfunction(L, w_GetColumnIndex);
+	lua_setfield(L, -2, "GetColumnIndex");
 	lua_pushcfunction(L, w_PushTextWrapPos);
 	lua_setfield(L, -2, "PushTextWrapPos");
 	lua_pushcfunction(L, w_GetWindowContentRegionMax);
 	lua_setfield(L, -2, "GetWindowContentRegionMax");
 	lua_pushcfunction(L, w_CalcTextSize);
 	lua_setfield(L, -2, "CalcTextSize");
+	lua_pushcfunction(L, w_GetScrollX);
+	lua_setfield(L, -2, "GetScrollX");
+	lua_pushcfunction(L, w_LogFinish);
+	lua_setfield(L, -2, "LogFinish");
 	lua_pushcfunction(L, w_EndGroup);
 	lua_setfield(L, -2, "EndGroup");
-	lua_pushcfunction(L, w_EndMenu);
-	lua_setfield(L, -2, "EndMenu");
-	lua_pushcfunction(L, w_SetKeyboardFocusHere);
-	lua_setfield(L, -2, "SetKeyboardFocusHere");
 	lua_pushcfunction(L, w_PopClipRect);
 	lua_setfield(L, -2, "PopClipRect");
-	lua_pushcfunction(L, w_SetCursorPos);
-	lua_setfield(L, -2, "SetCursorPos");
-	lua_pushcfunction(L, w_DragFloat4);
-	lua_setfield(L, -2, "DragFloat4");
+	lua_pushcfunction(L, w_SetKeyboardFocusHere);
+	lua_setfield(L, -2, "SetKeyboardFocusHere");
+	lua_pushcfunction(L, w_Image);
+	lua_setfield(L, -2, "Image");
+	lua_pushcfunction(L, w_ColorPicker4);
+	lua_setfield(L, -2, "ColorPicker4");
 	lua_pushcfunction(L, w_IsItemDeactivated);
 	lua_setfield(L, -2, "IsItemDeactivated");
+	lua_pushcfunction(L, w_IsAnyItemFocused);
+	lua_setfield(L, -2, "IsAnyItemFocused");
 	lua_pushcfunction(L, w_GetItemRectMax);
 	lua_setfield(L, -2, "GetItemRectMax");
-	lua_pushcfunction(L, w_SetItemAllowOverlap);
-	lua_setfield(L, -2, "SetItemAllowOverlap");
-	lua_pushcfunction(L, w_ColorConvertU32ToFloat4);
-	lua_setfield(L, -2, "ColorConvertU32ToFloat4");
 	lua_pushcfunction(L, w_Text);
 	lua_setfield(L, -2, "Text");
+
+	luaL_newmetatable(L, "ImDrawList");
+	lua_pushcfunction(L, w_ImDrawList_PathArcTo);
+	lua_setfield(L, -2, "PathArcTo");
+	lua_pushcfunction(L, w_ImDrawList_PopTextureID);
+	lua_setfield(L, -2, "PopTextureID");
+	lua_pushcfunction(L, w_ImDrawList_AddTriangle);
+	lua_setfield(L, -2, "AddTriangle");
+	lua_pushcfunction(L, w_ImDrawList_CloneOutput);
+	lua_setfield(L, -2, "CloneOutput");
+	lua_pushcfunction(L, w_ImDrawList_AddNgonFilled);
+	lua_setfield(L, -2, "AddNgonFilled");
+	lua_pushcfunction(L, w_ImDrawList_PushClipRectFullScreen);
+	lua_setfield(L, -2, "PushClipRectFullScreen");
+	lua_pushcfunction(L, w_ImDrawList_PathArcToFast);
+	lua_setfield(L, -2, "PathArcToFast");
+	lua_pushcfunction(L, w_ImDrawList_PrimReserve);
+	lua_setfield(L, -2, "PrimReserve");
+	lua_pushcfunction(L, w_ImDrawList_PathBezierCurveTo);
+	lua_setfield(L, -2, "PathBezierCurveTo");
+	lua_pushcfunction(L, w_ImDrawList_AddQuadFilled);
+	lua_setfield(L, -2, "AddQuadFilled");
+	lua_pushcfunction(L, w_ImDrawList_PathRect);
+	lua_setfield(L, -2, "PathRect");
+	lua_pushcfunction(L, w_ImDrawList_Clear);
+	lua_setfield(L, -2, "Clear");
+	lua_pushcfunction(L, w_ImDrawList_ClearFreeMemory);
+	lua_setfield(L, -2, "ClearFreeMemory");
+	lua_pushcfunction(L, w_ImDrawList_UpdateTextureID);
+	lua_setfield(L, -2, "UpdateTextureID");
+	lua_pushcfunction(L, w_ImDrawList_AddDrawCmd);
+	lua_setfield(L, -2, "AddDrawCmd");
+	lua_pushcfunction(L, w_ImDrawList_AddTriangleFilled);
+	lua_setfield(L, -2, "AddTriangleFilled");
+	lua_pushcfunction(L, w_ImDrawList_AddQuad);
+	lua_setfield(L, -2, "AddQuad");
+	lua_pushcfunction(L, w_ImDrawList_AddText);
+	lua_setfield(L, -2, "AddText");
+	lua_pushcfunction(L, w_ImDrawList_AddLine);
+	lua_setfield(L, -2, "AddLine");
+	lua_pushcfunction(L, w_ImDrawList_AddRectFilledMultiColor);
+	lua_setfield(L, -2, "AddRectFilledMultiColor");
+	lua_pushcfunction(L, w_ImDrawList_PushTextureID);
+	lua_setfield(L, -2, "PushTextureID");
+	lua_pushcfunction(L, w_ImDrawList_AddRect);
+	lua_setfield(L, -2, "AddRect");
+	lua_pushcfunction(L, w_ImDrawList_PrimUnreserve);
+	lua_setfield(L, -2, "PrimUnreserve");
+	lua_pushcfunction(L, w_ImDrawList_AddNgon);
+	lua_setfield(L, -2, "AddNgon");
+	lua_pushcfunction(L, w_ImDrawList_PushClipRect);
+	lua_setfield(L, -2, "PushClipRect");
+	lua_pushcfunction(L, w_ImDrawList_PrimRect);
+	lua_setfield(L, -2, "PrimRect");
+	lua_pushcfunction(L, w_ImDrawList_AddCircle);
+	lua_setfield(L, -2, "AddCircle");
+	lua_pushcfunction(L, w_ImDrawList_PopClipRect);
+	lua_setfield(L, -2, "PopClipRect");
+	lua_pushcfunction(L, w_ImDrawList_AddCircleFilled);
+	lua_setfield(L, -2, "AddCircleFilled");
+	lua_pushcfunction(L, w_ImDrawList_AddBezierCurve);
+	lua_setfield(L, -2, "AddBezierCurve");
+	lua_pushcfunction(L, w_ImDrawList_AddImageRounded);
+	lua_setfield(L, -2, "AddImageRounded");
+	lua_pushcfunction(L, w_ImDrawList_AddImageQuad);
+	lua_setfield(L, -2, "AddImageQuad");
+	lua_pushcfunction(L, w_ImDrawList_AddImage);
+	lua_setfield(L, -2, "AddImage");
+	lua_pushcfunction(L, w_ImDrawList_AddRectFilled);
+	lua_setfield(L, -2, "AddRectFilled");
+	lua_pushcfunction(L, w_ImDrawList_UpdateClipRect);
+	lua_setfield(L, -2, "UpdateClipRect");
 }
 
 void wrap_imgui::createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, 283); 
+	lua_createtable(L, 0, 286); 
 	addImguiWrappers(L);
 }
 

@@ -108,13 +108,13 @@ local function getRegionsForPosition(data, position)
 	return matchingRegions
 end
 
-local function isMethod(regions)
+local function getClassFromRegions(regions)
 	for _, region in ipairs(regions) do
 		if region.type == "struct" or region.type == "class" then
-			return true
+			return region.name
 		end
 	end
-	return false
+	return nil
 end
 
 local function matchMany(s, searchStart, ...)
@@ -210,20 +210,25 @@ local function parseImguiFunction(line, regions)
 	local args, isVarargs = matchCArgs(line, nameStop+1)
 	local comment = line:match("//(.+)")
 	local namespace = getNamespaceFromRegions(regions)
-	local qualifiedName = namespace .. "::" .. name
+	local class = getClassFromRegions(regions)
+	local namepieces = {}
+	namepieces[#namepieces+1] = namespace
+	namepieces[#namepieces+1] = name
+	local qualifiedName = table.concat(namepieces, "::")
 	return {
 		rawLine = line,
 		returnType = returnType,
 		name = name,
 		qualifiedName = qualifiedName,
 		namespace = namespace,
+		class = class,
 		arguments = args,
 		isVarargs = isVarargs,
 		comment = comment,
 	}
 end
 
-local function findFunctions(source, data)
+local function findFunctions(source, data, class)
 	local functions = {}
 
 	-- step 1. find functions
@@ -232,7 +237,8 @@ local function findFunctions(source, data)
 		local line = source:sub(start, stop)
 		if line:match("^%s*IMGUI_API") then
 			local regions = getRegionsForPosition(data, start)
-			if not isMethod(regions) then
+			local methodClass = getClassFromRegions(regions)
+			if methodClass == class then
 				local fnData = parseImguiFunction(line, regions)
 				if not SKIP_FUNCTIONS[fnData.name] and not fnData.name:match("V$") then
 					table.insert(functions, fnData)
@@ -255,7 +261,13 @@ local function findFunctions(source, data)
 		end
 	end
 
-	return functions, fnOverrides
+	return {
+		class = class,
+		fnData = functions,
+		overrides = fnOverrides,
+		validNames = {},
+		invalidNames = {},
+	}
 end
 
 local Parse = {}
@@ -278,7 +290,9 @@ function Parse.parseHeaders(filenames)
 	data.structs = findRegions(source, "struct")
 	data.classes = findRegions(source, "class")
 	data.enums = findEnums(source)
-	data.functions, data.functionOverrides = findFunctions(source, data)
+	data.functions = {}
+	data.functions.toplevel   = findFunctions(source, data)
+	data.functions.ImDrawList = findFunctions(source, data, "ImDrawList")
 
 	return data
 end

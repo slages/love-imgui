@@ -60,14 +60,13 @@ static int w_ShutDown([[maybe_unused]] lua_State *L)
 	return 0;
 }
 
-static int w_NewFrame(lua_State *L)
+static int w_Init(lua_State *L)
 {
 	if (!g_inited)
 	{
 		Init(L);
 		g_inited = true;
 	}
-	NewFrame();
 	return 0;
 }
 
@@ -250,7 +249,7 @@ static const struct luaL_Reg imguilib[] = {
 
 	// Implementation
 	{ "ShutDown", w_ShutDown },
-	{ "NewFrame", w_NewFrame },
+	{ "Init", w_Init },
 	{ "Render", w_Render },
 	{ "MouseMoved", w_MouseMoved },
 	{ "MousePressed", w_MousePressed },

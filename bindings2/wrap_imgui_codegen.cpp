@@ -15,6 +15,8 @@
 extern ImTextureID luax_checkTextureID(lua_State* L, int narg); // define in your application
 
 namespace {
+	long g_currentFrameNumber = 0;
+
 // Helpers {{{
 bool luax_optboolean(lua_State* L, int narg, bool d)
 {
@@ -211,7 +213,7 @@ std::vector<float> luax_checkfloatvector(lua_State* L, int narg)
 <% end %>
 // End Enums }}}
 
-// Callbacks {{{
+// Manually Implemented Wrappers {{{
 struct FuncRef {
 	lua_State* L = nullptr;
 	int index = 0;
@@ -285,204 +287,19 @@ void* luax_getImguiInputTextCallback(lua_State* L, int narg)
 	}
 	return nullptr;
 }
-// End Callbacks }}}
 
-// Functions {{{
-<% for _, fnData in ipairs(imgui.functions) do %>
-<%- helpers.genFunctionWrapper(imgui, fnData) %>
-<% end %>
-// End Functions }}}
-
-// Function Overrides (manually written) {{{
-// FIXME: these overrides create a a source of breakage when the imgui API
-// changes. if IMGUI ever changes the order of function overrides on their end,
-// or removes one of the API calls, we're in trouble!
-
-static int w_Value(lua_State* L)
+struct WrapImDrawList
 {
-	if (lua_isboolean(L, 2)) {
-		return w_Value_Override1(L); // prefix, b
-	} else {
-		return w_Value_Override4(L); // prefix, v, float_format=nil
-	}
-}
+	ImDrawList* value;
+	long frameNumber;
+	void init() { frameNumber = 0L; }
+	bool isValid() { return g_currentFrameNumber == frameNumber; }
+};
 
-static int w_MenuItem(lua_State* L)
-{
-	if (lua_gettop(L) < 3) {
-		return w_MenuItem_Override1(L); // label, shortcut
-	} else {
-		return w_MenuItem_Override2(L); // label, shortcut, p_selected, enabled
-	}
-}
-
-static int w_IsRectVisible(lua_State* L)
-{
-	if (lua_gettop(L) <= 2) {
-		return w_IsRectVisible_Override1(L); // size_x, size_y
-	} else {
-		return w_IsRectVisible_Override2(L); // rect_min_x, rect_min_y, rect_max_x, rect_max_y
-	}
-}
-
-static int w_BeginChild(lua_State* L)
-{
-	if (lua_isstring(L, 1)) {
-		return w_BeginChild_Override1(L); // str_id, size_x, size_y, border, flags
-	} else {
-		return w_BeginChild_Override2(L); // id, size_x, size_y, border, flags
-	}
-}
-
-static int w_InputText(lua_State* L)
-{
-	return w_InputText_Override2(L); // std::string variant
-}
-
-static int w_InputTextMultiline(lua_State* L)
-{
-	return w_InputTextMultiline_Override2(L); // std::string variant
-}
-
-static int w_InputTextWithHint(lua_State* L)
-{
-	return w_InputTextWithHint_Override2(L); // std::string variant
-}
-
-<% 
-local windowFunctions = {"SetWindowPos", "SetWindowSize", "SetWindowCollapsed", "SetWindowFocus"}
-for _, fn in ipairs(windowFunctions) do
-%>
-static int w_<%-fn%>(lua_State* L)
-{
-	if (lua_isstring(L, 1)) {
-		return w_<%-fn%>_Override2(L); // with window name
-	} else {
-		return w_<%-fn%>_Override1(L); // no window name
-	}
-}
-<% end %>
-
-static int w_PushStyleColor(lua_State* L)
-{
-	// Only one interesting override
-	return w_PushStyleColor_Override2(L); // idx, col_r, col_g, col_b, col_a
-}
-
-static int w_PushStyleVar(lua_State* L)
-{
-	if (lua_isnumber(L, 3)) {
-		return w_PushStyleVar_Override2(L); // idx, val_x, val_y
-	} 
-
-	return w_PushStyleVar_Override1(L); // idx, val_float
-}
-
-static int w_PushID(lua_State* L)
-{
-	if (lua_isstring(L, 2)) {
-		return w_PushID_Override2(L); // str_id_begin, str_id_end
-	} else if (lua_isstring(L, 1)) {
-		return w_PushID_Override1(L); // str_id
-	} 
-
-	return w_PushID_Override4(L); // id
-}
-
-static int w_GetID(lua_State* L)
-{
-	if (lua_isstring(L, 2)) {
-		return w_GetID_Override2(L); // str_id_begin, str_id_end
-	}
-
-	return w_GetID_Override1(L); // str_id
-}
-
-static int w_RadioButton(lua_State* L)
-{
-	if (lua_isboolean(L, 2)) {
-		return w_RadioButton_Override1(L); // label, active
-	} else {
-		return w_RadioButton_Override2(L); // label, v, v_button
-	}
-}
-
-static int w_TreeNode(lua_State* L)
-{
-	// TODO: Override2, Override3
-	return w_TreeNode_Override1(L); // label
-}
-
-static int w_TreeNodeEx(lua_State* L)
-{
-	// TODO: Override2, Override3
-	return w_TreeNodeEx_Override1(L); // label, flags
-}
-
-static int w_TreePush(lua_State* L)
-{
-	// intentionally only one override
-	return w_TreePush_Override1(L); // str_id
-}
-
-static int w_CollapsingHeader(lua_State* L)
-{
-	if (lua_isboolean(L, 2)) {
-		return w_CollapsingHeader_Override2(L); // label, p_open, flags
-	} else {
-		return w_CollapsingHeader_Override1(L); // label, flags
-	}
-}
-
-static int w_Selectable(lua_State* L)
-{
-	// Only one interesting override
-	return w_Selectable_Override2(L); // label, p_selected, flags, size
-}
-
-static int w_Combo(lua_State* L)
-{
-	if (lua_istable(L, 3)) {
-		return w_Combo_Override4(L); // label, current_item, items, popup_max_height_in_items
-	} else {
-		return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
-	}
-}
-
-static int w_ListBox(lua_State* L)
-{
-	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
-}
-
-static int w_PlotLines(lua_State* L)
-{
-	return w_PlotLines_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
-}
-
-static int w_PlotHistogram(lua_State* L)
-{
-	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
-}
-
-<% helpers.removeValidFunction(imgui, "ListBoxHeader") -%>
-static int w_ListBoxHeaderXY(lua_State* L)
-{
-	<% helpers.addValidFunctions(imgui, "ListBoxHeaderXY") -%>
-	// There's no way to distinguish these two
-	return w_ListBoxHeader_Override1(L); // label, size
-}
-
-static int w_ListBoxHeaderItems(lua_State* L)
-{
-	<% helpers.addValidFunctions(imgui, "ListBoxHeaderItems") -%>
-	// There's no way to distinguish these two
-	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
-}
-
-static int w_ColorPicker4(lua_State* L)
+<% helpers.addValidFunctions(imgui.functions.toplevel, "ColorPicker4") -%>
+int w_ColorPicker4(lua_State* L)
 {
 	// manually implemented to handle ref_col, which is a little goofy
-	<% helpers.addValidFunctions(imgui, "ColorPicker4") -%>
 	auto label = luaL_checkstring(L, 1);
 	float col[4];
 	col[0] = static_cast<float>(luaL_checknumber(L, 2));
@@ -510,6 +327,227 @@ static int w_ColorPicker4(lua_State* L)
 	return 5;
 }
 
+<% helpers.addValidFunctions(imgui.functions.toplevel, "NewFrame") -%>
+int w_NewFrame(lua_State* L)
+{
+	// manually implemented to track new frames
+	ImGui::NewFrame();
+	g_currentFrameNumber++;
+	return 0;
+}
+
+// End Manually Implemented Wrappers }}}
+
+// Functions {{{
+<% for _, fnElement in pairs(imgui.functions) do -%>
+<% for _, fnData in ipairs(fnElement.fnData) do -%>
+<%- helpers.genFunctionWrapper(fnElement, fnData) %>
+
+<% end -%>
+<% end -%>
+// End Functions }}}
+
+// Function Overrides (manually written) {{{
+// FIXME: these overrides create a a source of breakage when the imgui API
+// changes. if IMGUI ever changes the order of function overrides on their end,
+// or removes one of the API calls, we're in trouble!
+
+int w_Value(lua_State* L)
+{
+	if (lua_isboolean(L, 2)) {
+		return w_Value_Override1(L); // prefix, b
+	} else {
+		return w_Value_Override4(L); // prefix, v, float_format=nil
+	}
+}
+
+int w_MenuItem(lua_State* L)
+{
+	if (lua_gettop(L) < 3) {
+		return w_MenuItem_Override1(L); // label, shortcut
+	} else {
+		return w_MenuItem_Override2(L); // label, shortcut, p_selected, enabled
+	}
+}
+
+int w_IsRectVisible(lua_State* L)
+{
+	if (lua_gettop(L) <= 2) {
+		return w_IsRectVisible_Override1(L); // size_x, size_y
+	} else {
+		return w_IsRectVisible_Override2(L); // rect_min_x, rect_min_y, rect_max_x, rect_max_y
+	}
+}
+
+int w_BeginChild(lua_State* L)
+{
+	if (lua_isstring(L, 1)) {
+		return w_BeginChild_Override1(L); // str_id, size_x, size_y, border, flags
+	} else {
+		return w_BeginChild_Override2(L); // id, size_x, size_y, border, flags
+	}
+}
+
+int w_InputText(lua_State* L)
+{
+	return w_InputText_Override2(L); // std::string variant
+}
+
+int w_InputTextMultiline(lua_State* L)
+{
+	return w_InputTextMultiline_Override2(L); // std::string variant
+}
+
+int w_InputTextWithHint(lua_State* L)
+{
+	return w_InputTextWithHint_Override2(L); // std::string variant
+}
+
+<% 
+local windowFunctions = {"SetWindowPos", "SetWindowSize", "SetWindowCollapsed", "SetWindowFocus"}
+for _, fn in ipairs(windowFunctions) do
+%>
+int w_<%-fn%>(lua_State* L)
+{
+	if (lua_isstring(L, 1)) {
+		return w_<%-fn%>_Override2(L); // with window name
+	} else {
+		return w_<%-fn%>_Override1(L); // no window name
+	}
+}
+<% end %>
+
+int w_PushStyleColor(lua_State* L)
+{
+	// Only one interesting override
+	return w_PushStyleColor_Override2(L); // idx, col_r, col_g, col_b, col_a
+}
+
+int w_PushStyleVar(lua_State* L)
+{
+	if (lua_isnumber(L, 3)) {
+		return w_PushStyleVar_Override2(L); // idx, val_x, val_y
+	} 
+
+	return w_PushStyleVar_Override1(L); // idx, val_float
+}
+
+int w_PushID(lua_State* L)
+{
+	if (lua_isstring(L, 2)) {
+		return w_PushID_Override2(L); // str_id_begin, str_id_end
+	} else if (lua_isstring(L, 1)) {
+		return w_PushID_Override1(L); // str_id
+	} 
+
+	return w_PushID_Override4(L); // id
+}
+
+int w_GetID(lua_State* L)
+{
+	if (lua_isstring(L, 2)) {
+		return w_GetID_Override2(L); // str_id_begin, str_id_end
+	}
+
+	return w_GetID_Override1(L); // str_id
+}
+
+int w_RadioButton(lua_State* L)
+{
+	if (lua_isboolean(L, 2)) {
+		return w_RadioButton_Override1(L); // label, active
+	} else {
+		return w_RadioButton_Override2(L); // label, v, v_button
+	}
+}
+
+int w_TreeNode(lua_State* L)
+{
+	// TODO: Override2, Override3
+	return w_TreeNode_Override1(L); // label
+}
+
+int w_TreeNodeEx(lua_State* L)
+{
+	// TODO: Override2, Override3
+	return w_TreeNodeEx_Override1(L); // label, flags
+}
+
+int w_TreePush(lua_State* L)
+{
+	// intentionally only one override
+	return w_TreePush_Override1(L); // str_id
+}
+
+int w_CollapsingHeader(lua_State* L)
+{
+	if (lua_isboolean(L, 2)) {
+		return w_CollapsingHeader_Override2(L); // label, p_open, flags
+	} else {
+		return w_CollapsingHeader_Override1(L); // label, flags
+	}
+}
+
+int w_Selectable(lua_State* L)
+{
+	// Only one interesting override
+	return w_Selectable_Override2(L); // label, p_selected, flags, size
+}
+
+int w_Combo(lua_State* L)
+{
+	if (lua_istable(L, 3)) {
+		return w_Combo_Override4(L); // label, current_item, items, popup_max_height_in_items
+	} else {
+		return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
+	}
+}
+
+int w_ListBox(lua_State* L)
+{
+	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
+}
+
+int w_PlotLines(lua_State* L)
+{
+	return w_PlotLines_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
+}
+
+int w_PlotHistogram(lua_State* L)
+{
+	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
+}
+
+<% helpers.removeValidFunction(imgui.functions.toplevel, "ListBoxHeader") -%>
+int w_ListBoxHeaderXY(lua_State* L)
+{
+	<% helpers.addValidFunctions(imgui.functions.toplevel, "ListBoxHeaderXY") -%>
+	// There's no way to distinguish these two
+	return w_ListBoxHeader_Override1(L); // label, size
+}
+
+int w_ListBoxHeaderItems(lua_State* L)
+{
+	<% helpers.addValidFunctions(imgui.functions.toplevel, "ListBoxHeaderItems") -%>
+	// There's no way to distinguish these two
+	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
+}
+
+int w_GetForegroundDrawList(lua_State* L)
+{
+	return w_GetForegroundDrawList_Override1(L);
+}
+
+int w_GetBackgroundDrawList(lua_State* L)
+{
+	return w_GetBackgroundDrawList_Override1(L);
+}
+
+int w_ImDrawList_AddText(lua_State* L)
+{
+	return w_ImDrawList_AddText_Override1(L);
+}
+
 // End Function Overrides }}}
 }
 
@@ -517,15 +555,21 @@ static int w_ColorPicker4(lua_State* L)
 
 void wrap_imgui::addImguiWrappers(lua_State* L)
 {
-<% for name in pairs(imgui.validFunctionNames) do -%>
+<% for name in pairs(imgui.functions.toplevel.validNames) do -%>
 	lua_pushcfunction(L, w_<%- name %>);
+	lua_setfield(L, -2, "<%- name %>");
+<% end -%>
+
+	luaL_newmetatable(L, "ImDrawList");
+<% for name in pairs(imgui.functions.ImDrawList.validNames) do -%>
+	lua_pushcfunction(L, w_ImDrawList_<%- name %>);
 	lua_setfield(L, -2, "<%- name %>");
 <% end -%>
 }
 
 void wrap_imgui::createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, <%- helpers.count(imgui.validFunctionNames) %>); 
+	lua_createtable(L, 0, <%- helpers.count(imgui.functions.toplevel.validNames) %>); 
 	addImguiWrappers(L);
 }
 

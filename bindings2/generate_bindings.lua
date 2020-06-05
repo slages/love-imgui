@@ -65,16 +65,23 @@ function helpers.genEnumFromString(_, enumData)
 	return buf:done()
 end
 
-function helpers.genFunctionWrapper(imgui, fnData)
+function helpers.genFunctionWrapper(fnElement, fnData)
 	local qualifiedName = fnData.qualifiedName
 	local cname = "w_" .. fnData.name
-	if imgui.functionOverrides[qualifiedName] then
-		for index, iData in ipairs(imgui.functionOverrides[qualifiedName]) do
+
+	if fnData.class then
+		cname = "w_" .. fnData.class .. "_" .. fnData.name
+	end
+
+	if fnElement.overrides[qualifiedName] then
+		for index, iData in ipairs(fnElement.overrides[qualifiedName]) do
 			if iData == fnData then
 				cname = cname .. "_Override" .. index
 				break
 			end
 		end
+	elseif fnElement.validNames[fnData.name] then
+		return string.format("// skipping %s: already implemented", cname)
 	end
 
 	local buf = Buffer.new(0)
@@ -88,7 +95,6 @@ function helpers.genFunctionWrapper(imgui, fnData)
 		-- arguments
 		local argnames = {}
 		local outParams = {}
-		local lua_arg = 1
 
 		for i = #fnData.arguments, 1, -1 do
 			local arg = fnData.arguments[i]
@@ -108,11 +114,19 @@ function helpers.genFunctionWrapper(imgui, fnData)
 			end
 		end
 
+		local lua_arg = 1
+		if fnData.class then
+			buf:addf("auto* self_udata = static_cast<Wrap%s*>(luaL_checkudata(L, 1, %q));", fnData.class, fnData.class)
+			buf:add("if (!self_udata->isValid()) { luaL_error(L, \"Expired userdata\"); }")
+			buf:add("auto* self = self_udata->value;")
+			lua_arg = 2
+		end
+
 		local atLeastOneArgument = false
 		for _, arg in ipairs(fnData.arguments) do
 			lua_arg, stop = Types.check(buf, arg, lua_arg, outParams)
 			if stop then
-				helpers.addInvalidFunctions(imgui, fnData.name)
+				helpers.addInvalidFunctions(fnElement, fnData.name)
 				return string.format("// skipping %s due to unimplemented argument type: %q", cname, arg.type)
 			end
 			atLeastOneArgument = true
@@ -139,10 +153,14 @@ function helpers.genFunctionWrapper(imgui, fnData)
 
 		-- call
 		if atLeastOneArgument then buf:add("") end
+		local callname = qualifiedName
+		if fnData.class then
+			callname = "self->"..fnData.name
+		end
 		if fnData.returnType == "void" then
-			buf:addf("%s(%s);", qualifiedName, argnames)
+			buf:addf("%s(%s);", callname, argnames)
 		else
-			buf:addf("%s out = %s(%s);", fnData.returnType, qualifiedName, argnames)
+			buf:addf("%s out = %s(%s);", fnData.returnType, callname, argnames)
 			table.insert(outParams, {"out", fnData.returnType})
 		end
 		buf:add("")
@@ -153,7 +171,7 @@ function helpers.genFunctionWrapper(imgui, fnData)
 			local name, ctype = unpack(param)
 			outArg, stop = Types.push(buf, name, ctype, outArg)
 			if stop then
-				helpers.addInvalidFunctions(imgui, fnData.name)
+				helpers.addInvalidFunctions(fnElement, fnData.name)
 				return string.format("// skipping %s due to unimplemented return type: %q", cname, fnData.returnType)
 			end
 		end
@@ -163,27 +181,27 @@ function helpers.genFunctionWrapper(imgui, fnData)
 		-- output
 	end buf:unindent() buf:add("}")
 
-	helpers.addValidFunctions(imgui, fnData.name)
+	helpers.addValidFunctions(fnElement, fnData.name)
 	return buf:done()
 end
 
-function helpers.removeValidFunction(imgui, toRemove)
-	imgui.validFunctionNames[toRemove] = nil
+function helpers.removeValidFunction(fnElement, toRemove)
+	fnElement.validNames[toRemove] = nil
 end
 
-function helpers.addValidFunctions(imgui, ...)
+function helpers.addValidFunctions(fnElement, ...)
 	for i = 1, select('#', ...) do
 		local name = select(i, ...)
-		imgui.validFunctionNames[name] = true
-		imgui.invalidFunctionNames[name] = nil
+		fnElement.validNames[name] = true
+		fnElement.invalidNames[name] = nil
 	end
 end
 
-function helpers.addInvalidFunctions(imgui, ...)
+function helpers.addInvalidFunctions(fnElement, ...)
 	for i = 1, select('#', ...) do
 		local name = select(i, ...)
-		if not imgui.validFunctionNames[name] then
-			imgui.invalidFunctionNames[name] = true
+		if not fnElement.validNames[name] then
+			fnElement.invalidNames[name] = true
 		end
 	end
 end
@@ -217,14 +235,17 @@ end
 
 local function main()
 	local imgui = Parse.parseHeaders{"src/libimgui/imgui.h", "src/imgui_stdlib.h"}
-	imgui.invalidFunctionNames = {}
-	imgui.validFunctionNames = {}
 	generateFile("src/wrap_imgui_codegen.cpp", "bindings2/wrap_imgui_codegen.cpp", imgui)
 	generateFile("src/wrap_imgui_codegen.h",  "bindings2/wrap_imgui_codegen.h", imgui)
-	for name in pairs(imgui.invalidFunctionNames) do
-		util.logf("unimplemented function: %s", name)
+	for elementName, fnElement in pairs(imgui.functions) do
+		for name in pairs(fnElement.invalidNames) do
+			util.logf("unimplemented function: %s", name)
+		end
+		util.logf("%s: %d functions implemented, %d functions unimplemented",
+			elementName,
+			helpers.count(fnElement.validNames),
+			helpers.count(fnElement.invalidNames))
 	end
-	util.logf("%d functions implemented, %d functions unimplemented", helpers.count(imgui.validFunctionNames), helpers.count(imgui.invalidFunctionNames))
 end
 
 main(...)
