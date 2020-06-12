@@ -1,211 +1,20 @@
 // This is an automatically generated file!!
-#define _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 
+#include "wren.hpp"
 #include "wrap_imgui_codegen.h"
 #include "imgui.h"
 #include "imgui_stdlib.h"
 
-#include <optional>
-#include <string>
-#include <vector>
-#include <sstream>
-#include <locale>
 #include <codecvt>
-
-extern ImTextureID luax_checkTextureID(lua_State* L, int narg); // define in your application
+#include <locale>
+#include <optional>
+#include <sstream>
+#include <string>
+#include <unordered_map>
+#include <variant>
+#include <vector>
 
 namespace {
-	long g_currentFrameNumber = 0;
-
-// Helpers {{{
-bool luax_optboolean(lua_State* L, int narg, bool d)
-{
-	if(lua_isnoneornil(L, narg)) {
-		return d;
-	}
-	return lua_toboolean(L, narg);
-}
-
-bool luax_checkboolean(lua_State* L, int narg)
-{
-	return lua_toboolean(L, narg);
-}
-
-float luax_optfloat(lua_State* L, int narg, float d)
-{
-	if(lua_isnoneornil(L, narg)) {
-		return d;
-	}
-	return static_cast<float>(lua_tonumber(L, narg));
-}
-
-float luax_checkfloat(lua_State* L, int narg)
-{
-	return static_cast<float>(luaL_checknumber(L, narg));
-}
-
-void* luax_checklightuserdata(lua_State* L, int narg)
-{
-	if(!lua_islightuserdata(L, narg)) {
-		luaL_error(L, "Invalid lightuserdata passed as parameter %d", narg);
-		return nullptr;
-	}
-	return lua_touserdata(L, narg);
-}
-
-void* luax_optlightuserdata(lua_State* L, int narg, void* d)
-{
-	if(lua_isnoneornil(L, narg)) {
-		return d;
-	}
-	return luax_checklightuserdata(L, narg);
-}
-
-const char* luax_formatargs(lua_State* L, int startarg)
-{
-	int endarg = lua_gettop(L);
-
-	lua_getglobal(L, "string"); // 1
-	lua_getfield(L, -1, "format"); // 2
-	lua_remove(L, -2); // 1, remove string
-	for (int i = startarg; i <= endarg; ++i) {
-		lua_pushvalue(L, i);
-	} // 1 + args
-	// out = string.format(...)
-	lua_call(L, endarg - startarg + 1, 1); // 1
-	const char* out = luaL_checkstring(L, -1); // 1
-	lua_pop(L, 1); // 0
-
-	return out;
-}
-
-template<typename T, typename U>
-T luax_checkenum(U fromString, lua_State* L, int narg)
-{
-	const char* s = luaL_checkstring(L, narg);
-	std::optional<T> opt = fromString(s);
-	if(!opt) {
-		luaL_error(L, "Invalid enum as argument %d, received \"%s\"", narg, s);
-	}
-	return *opt;
-}
-
-template<typename T, typename U>
-T luax_optenum(U fromString, lua_State* L, int narg, T d)
-{
-	if(!lua_isstring(L, narg)) {
-		return d;
-	}
-	const char* s = lua_tostring(L, narg);
-	std::optional<T> opt = fromString(s);
-	if(!opt) {
-		return d;
-	}
-	return *opt;
-}
-
-template<typename T, typename U>
-T luax_checkflags(U fromString, lua_State* L, int narg)
-{
-	T out{};
-	if (lua_isnumber(L, narg)) {
-		// variant A: raw number
-		out = static_cast<T>(lua_tointeger(L, narg));
-	} else if (lua_isstring(L, narg)) {
-		// variant B: string, split by '|'
-		const char* s = lua_tostring(L, narg);
-		std::vector<std::string> tokens;
-		std::string token;
-		std::istringstream tokenStream(s);
-		while (std::getline(tokenStream, token, '|')) {
-			std::optional<T> opt = fromString(token.c_str());
-			if (!opt) {
-				luaL_error(L, "Unrecognized value in flags parameter %d: %s", narg, token.c_str());
-			}
-			out = out | *opt;
-		}
-	} else if (lua_istable(L, narg)) {
-		// Variant C: table, both [enum] = true, and "enum" are supported
-		lua_pushvalue(L, narg); // t
-		lua_pushnil(L); // t, k(nil)
-		while (lua_next(L, -2)) {// t, k, v
-			lua_pushvalue(L, -2); // t, k, v, k
-			if (lua_isstring(L, -1)) {
-				const char* flagString = lua_tostring(L, -1);
-				std::optional<T> opt = fromString(flagString);
-				if (!opt) {
-					luaL_error(L, "Unrecognized enum in flags parameter %d: %s.", narg);
-				}
-				bool enabled = lua_toboolean(L, -2);
-				if (enabled) {
-					out = out | *opt;
-				}
-			} else if (lua_isnumber(L, -1)) {
-				const char* flagString = lua_tostring(L, -2);
-				std::optional<T> opt = fromString(flagString);
-				if (!opt) {
-					luaL_error(L, "Unrecognized enum in flags parameter %d: %s.", narg);
-				}
-				out = out | *opt;
-			}
-
-			lua_pop(L, 2); // t, k
-		}
-		lua_pop(L, 1); // clean
-	} else {
-		luaL_error(L, "Unrecognized flag parameter %d: must be int, string, or table", narg);
-	}
-
-	return out;
-}
-
-template<typename T, typename U>
-T luax_optflags(U fromString, lua_State* L, int narg, T d)
-{
-	if (lua_isnoneornil(L, narg)) {
-		return d;
-	}
-	return luax_checkflags<T, U>(fromString, L, narg);
-}
-
-std::vector<const char*> luax_checkstringvector(lua_State* L, int narg)
-{
-	if(!lua_istable(L, narg)) {
-		luaL_error(L, "Invalid table passed as parameter %d", narg);
-	}
-
-	std::vector<const char*> out;
-	int idx = 1;
-	lua_rawgeti(L, narg, idx);
-	while (!lua_isnil(L, -1)) {
-		out.emplace_back(luaL_checkstring(L, -1));
-		lua_pop(L, 1);
-		idx++;
-		lua_rawgeti(L, narg, idx);
-	}
-
-	return out;
-}
-
-std::vector<float> luax_checkfloatvector(lua_State* L, int narg)
-{
-	if(!lua_istable(L, narg)) {
-		luaL_error(L, "Invalid table passed as parameter %d", narg);
-	}
-
-	std::vector<float> out;
-	int idx = 1;
-	lua_rawgeti(L, narg, idx);
-	while (!lua_isnil(L, -1)) {
-		out.emplace_back(static_cast<float>(luaL_checknumber(L, -1)));
-		lua_pop(L, 1);
-		idx++;
-		lua_rawgeti(L, narg, idx);
-	}
-
-	return out;
-}
-// End Helpers }}}
 
 // Enums {{{
 
@@ -1228,1984 +1037,1309 @@ const char* getStringFromImGuiViewportFlags(ImGuiViewportFlags in)
 
 // End Enums }}}
 
-// Manually Implemented Wrappers {{{
-struct FuncRef {
-	lua_State* L = nullptr;
-	int index = 0;
-};
-
-int callLuaInputTextCallback(ImGuiInputTextCallbackData *data)
+// Helpers {{{
+const char* wrenExGetSlotStringDefault(WrenVM* vm, int narg, const char* d)
 {
-	auto* ref = reinterpret_cast<FuncRef*>(data->UserData);
-	if(!ref) {
-		return 0; // no lua ref
+	if(wrenGetSlotCount(vm) > narg) {
+		return wrenGetSlotString(vm, narg);
+	} else {
+		return d;
 	}
-	lua_State* L = ref->L;
-	lua_rawgeti(L, LUA_REGISTRYINDEX, ref->index);
-	luaL_unref(L, LUA_REGISTRYINDEX, ref->index);
+}
 
-	// TODO: metatable to add/remove from buffer
-	lua_newtable(L);
-	lua_pushvalue(L, -1); //copy for later
-	
-	lua_pushstring(L, getStringFromImGuiInputTextFlags(data->EventFlag));
-	lua_setfield(L, -2, "EventFlag");
-
-	lua_pushlstring(L, data->Buf, data->BufTextLen);
-	lua_setfield(L, -2, "Buf");
-
-	//using int16_t instead of char16_t to avoid a visual studio bug in codecvt
-	std::wstring_convert<std::codecvt_utf8_utf16<int16_t>, int16_t> convert;
-	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
-		ImWchar k = data->EventChar;
-		std::string u8str = convert.to_bytes(k);
-		lua_pushlstring(L, u8str.c_str(), u8str.size());
-		lua_setfield(L, -2, "EventChar");
+bool wrenExGetSlotBoolDefault(WrenVM* vm, int narg, bool d)
+{
+	if(wrenGetSlotCount(vm) > narg) {
+		return wrenGetSlotBool(vm, narg);
+	} else {
+		return d;
 	}
-	if (data->Flags & (ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory)) {
-		lua_pushstring(L, getStringFromImGuiKey(data->EventKey));
-		lua_setfield(L, -2, "EventKey");
+}
+
+int wrenExGetSlotInt(WrenVM* vm, int narg)
+{
+	// TODO: check integralness
+	return static_cast<int>(wrenGetSlotDouble(vm, narg));
+}
+
+int wrenExGetSlotIntDefault(WrenVM* vm, int narg, int d)
+{
+	if(wrenGetSlotCount(vm) > narg) {
+		return wrenExGetSlotInt(vm, narg);
+	} else {
+		return d;
 	}
-	if (data->Flags & (ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackAlways)) {
-		lua_pushinteger(L, data->CursorPos);
-		lua_setfield(L, -2, "CursorPos");
-		lua_pushinteger(L, data->SelectionStart);
-		lua_setfield(L, -2, "SelectionStart");
-		lua_pushinteger(L, data->SelectionEnd);
-		lua_setfield(L, -2, "SelectionEnd");
+}
+
+double wrenExGetSlotDoubleDefault(WrenVM* vm, int narg, double d)
+{
+	if(wrenGetSlotCount(vm) > narg) {
+		return wrenGetSlotDouble(vm, narg);
+	} else {
+		return d;
+	}
+}
+
+float wrenExGetSlotFloat(WrenVM* vm, int narg)
+{
+	return static_cast<float>(wrenGetSlotDouble(vm, narg));
+}
+
+float wrenExGetSlotFloatDefault(WrenVM* vm, int narg, float d)
+{
+	if(wrenGetSlotCount(vm) > narg) {
+		return wrenExGetSlotFloat(vm, narg);
+	} else {
+		return d;
+	}
+}
+
+unsigned int wrenExGetSlotUInt(WrenVM* vm, int narg)
+{
+	// TODO: check integralness
+	return static_cast<unsigned int>(wrenGetSlotDouble(vm, narg));
+}
+
+unsigned int wrenExGetSlotUIntDefault(WrenVM* vm, int narg, unsigned int d)
+{
+	if(wrenGetSlotCount(vm) > narg) {
+		return wrenExGetSlotUInt(vm, narg);
+	} else {
+		return d;
+	}
+}
+
+void wrenExAbortf(WrenVM* vm, const char* fmt, ...)
+{
+	char buf[1000]; // arbitrary size
+
+	va_list arglist;
+    va_start(arglist, fmt);
+    vsnprintf(buf, 1000, fmt, arglist);
+    va_end(arglist);
+
+	int slotIdx = wrenGetSlotCount(vm);
+	wrenEnsureSlots(vm, slotIdx + 1);
+	wrenSetSlotString(vm, slotIdx, buf);
+	wrenAbortFiber(vm, slotIdx);
+}
+
+template<typename T, typename U>
+T wrenExGetSlotEnum(U fromString, WrenVM* vm, int narg)
+{
+	const char* s = wrenGetSlotString(vm, narg);
+	std::optional<T> opt = fromString(s);
+	if(!opt) {
+		wrenExAbortf(vm, "Invalid enum as argument %d, received \"%s\"", narg, s);
+	}
+	return *opt;
+}
+
+template<typename T, typename U>
+T wrenExGetSlotEnumsDefault(U fromString, WrenVM* vm, int narg, T d)
+{
+	if(wrenGetSlotType(vm, narg) == WREN_TYPE_NULL) {
+		return d;
+	}
+	return wrenExGetSlotEnum<T, U>(fromString, vm, narg);
+}
+
+template<typename T, typename U>
+T wrenExGetSlotFlags(U fromString, WrenVM* vm, int narg)
+{
+	T out{};
+	WrenType type = wrenGetSlotType(vm, narg);
+	if (type == WREN_TYPE_NUM) {
+		// variant A: raw number
+		out = static_cast<T>(wrenExGetSlotInt(vm, narg));
+	} else if (type == WREN_TYPE_STRING) {
+		// variant B: string, split by '|'
+		const char* s = wrenGetSlotString(vm, narg);
+		std::vector<std::string> tokens;
+		std::string token;
+		std::istringstream tokenStream(s);
+		while (std::getline(tokenStream, token, '|')) {
+			std::optional<T> opt = fromString(token.c_str());
+			if (!opt) {
+				wrenExAbortf(vm, "Unrecognized value in flags parameter %d: %s", narg, token.c_str());
+			}
+			out = out | *opt;
+		}
+	} else {
+		wrenExAbortf(vm, "Unrecognized flag parameter %d: must be int, string, or table", narg);
 	}
 
-	lua_call(L, 1, 1);
-	int out = static_cast<int>(lua_tointeger(L, -1));
-	lua_pop(L, 1);
-
-	if(data->Flags & ImGuiInputTextFlags_CallbackCharFilter) {
-		lua_getfield(L, -2, "EventChar");
-		const char* k = lua_tostring(L, -1);
-		std::basic_string<int16_t> u16str = convert.from_bytes(k);
-		data->EventChar = u16str.at(0);
-		lua_pop(L, 1);
-	}
-	delete ref;
-	data->UserData = nullptr;
 	return out;
 }
 
-void* luax_getImguiInputTextCallback(lua_State* L, int narg)
+template<typename T, typename U>
+T wrenExGetSlotFlagsDefault(U fromString, WrenVM* vm, int narg, T d)
 {
-	if (lua_isfunction(L, narg)) {
-		auto* ref = new FuncRef;
-		ref->L = L;
-		lua_pushvalue(L, narg);
-		ref->index = luaL_ref(L, LUA_REGISTRYINDEX);
-		return ref;
+	if(wrenGetSlotType(vm, narg) == WREN_TYPE_NULL) {
+		return d;
 	}
-	return nullptr;
+	return wrenExGetSlotFlags<T, U>(fromString, vm, narg);
 }
 
-struct WrapImDrawList
+// End Helpers }}}
+
+// Helper classes {{{
+using WrenNull = std::monostate;
+void setSlotGeneric(WrenVM* vm, int slotIdx, bool v)
 {
-	ImDrawList* value;
-	long frameNumber;
-	void init() { frameNumber = 0L; }
-	bool isValid() { return g_currentFrameNumber == frameNumber; }
+	wrenSetSlotBool(vm, slotIdx, v);
+}
+
+void setSlotGeneric(WrenVM* vm, int slotIdx, double v)
+{
+	wrenSetSlotDouble(vm, slotIdx, v);
+}
+
+void setSlotGeneric(WrenVM* vm, int slotIdx, WrenNull v)
+{
+	(void)v;
+	wrenSetSlotNull(vm, slotIdx);
+}
+
+template<typename T>
+T getSlotGeneric(WrenVM* vm, int slotIdx);
+
+template<>
+bool getSlotGeneric<bool>(WrenVM* vm, int slotIdx)
+{
+	return wrenGetSlotBool(vm, slotIdx);
+}
+
+template<>
+double getSlotGeneric<double>(WrenVM* vm, int slotIdx)
+{
+	return wrenGetSlotDouble(vm, slotIdx);
+}
+
+class Box {
+	using Field = std::variant<WrenNull, bool, double>;
+	public:
+	static void alloc(WrenVM* vm)
+	{
+		void* memory = wrenSetSlotNewForeign(vm, 0, 0, sizeof(Field));
+		Field* field = new (memory) Field();
+	}
+	static void finalize(void* memory)
+	{
+		Field* field = (Field*)memory;
+		field->~Field();
+	}
+	static void init(WrenVM* vm)
+	{
+		set(vm);
+	}
+	static void get(WrenVM* vm)
+	{
+		Field* field = (Field*)wrenGetSlotForeign(vm, 0);
+		std::visit([&](auto&&arg){setSlotGeneric(vm, 0, arg);}, *field);
+	}
+	template<typename T>
+	static T getCPP(WrenVM* vm, int slotIdx)
+	{
+		Field* field = (Field*)wrenGetSlotForeign(vm, slotIdx);
+		return std::get<T>(*field);
+	}
+	static void set(WrenVM* vm)
+	{
+		Field* field = (Field*)wrenGetSlotForeign(vm, 0);
+		switch(wrenGetSlotType(vm, 1))
+		{
+		case WREN_TYPE_BOOL:
+			{
+				*field = getSlotGeneric<bool>(vm, 1);
+			}
+			break;
+		case WREN_TYPE_NUM:
+			{
+				*field = getSlotGeneric<double>(vm, 1);
+			}
+			break;
+		default:
+			{
+				wrenExAbortf(vm, "Invalid box type");
+			}
+			break;
+		}
+	}
+	template<typename T>
+	static void setCPP(WrenVM* vm, int slotIdx, T v)
+	{
+		Field* field = (Field*)wrenGetSlotForeign(vm, slotIdx);
+		*field = v;
+	}
 };
-
-int w_ColorPicker4(lua_State* L)
-{
-	// manually implemented to handle ref_col, which is a little goofy
-		auto label = luaL_checkstring(L, 1);
-	float col[4];
-	col[0] = static_cast<float>(luaL_checknumber(L, 2));
-	col[1] = static_cast<float>(luaL_checknumber(L, 3));
-	col[2] = static_cast<float>(luaL_checknumber(L, 4));
-	col[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
-	float ref_col_data[4];
-	float* ref_col = nullptr;
-	if(lua_gettop(L) > 6) {
-		ref_col_data[0] = static_cast<float>(luaL_checknumber(L, 7));
-		ref_col_data[1] = static_cast<float>(luaL_checknumber(L, 8));
-		ref_col_data[2] = static_cast<float>(luaL_checknumber(L, 9));
-		ref_col_data[3] = static_cast<float>(luaL_checknumber(L, 10));
-		ref_col = ref_col_data;
-	}
-	
-	bool out = ImGui::ColorPicker4(label, col, flags, ref_col);
-	
-	lua_pushnumber(L, col[0]);
-	lua_pushnumber(L, col[1]);
-	lua_pushnumber(L, col[2]);
-	lua_pushnumber(L, col[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
-
-int w_NewFrame(lua_State* L)
-{
-	// manually implemented to track new frames
-	ImGui::NewFrame();
-	g_currentFrameNumber++;
-	return 0;
-}
-
-// End Manually Implemented Wrappers }}}
+// }}}
 
 // Functions {{{
-int w_CreateContext(lua_State *L)
-{
-	ImFontAtlas* shared_font_atlas = NULL; // skipping
-	
-	ImGuiContext* out = ImGui::CreateContext(shared_font_atlas);
-	
-	lua_pushlightuserdata(L, out);
-	return 1;
-}
+// skipping w_CreateContext due to unimplemented return type: "ImGuiContext*"
 
-/*  NULL = destroy current context */
-int w_DestroyContext(lua_State *L)
-{
-	auto ctx = static_cast<ImGuiContext*>(luax_optlightuserdata(L, 1, NULL));
-	
-	ImGui::DestroyContext(ctx);
-	
-	return 0;
-}
+// skipping w_DestroyContext due to unimplemented argument type: "ImGuiContext*"
 
-int w_GetCurrentContext(lua_State *L)
-{
-	ImGuiContext* out = ImGui::GetCurrentContext();
-	
-	lua_pushlightuserdata(L, out);
-	return 1;
-}
+// skipping w_GetCurrentContext due to unimplemented return type: "ImGuiContext*"
 
-int w_SetCurrentContext(lua_State *L)
-{
-	auto ctx = static_cast<ImGuiContext*>(luax_checklightuserdata(L, 1));
-	
-	ImGui::SetCurrentContext(ctx);
-	
-	return 0;
-}
+// skipping w_SetCurrentContext due to unimplemented argument type: "ImGuiContext*"
 
 // skipping w_GetIO due to unimplemented return type: "ImGuiIO&"
 
-/*  access the Style structure (colors, sizes). Always use PushStyleCol(), PushStyleVar() to modify style mid-frame. */
-int w_GetStyle(lua_State *L)
+// skipping w_GetStyle due to unimplemented return type: "ImGuiStyle&"
+
+/*  start a new Dear ImGui frame, you can submit any command from this point until Render()/EndFrame(). */
+void w_NewFrame(WrenVM *vm)
 {
-	ImGuiStyle& out = ImGui::GetStyle();
+	ImGui::NewFrame();
 	
-	lua_pushlightuserdata(L, &out);
-	return 1;
 }
 
-// skipping w_NewFrame: already implemented
-
 /*  ends the Dear ImGui frame. automatically called by Render(), you likely don't need to call that yourself directly. If you don't need to render data (skipping rendering) you may call EndFrame() but you'll have wasted CPU already! If you don't need to render, better to not create any imgui windows and not call NewFrame() at all! */
-int w_EndFrame(lua_State *L)
+void w_EndFrame(WrenVM *vm)
 {
 	ImGui::EndFrame();
 	
-	return 0;
 }
 
 /*  ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function. (Obsolete: this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.) */
-int w_Render(lua_State *L)
+void w_Render(WrenVM *vm)
 {
 	ImGui::Render();
 	
-	return 0;
 }
 
 // skipping w_GetDrawData due to unimplemented return type: "ImDrawData*"
 
 /*  create Demo window (previously called ShowTestWindow). demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application! */
-int w_ShowDemoWindow(lua_State *L)
+void w_ShowDemoWindow(WrenVM *vm)
 {
-	bool p_open = luax_optboolean(L, 1, NULL);
+	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 1));
 	
 	ImGui::ShowDemoWindow(&p_open);
 	
-	lua_pushboolean(L, p_open);
-	return 1;
+	Box::setCPP<bool>(vm, 1, p_open);
 }
 
 /*  create About window. display Dear ImGui version, credits and build/system information. */
-int w_ShowAboutWindow(lua_State *L)
+void w_ShowAboutWindow(WrenVM *vm)
 {
-	bool p_open = luax_optboolean(L, 1, NULL);
+	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 1));
 	
 	ImGui::ShowAboutWindow(&p_open);
 	
-	lua_pushboolean(L, p_open);
-	return 1;
+	Box::setCPP<bool>(vm, 1, p_open);
 }
 
 /*  create Metrics/Debug window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
-int w_ShowMetricsWindow(lua_State *L)
+void w_ShowMetricsWindow(WrenVM *vm)
 {
-	bool p_open = luax_optboolean(L, 1, NULL);
+	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 1));
 	
 	ImGui::ShowMetricsWindow(&p_open);
 	
-	lua_pushboolean(L, p_open);
-	return 1;
+	Box::setCPP<bool>(vm, 1, p_open);
 }
 
-/*  add style editor block (not a window). you can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it uses the default style) */
-int w_ShowStyleEditor(lua_State *L)
-{
-	auto ref = static_cast<ImGuiStyle*>(luax_optlightuserdata(L, 1, NULL));
-	
-	ImGui::ShowStyleEditor(ref);
-	
-	return 0;
-}
+// skipping w_ShowStyleEditor due to unimplemented argument type: "ImGuiStyle*"
 
 /*  add style selector block (not a window), essentially a combo listing the default styles. */
-int w_ShowStyleSelector(lua_State *L)
+void w_ShowStyleSelector(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
+	auto label = wrenGetSlotString(vm, 1);
 	
 	bool out = ImGui::ShowStyleSelector(label);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  add font selector block (not a window), essentially a combo listing the loaded fonts. */
-int w_ShowFontSelector(lua_State *L)
+void w_ShowFontSelector(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
+	auto label = wrenGetSlotString(vm, 1);
 	
 	ImGui::ShowFontSelector(label);
 	
-	return 0;
 }
 
 /*  add basic help/info block (not a window): how to manipulate ImGui as a end-user (mouse/keyboard controls). */
-int w_ShowUserGuide(lua_State *L)
+void w_ShowUserGuide(WrenVM *vm)
 {
 	ImGui::ShowUserGuide();
 	
-	return 0;
 }
 
 /*  get the compiled version string e.g. "1.23" (essentially the compiled value for IMGUI_VERSION) */
-int w_GetVersion(lua_State *L)
+void w_GetVersion(WrenVM *vm)
 {
 	const char* out = ImGui::GetVersion();
+	wrenSetSlotString(vm, 0, out);
 	
-	lua_pushstring(L, out);
-	return 1;
 }
 
-/*  new, recommended style (default) */
-int w_StyleColorsDark(lua_State *L)
-{
-	auto dst = static_cast<ImGuiStyle*>(luax_optlightuserdata(L, 1, NULL));
-	
-	ImGui::StyleColorsDark(dst);
-	
-	return 0;
-}
+// skipping w_StyleColorsDark due to unimplemented argument type: "ImGuiStyle*"
 
-/*  classic imgui style */
-int w_StyleColorsClassic(lua_State *L)
-{
-	auto dst = static_cast<ImGuiStyle*>(luax_optlightuserdata(L, 1, NULL));
-	
-	ImGui::StyleColorsClassic(dst);
-	
-	return 0;
-}
+// skipping w_StyleColorsClassic due to unimplemented argument type: "ImGuiStyle*"
 
-/*  best used with borders and a custom, thicker font */
-int w_StyleColorsLight(lua_State *L)
-{
-	auto dst = static_cast<ImGuiStyle*>(luax_optlightuserdata(L, 1, NULL));
-	
-	ImGui::StyleColorsLight(dst);
-	
-	return 0;
-}
+// skipping w_StyleColorsLight due to unimplemented argument type: "ImGuiStyle*"
 
-int w_Begin(lua_State *L)
+void w_Begin(WrenVM *vm)
 {
-	auto name = luaL_checkstring(L, 1);
-	bool p_open = luax_optboolean(L, 2, NULL);
-	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 3, 0);
+	auto name = wrenGetSlotString(vm, 1);
+	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 3, 0);
 	
 	bool out = ImGui::Begin(name, &p_open, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, p_open);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<bool>(vm, 2, p_open);
 }
 
-int w_End(lua_State *L)
+void w_End(WrenVM *vm)
 {
 	ImGui::End();
 	
-	return 0;
 }
 
-int w_BeginChild_Override1(lua_State *L)
-{
-	auto str_id = luaL_checkstring(L, 1);
-	auto size = ImVec2(0,0);
-	size.x = luax_optfloat(L, 2, size.x);
-	size.y = luax_optfloat(L, 3, size.y);
-	auto border = luax_optboolean(L, 4, false);
-	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 5, 0);
-	
-	bool out = ImGui::BeginChild(str_id, size, border, flags);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_BeginChild_Override1 due to unimplemented argument type: "const ImVec2&"
 
-int w_BeginChild_Override2(lua_State *L)
-{
-	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
-	auto size = ImVec2(0,0);
-	size.x = luax_optfloat(L, 2, size.x);
-	size.y = luax_optfloat(L, 3, size.y);
-	auto border = luax_optboolean(L, 4, false);
-	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 5, 0);
-	
-	bool out = ImGui::BeginChild(id, size, border, flags);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_BeginChild_Override2 due to unimplemented argument type: "const ImVec2&"
 
-int w_EndChild(lua_State *L)
+void w_EndChild(WrenVM *vm)
 {
 	ImGui::EndChild();
 	
-	return 0;
 }
 
-int w_IsWindowAppearing(lua_State *L)
+void w_IsWindowAppearing(WrenVM *vm)
 {
 	bool out = ImGui::IsWindowAppearing();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-int w_IsWindowCollapsed(lua_State *L)
+void w_IsWindowCollapsed(WrenVM *vm)
 {
 	bool out = ImGui::IsWindowCollapsed();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is current window focused? or its root/child, depending on flags. see flags for options. */
-int w_IsWindowFocused(lua_State *L)
+void w_IsWindowFocused(WrenVM *vm)
 {
-	auto flags = luax_optflags<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, L, 1, 0);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, vm, 1, 0);
 	
 	bool out = ImGui::IsWindowFocused(flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is current window hovered (and typically: not blocked by a popup/modal)? see flags for options. NB: If you are trying to check whether your mouse should be dispatched to imgui or to your app, you should use the 'io.WantCaptureMouse' boolean for that! Please read the FAQ! */
-int w_IsWindowHovered(lua_State *L)
+void w_IsWindowHovered(WrenVM *vm)
 {
-	auto flags = luax_optflags<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, L, 1, 0);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, vm, 1, 0);
 	
 	bool out = ImGui::IsWindowHovered(flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-/*  get draw list associated to the current window, to append your own drawing primitives */
-int w_GetWindowDrawList(lua_State *L)
-{
-	ImDrawList* out = ImGui::GetWindowDrawList();
-	
-	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
-	out_udata->value = out;
-	out_udata->init();
-	luaL_getmetatable(L, "ImDrawList");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+// skipping w_GetWindowDrawList due to unimplemented return type: "ImDrawList*"
 
 /*  get DPI scale currently associated to the current window's viewport. */
-int w_GetWindowDpiScale(lua_State *L)
+void w_GetWindowDpiScale(WrenVM *vm)
 {
 	float out = ImGui::GetWindowDpiScale();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 // skipping w_GetWindowViewport due to unimplemented return type: "ImGuiViewport*"
 
-/*  get current window position in screen space (useful if you want to do your own drawing via the DrawList API) */
-int w_GetWindowPos(lua_State *L)
-{
-	ImVec2 out = ImGui::GetWindowPos();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetWindowPos due to unimplemented return type: "ImVec2"
 
-/*  get current window size */
-int w_GetWindowSize(lua_State *L)
-{
-	ImVec2 out = ImGui::GetWindowSize();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetWindowSize due to unimplemented return type: "ImVec2"
 
 /*  get current window width (shortcut for GetWindowSize().x) */
-int w_GetWindowWidth(lua_State *L)
+void w_GetWindowWidth(WrenVM *vm)
 {
 	float out = ImGui::GetWindowWidth();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  get current window height (shortcut for GetWindowSize().y) */
-int w_GetWindowHeight(lua_State *L)
+void w_GetWindowHeight(WrenVM *vm)
 {
 	float out = ImGui::GetWindowHeight();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
-/*  set next window position. call before Begin(). use pivot=(0.5f,0.5f) to center on given point, etc. */
-int w_SetNextWindowPos(lua_State *L)
-{
-	ImVec2 pos;
-	pos.x = luax_checkfloat(L, 1);
-	pos.y = luax_checkfloat(L, 2);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
-	auto pivot = ImVec2(0,0);
-	pivot.x = luax_optfloat(L, 4, pivot.x);
-	pivot.y = luax_optfloat(L, 5, pivot.y);
-	
-	ImGui::SetNextWindowPos(pos, cond, pivot);
-	
-	return 0;
-}
+// skipping w_SetNextWindowPos due to unimplemented argument type: "const ImVec2&"
 
-/*  set next window size. set axis to 0.0f to force an auto-fit on this axis. call before Begin() */
-int w_SetNextWindowSize(lua_State *L)
-{
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 1);
-	size.y = luax_checkfloat(L, 2);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
-	
-	ImGui::SetNextWindowSize(size, cond);
-	
-	return 0;
-}
+// skipping w_SetNextWindowSize due to unimplemented argument type: "const ImVec2&"
 
-// skipping w_SetNextWindowSizeConstraints due to unimplemented argument type: "ImGuiSizeCallback"
+// skipping w_SetNextWindowSizeConstraints due to unimplemented argument type: "const ImVec2&"
 
-/*  set next window content size (~ scrollable client area, which enforce the range of scrollbars). Not including window decorations (title bar, menu bar, etc.) nor WindowPadding. set an axis to 0.0f to leave it automatic. call before Begin() */
-int w_SetNextWindowContentSize(lua_State *L)
-{
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 1);
-	size.y = luax_checkfloat(L, 2);
-	
-	ImGui::SetNextWindowContentSize(size);
-	
-	return 0;
-}
+// skipping w_SetNextWindowContentSize due to unimplemented argument type: "const ImVec2&"
 
 /*  set next window collapsed state. call before Begin() */
-int w_SetNextWindowCollapsed(lua_State *L)
+void w_SetNextWindowCollapsed(WrenVM *vm)
 {
-	auto collapsed = luax_checkboolean(L, 1);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 2, 0);
+	auto collapsed = wrenGetSlotBool(vm, 1);
+	auto cond = wrenExGetSlotEnumsDefault<ImGuiCond>(getImGuiCondFromString, vm, 2, 0);
 	
 	ImGui::SetNextWindowCollapsed(collapsed, cond);
 	
-	return 0;
 }
 
 /*  set next window to be focused / top-most. call before Begin() */
-int w_SetNextWindowFocus(lua_State *L)
+void w_SetNextWindowFocus(WrenVM *vm)
 {
 	ImGui::SetNextWindowFocus();
 	
-	return 0;
 }
 
 /*  set next window background color alpha. helper to easily override the Alpha component of ImGuiCol_WindowBg/ChildBg/PopupBg. you may also use ImGuiWindowFlags_NoBackground. */
-int w_SetNextWindowBgAlpha(lua_State *L)
+void w_SetNextWindowBgAlpha(WrenVM *vm)
 {
-	auto alpha = luax_checkfloat(L, 1);
+	auto alpha = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::SetNextWindowBgAlpha(alpha);
 	
-	return 0;
 }
 
 /*  set next window viewport */
-int w_SetNextWindowViewport(lua_State *L)
+void w_SetNextWindowViewport(WrenVM *vm)
 {
-	auto viewport_id = static_cast<ImGuiID>(luaL_checkint(L, 1));
+	auto viewport_id = static_cast<ImGuiID>(wrenExGetSlotInt(vm, 1));
 	
 	ImGui::SetNextWindowViewport(viewport_id);
 	
-	return 0;
 }
 
-/*  (not recommended) set current window position - call within Begin()/End(). prefer using SetNextWindowPos(), as this may incur tearing and side-effects. */
-int w_SetWindowPos_Override1(lua_State *L)
-{
-	ImVec2 pos;
-	pos.x = luax_checkfloat(L, 1);
-	pos.y = luax_checkfloat(L, 2);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
-	
-	ImGui::SetWindowPos(pos, cond);
-	
-	return 0;
-}
+// skipping w_SetWindowPos_Override1 due to unimplemented argument type: "const ImVec2&"
 
-/*  (not recommended) set current window size - call within Begin()/End(). set to ImVec2(0,0) to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects. */
-int w_SetWindowSize_Override1(lua_State *L)
-{
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 1);
-	size.y = luax_checkfloat(L, 2);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
-	
-	ImGui::SetWindowSize(size, cond);
-	
-	return 0;
-}
+// skipping w_SetWindowSize_Override1 due to unimplemented argument type: "const ImVec2&"
 
 /*  (not recommended) set current window collapsed state. prefer using SetNextWindowCollapsed(). */
-int w_SetWindowCollapsed_Override1(lua_State *L)
+void w_SetWindowCollapsed_Override1(WrenVM *vm)
 {
-	auto collapsed = luax_checkboolean(L, 1);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 2, 0);
+	auto collapsed = wrenGetSlotBool(vm, 1);
+	auto cond = wrenExGetSlotEnumsDefault<ImGuiCond>(getImGuiCondFromString, vm, 2, 0);
 	
 	ImGui::SetWindowCollapsed(collapsed, cond);
 	
-	return 0;
 }
 
 /*  (not recommended) set current window to be focused / top-most. prefer using SetNextWindowFocus(). */
-int w_SetWindowFocus_Override1(lua_State *L)
+void w_SetWindowFocus_Override1(WrenVM *vm)
 {
 	ImGui::SetWindowFocus();
 	
-	return 0;
 }
 
 /*  set font scale. Adjust IO.FontGlobalScale if you want to scale all windows. This is an old API! For correct scaling, prefer to reload font + rebuild ImFontAtlas + call style.ScaleAllSizes(). */
-int w_SetWindowFontScale(lua_State *L)
+void w_SetWindowFontScale(WrenVM *vm)
 {
-	auto scale = luax_checkfloat(L, 1);
+	auto scale = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::SetWindowFontScale(scale);
 	
-	return 0;
 }
 
-/*  set named window position. */
-int w_SetWindowPos_Override2(lua_State *L)
-{
-	auto name = luaL_checkstring(L, 1);
-	ImVec2 pos;
-	pos.x = luax_checkfloat(L, 2);
-	pos.y = luax_checkfloat(L, 3);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 4, 0);
-	
-	ImGui::SetWindowPos(name, pos, cond);
-	
-	return 0;
-}
+// skipping w_SetWindowPos_Override2 due to unimplemented argument type: "const ImVec2&"
 
-/*  set named window size. set axis to 0.0f to force an auto-fit on this axis. */
-int w_SetWindowSize_Override2(lua_State *L)
-{
-	auto name = luaL_checkstring(L, 1);
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 2);
-	size.y = luax_checkfloat(L, 3);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 4, 0);
-	
-	ImGui::SetWindowSize(name, size, cond);
-	
-	return 0;
-}
+// skipping w_SetWindowSize_Override2 due to unimplemented argument type: "const ImVec2&"
 
 /*  set named window collapsed state */
-int w_SetWindowCollapsed_Override2(lua_State *L)
+void w_SetWindowCollapsed_Override2(WrenVM *vm)
 {
-	auto name = luaL_checkstring(L, 1);
-	auto collapsed = luax_checkboolean(L, 2);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
+	auto name = wrenGetSlotString(vm, 1);
+	auto collapsed = wrenGetSlotBool(vm, 2);
+	auto cond = wrenExGetSlotEnumsDefault<ImGuiCond>(getImGuiCondFromString, vm, 3, 0);
 	
 	ImGui::SetWindowCollapsed(name, collapsed, cond);
 	
-	return 0;
 }
 
 /*  set named window to be focused / top-most. use NULL to remove focus. */
-int w_SetWindowFocus_Override2(lua_State *L)
+void w_SetWindowFocus_Override2(WrenVM *vm)
 {
-	auto name = luaL_checkstring(L, 1);
+	auto name = wrenGetSlotString(vm, 1);
 	
 	ImGui::SetWindowFocus(name);
 	
-	return 0;
 }
 
-/*  current content boundaries (typically window boundaries including scrolling, or current column boundaries), in windows coordinates */
-int w_GetContentRegionMax(lua_State *L)
-{
-	ImVec2 out = ImGui::GetContentRegionMax();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetContentRegionMax due to unimplemented return type: "ImVec2"
 
-/*  == GetContentRegionMax() - GetCursorPos() */
-int w_GetContentRegionAvail(lua_State *L)
-{
-	ImVec2 out = ImGui::GetContentRegionAvail();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetContentRegionAvail due to unimplemented return type: "ImVec2"
 
-/*  content boundaries min (roughly (0,0)-Scroll), in window coordinates */
-int w_GetWindowContentRegionMin(lua_State *L)
-{
-	ImVec2 out = ImGui::GetWindowContentRegionMin();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetWindowContentRegionMin due to unimplemented return type: "ImVec2"
 
-/*  content boundaries max (roughly (0,0)+Size-Scroll) where Size can be override with SetNextWindowContentSize(), in window coordinates */
-int w_GetWindowContentRegionMax(lua_State *L)
-{
-	ImVec2 out = ImGui::GetWindowContentRegionMax();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetWindowContentRegionMax due to unimplemented return type: "ImVec2"
 
-int w_GetWindowContentRegionWidth(lua_State *L)
+void w_GetWindowContentRegionWidth(WrenVM *vm)
 {
 	float out = ImGui::GetWindowContentRegionWidth();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  get scrolling amount [0..GetScrollMaxX()] */
-int w_GetScrollX(lua_State *L)
+void w_GetScrollX(WrenVM *vm)
 {
 	float out = ImGui::GetScrollX();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  get scrolling amount [0..GetScrollMaxY()] */
-int w_GetScrollY(lua_State *L)
+void w_GetScrollY(WrenVM *vm)
 {
 	float out = ImGui::GetScrollY();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  get maximum scrolling amount ~~ ContentSize.X - WindowSize.X */
-int w_GetScrollMaxX(lua_State *L)
+void w_GetScrollMaxX(WrenVM *vm)
 {
 	float out = ImGui::GetScrollMaxX();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  get maximum scrolling amount ~~ ContentSize.Y - WindowSize.Y */
-int w_GetScrollMaxY(lua_State *L)
+void w_GetScrollMaxY(WrenVM *vm)
 {
 	float out = ImGui::GetScrollMaxY();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  set scrolling amount [0..GetScrollMaxX()] */
-int w_SetScrollX(lua_State *L)
+void w_SetScrollX(WrenVM *vm)
 {
-	auto scroll_x = luax_checkfloat(L, 1);
+	auto scroll_x = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::SetScrollX(scroll_x);
 	
-	return 0;
 }
 
 /*  set scrolling amount [0..GetScrollMaxY()] */
-int w_SetScrollY(lua_State *L)
+void w_SetScrollY(WrenVM *vm)
 {
-	auto scroll_y = luax_checkfloat(L, 1);
+	auto scroll_y = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::SetScrollY(scroll_y);
 	
-	return 0;
 }
 
 /*  adjust scrolling amount to make current cursor position visible. center_x_ratio=0.0: left, 0.5: center, 1.0: right. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead. */
-int w_SetScrollHereX(lua_State *L)
+void w_SetScrollHereX(WrenVM *vm)
 {
-	auto center_x_ratio = luax_optfloat(L, 1, 0.5f);
+	auto center_x_ratio = wrenExGetSlotFloatDefault(vm, 1, 0.5f);
 	
 	ImGui::SetScrollHereX(center_x_ratio);
 	
-	return 0;
 }
 
 /*  adjust scrolling amount to make current cursor position visible. center_y_ratio=0.0: top, 0.5: center, 1.0: bottom. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead. */
-int w_SetScrollHereY(lua_State *L)
+void w_SetScrollHereY(WrenVM *vm)
 {
-	auto center_y_ratio = luax_optfloat(L, 1, 0.5f);
+	auto center_y_ratio = wrenExGetSlotFloatDefault(vm, 1, 0.5f);
 	
 	ImGui::SetScrollHereY(center_y_ratio);
 	
-	return 0;
 }
 
 /*  adjust scrolling amount to make given position visible. Generally GetCursorStartPos() + offset to compute a valid position. */
-int w_SetScrollFromPosX(lua_State *L)
+void w_SetScrollFromPosX(WrenVM *vm)
 {
-	auto local_x = luax_checkfloat(L, 1);
-	auto center_x_ratio = luax_optfloat(L, 2, 0.5f);
+	auto local_x = wrenExGetSlotFloat(vm, 1);
+	auto center_x_ratio = wrenExGetSlotFloatDefault(vm, 2, 0.5f);
 	
 	ImGui::SetScrollFromPosX(local_x, center_x_ratio);
 	
-	return 0;
 }
 
 /*  adjust scrolling amount to make given position visible. Generally GetCursorStartPos() + offset to compute a valid position. */
-int w_SetScrollFromPosY(lua_State *L)
+void w_SetScrollFromPosY(WrenVM *vm)
 {
-	auto local_y = luax_checkfloat(L, 1);
-	auto center_y_ratio = luax_optfloat(L, 2, 0.5f);
+	auto local_y = wrenExGetSlotFloat(vm, 1);
+	auto center_y_ratio = wrenExGetSlotFloatDefault(vm, 2, 0.5f);
 	
 	ImGui::SetScrollFromPosY(local_y, center_y_ratio);
 	
-	return 0;
 }
 
 // skipping w_PushFont due to unimplemented argument type: "ImFont*"
 
-int w_PopFont(lua_State *L)
+void w_PopFont(WrenVM *vm)
 {
 	ImGui::PopFont();
 	
-	return 0;
 }
 
-int w_PushStyleColor_Override1(lua_State *L)
+void w_PushStyleColor_Override1(WrenVM *vm)
 {
-	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 2));
+	auto idx = wrenExGetSlotEnum<ImGuiCol>(getImGuiColFromString, vm, 1);
+	auto col = static_cast<ImU32>(wrenExGetSlotUInt(vm, 2));
 	
 	ImGui::PushStyleColor(idx, col);
 	
-	return 0;
 }
 
-int w_PushStyleColor_Override2(lua_State *L)
-{
-	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
-	ImVec4 col;
-	col.x = luax_checkfloat(L, 2);
-	col.y = luax_checkfloat(L, 3);
-	col.z = luax_checkfloat(L, 4);
-	col.w = luax_checkfloat(L, 5);
-	
-	ImGui::PushStyleColor(idx, col);
-	
-	return 0;
-}
+// skipping w_PushStyleColor_Override2 due to unimplemented argument type: "const ImVec4&"
 
-int w_PopStyleColor(lua_State *L)
+void w_PopStyleColor(WrenVM *vm)
 {
-	auto count = luaL_optint(L, 1, 1);
+	auto count = wrenExGetSlotIntDefault(vm, 1, 1);
 	
 	ImGui::PopStyleColor(count);
 	
-	return 0;
 }
 
-int w_PushStyleVar_Override1(lua_State *L)
+void w_PushStyleVar_Override1(WrenVM *vm)
 {
-	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
-	auto val = luax_checkfloat(L, 2);
+	auto idx = wrenExGetSlotEnum<ImGuiStyleVar>(getImGuiStyleVarFromString, vm, 1);
+	auto val = wrenExGetSlotFloat(vm, 2);
 	
 	ImGui::PushStyleVar(idx, val);
 	
-	return 0;
 }
 
-int w_PushStyleVar_Override2(lua_State *L)
-{
-	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
-	ImVec2 val;
-	val.x = luax_checkfloat(L, 2);
-	val.y = luax_checkfloat(L, 3);
-	
-	ImGui::PushStyleVar(idx, val);
-	
-	return 0;
-}
+// skipping w_PushStyleVar_Override2 due to unimplemented argument type: "const ImVec2&"
 
-int w_PopStyleVar(lua_State *L)
+void w_PopStyleVar(WrenVM *vm)
 {
-	auto count = luaL_optint(L, 1, 1);
+	auto count = wrenExGetSlotIntDefault(vm, 1, 1);
 	
 	ImGui::PopStyleVar(count);
 	
-	return 0;
 }
 
-/*  retrieve style color as stored in ImGuiStyle structure. use to feed back into PushStyleColor(), otherwise use GetColorU32() to get style color with style alpha baked in. */
-int w_GetStyleColorVec4(lua_State *L)
-{
-	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
-	
-	const ImVec4& out = ImGui::GetStyleColorVec4(idx);
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	lua_pushnumber(L, out.z);
-	lua_pushnumber(L, out.w);
-	return 2;
-}
+// skipping w_GetStyleColorVec4 due to unimplemented return type: "const ImVec4&"
 
 // skipping w_GetFont due to unimplemented return type: "ImFont*"
 
 /*  get current font size (= height in pixels) of current font with current scale applied */
-int w_GetFontSize(lua_State *L)
+void w_GetFontSize(WrenVM *vm)
 {
 	float out = ImGui::GetFontSize();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
-/*  get UV coordinate for a while pixel, useful to draw custom shapes via the ImDrawList API */
-int w_GetFontTexUvWhitePixel(lua_State *L)
-{
-	ImVec2 out = ImGui::GetFontTexUvWhitePixel();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetFontTexUvWhitePixel due to unimplemented return type: "ImVec2"
 
 /*  set width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
-int w_PushItemWidth(lua_State *L)
+void w_PushItemWidth(WrenVM *vm)
 {
-	auto item_width = luax_checkfloat(L, 1);
+	auto item_width = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::PushItemWidth(item_width);
 	
-	return 0;
 }
 
-int w_PopItemWidth(lua_State *L)
+void w_PopItemWidth(WrenVM *vm)
 {
 	ImGui::PopItemWidth();
 	
-	return 0;
 }
 
 /*  set width of the _next_ common large "item+label" widget. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side) */
-int w_SetNextItemWidth(lua_State *L)
+void w_SetNextItemWidth(WrenVM *vm)
 {
-	auto item_width = luax_checkfloat(L, 1);
+	auto item_width = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::SetNextItemWidth(item_width);
 	
-	return 0;
 }
 
 /*  width of item given pushed settings and current cursor position. NOT necessarily the width of last item unlike most 'Item' functions. */
-int w_CalcItemWidth(lua_State *L)
+void w_CalcItemWidth(WrenVM *vm)
 {
 	float out = ImGui::CalcItemWidth();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  word-wrapping for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
-int w_PushTextWrapPos(lua_State *L)
+void w_PushTextWrapPos(WrenVM *vm)
 {
-	auto wrap_local_pos_x = luax_optfloat(L, 1, 0.0f);
+	auto wrap_local_pos_x = wrenExGetSlotFloatDefault(vm, 1, 0.0f);
 	
 	ImGui::PushTextWrapPos(wrap_local_pos_x);
 	
-	return 0;
 }
 
-int w_PopTextWrapPos(lua_State *L)
+void w_PopTextWrapPos(WrenVM *vm)
 {
 	ImGui::PopTextWrapPos();
 	
-	return 0;
 }
 
 /*  allow focusing using TAB/Shift-TAB, enabled by default but you can disable it for certain widgets */
-int w_PushAllowKeyboardFocus(lua_State *L)
+void w_PushAllowKeyboardFocus(WrenVM *vm)
 {
-	auto allow_keyboard_focus = luax_checkboolean(L, 1);
+	auto allow_keyboard_focus = wrenGetSlotBool(vm, 1);
 	
 	ImGui::PushAllowKeyboardFocus(allow_keyboard_focus);
 	
-	return 0;
 }
 
-int w_PopAllowKeyboardFocus(lua_State *L)
+void w_PopAllowKeyboardFocus(WrenVM *vm)
 {
 	ImGui::PopAllowKeyboardFocus();
 	
-	return 0;
 }
 
 /*  in 'repeat' mode, Button*() functions return repeated true in a typematic manner (using io.KeyRepeatDelay/io.KeyRepeatRate setting). Note that you can call IsItemActive() after any Button() to tell if the button is held in the current frame. */
-int w_PushButtonRepeat(lua_State *L)
+void w_PushButtonRepeat(WrenVM *vm)
 {
-	auto repeat = luax_checkboolean(L, 1);
+	auto repeat = wrenGetSlotBool(vm, 1);
 	
 	ImGui::PushButtonRepeat(repeat);
 	
-	return 0;
 }
 
-int w_PopButtonRepeat(lua_State *L)
+void w_PopButtonRepeat(WrenVM *vm)
 {
 	ImGui::PopButtonRepeat();
 	
-	return 0;
 }
 
 /*  separator, generally horizontal. inside a menu bar or in horizontal layout mode, this becomes a vertical separator. */
-int w_Separator(lua_State *L)
+void w_Separator(WrenVM *vm)
 {
 	ImGui::Separator();
 	
-	return 0;
 }
 
 /*  call between widgets or groups to layout them horizontally. X position given in window coordinates. */
-int w_SameLine(lua_State *L)
+void w_SameLine(WrenVM *vm)
 {
-	auto offset_from_start_x = luax_optfloat(L, 1, 0.0f);
-	auto spacing = luax_optfloat(L, 2, -1.0f);
+	auto offset_from_start_x = wrenExGetSlotFloatDefault(vm, 1, 0.0f);
+	auto spacing = wrenExGetSlotFloatDefault(vm, 2, -1.0f);
 	
 	ImGui::SameLine(offset_from_start_x, spacing);
 	
-	return 0;
 }
 
 /*  undo a SameLine() or force a new line when in an horizontal-layout context. */
-int w_NewLine(lua_State *L)
+void w_NewLine(WrenVM *vm)
 {
 	ImGui::NewLine();
 	
-	return 0;
 }
 
 /*  add vertical spacing. */
-int w_Spacing(lua_State *L)
+void w_Spacing(WrenVM *vm)
 {
 	ImGui::Spacing();
 	
-	return 0;
 }
 
-/*  add a dummy item of given size. unlike InvisibleButton(), Dummy() won't take the mouse click or be navigable into. */
-int w_Dummy(lua_State *L)
-{
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 1);
-	size.y = luax_checkfloat(L, 2);
-	
-	ImGui::Dummy(size);
-	
-	return 0;
-}
+// skipping w_Dummy due to unimplemented argument type: "const ImVec2&"
 
 /*  move content position toward the right, by style.IndentSpacing or indent_w if != 0 */
-int w_Indent(lua_State *L)
+void w_Indent(WrenVM *vm)
 {
-	auto indent_w = luax_optfloat(L, 1, 0.0f);
+	auto indent_w = wrenExGetSlotFloatDefault(vm, 1, 0.0f);
 	
 	ImGui::Indent(indent_w);
 	
-	return 0;
 }
 
 /*  move content position back to the left, by style.IndentSpacing or indent_w if != 0 */
-int w_Unindent(lua_State *L)
+void w_Unindent(WrenVM *vm)
 {
-	auto indent_w = luax_optfloat(L, 1, 0.0f);
+	auto indent_w = wrenExGetSlotFloatDefault(vm, 1, 0.0f);
 	
 	ImGui::Unindent(indent_w);
 	
-	return 0;
 }
 
 /*  lock horizontal starting position */
-int w_BeginGroup(lua_State *L)
+void w_BeginGroup(WrenVM *vm)
 {
 	ImGui::BeginGroup();
 	
-	return 0;
 }
 
 /*  unlock horizontal starting position + capture the whole group bounding box into one "item" (so you can use IsItemHovered() or layout primitives such as SameLine() on whole group, etc.) */
-int w_EndGroup(lua_State *L)
+void w_EndGroup(WrenVM *vm)
 {
 	ImGui::EndGroup();
 	
-	return 0;
 }
 
-/*  cursor position in window coordinates (relative to window position) */
-int w_GetCursorPos(lua_State *L)
-{
-	ImVec2 out = ImGui::GetCursorPos();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetCursorPos due to unimplemented return type: "ImVec2"
 
 /*    (some functions are using window-relative coordinates, such as: GetCursorPos, GetCursorStartPos, GetContentRegionMax, GetWindowContentRegion* etc. */
-int w_GetCursorPosX(lua_State *L)
+void w_GetCursorPosX(WrenVM *vm)
 {
 	float out = ImGui::GetCursorPosX();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*     other functions such as GetCursorScreenPos or everything in ImDrawList:: */
-int w_GetCursorPosY(lua_State *L)
+void w_GetCursorPosY(WrenVM *vm)
 {
 	float out = ImGui::GetCursorPosY();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
-/*     are using the main, absolute coordinate system. */
-int w_SetCursorPos(lua_State *L)
-{
-	ImVec2 local_pos;
-	local_pos.x = luax_checkfloat(L, 1);
-	local_pos.y = luax_checkfloat(L, 2);
-	
-	ImGui::SetCursorPos(local_pos);
-	
-	return 0;
-}
+// skipping w_SetCursorPos due to unimplemented argument type: "const ImVec2&"
 
 /*     GetWindowPos() + GetCursorPos() == GetCursorScreenPos() etc.) */
-int w_SetCursorPosX(lua_State *L)
+void w_SetCursorPosX(WrenVM *vm)
 {
-	auto local_x = luax_checkfloat(L, 1);
+	auto local_x = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::SetCursorPosX(local_x);
 	
-	return 0;
 }
 
-int w_SetCursorPosY(lua_State *L)
+void w_SetCursorPosY(WrenVM *vm)
 {
-	auto local_y = luax_checkfloat(L, 1);
+	auto local_y = wrenExGetSlotFloat(vm, 1);
 	
 	ImGui::SetCursorPosY(local_y);
 	
-	return 0;
 }
 
-/*  initial cursor position in window coordinates */
-int w_GetCursorStartPos(lua_State *L)
-{
-	ImVec2 out = ImGui::GetCursorStartPos();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetCursorStartPos due to unimplemented return type: "ImVec2"
 
-/*  cursor position in absolute screen coordinates (0..io.DisplaySize) or natural OS coordinates when using multiple viewport. Useful to work with ImDrawList API. */
-int w_GetCursorScreenPos(lua_State *L)
-{
-	ImVec2 out = ImGui::GetCursorScreenPos();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetCursorScreenPos due to unimplemented return type: "ImVec2"
 
-/*  cursor position in absolute screen coordinates (0..io.DisplaySize) or natural OS coordinates when using multiple viewport. */
-int w_SetCursorScreenPos(lua_State *L)
-{
-	ImVec2 pos;
-	pos.x = luax_checkfloat(L, 1);
-	pos.y = luax_checkfloat(L, 2);
-	
-	ImGui::SetCursorScreenPos(pos);
-	
-	return 0;
-}
+// skipping w_SetCursorScreenPos due to unimplemented argument type: "const ImVec2&"
 
 /*  vertically align upcoming text baseline to FramePadding.y so that it will align properly to regularly framed items (call if you have text on a line before a framed item) */
-int w_AlignTextToFramePadding(lua_State *L)
+void w_AlignTextToFramePadding(WrenVM *vm)
 {
 	ImGui::AlignTextToFramePadding();
 	
-	return 0;
 }
 
 /*  ~ FontSize */
-int w_GetTextLineHeight(lua_State *L)
+void w_GetTextLineHeight(WrenVM *vm)
 {
 	float out = ImGui::GetTextLineHeight();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  ~ FontSize + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of text) */
-int w_GetTextLineHeightWithSpacing(lua_State *L)
+void w_GetTextLineHeightWithSpacing(WrenVM *vm)
 {
 	float out = ImGui::GetTextLineHeightWithSpacing();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  ~ FontSize + style.FramePadding.y * 2 */
-int w_GetFrameHeight(lua_State *L)
+void w_GetFrameHeight(WrenVM *vm)
 {
 	float out = ImGui::GetFrameHeight();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  ~ FontSize + style.FramePadding.y * 2 + style.ItemSpacing.y (distance in pixels between 2 consecutive lines of framed widgets) */
-int w_GetFrameHeightWithSpacing(lua_State *L)
+void w_GetFrameHeightWithSpacing(WrenVM *vm)
 {
 	float out = ImGui::GetFrameHeightWithSpacing();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  push string into the ID stack (will hash string). */
-int w_PushID_Override1(lua_State *L)
+void w_PushID_Override1(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
+	auto str_id = wrenGetSlotString(vm, 1);
 	
 	ImGui::PushID(str_id);
 	
-	return 0;
 }
 
 /*  push string into the ID stack (will hash string). */
-int w_PushID_Override2(lua_State *L)
+void w_PushID_Override2(WrenVM *vm)
 {
-	auto str_id_begin = luaL_checkstring(L, 1);
-	auto str_id_end = luaL_checkstring(L, 2);
+	auto str_id_begin = wrenGetSlotString(vm, 1);
+	auto str_id_end = wrenGetSlotString(vm, 2);
 	
 	ImGui::PushID(str_id_begin, str_id_end);
 	
-	return 0;
 }
 
 // skipping w_PushID_Override3 due to unimplemented argument type: "const void*"
 
 /*  push integer into the ID stack (will hash integer). */
-int w_PushID_Override4(lua_State *L)
+void w_PushID_Override4(WrenVM *vm)
 {
-	auto int_id = luaL_checkint(L, 1);
+	auto int_id = wrenExGetSlotInt(vm, 1);
 	
 	ImGui::PushID(int_id);
 	
-	return 0;
 }
 
 /*  pop from the ID stack. */
-int w_PopID(lua_State *L)
+void w_PopID(WrenVM *vm)
 {
 	ImGui::PopID();
 	
-	return 0;
 }
 
 /*  calculate unique ID (hash of whole ID stack + given parameter). e.g. if you want to query into ImGuiStorage yourself */
-int w_GetID_Override1(lua_State *L)
+void w_GetID_Override1(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
+	auto str_id = wrenGetSlotString(vm, 1);
 	
 	ImGuiID out = ImGui::GetID(str_id);
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
-int w_GetID_Override2(lua_State *L)
+void w_GetID_Override2(WrenVM *vm)
 {
-	auto str_id_begin = luaL_checkstring(L, 1);
-	auto str_id_end = luaL_checkstring(L, 2);
+	auto str_id_begin = wrenGetSlotString(vm, 1);
+	auto str_id_end = wrenGetSlotString(vm, 2);
 	
 	ImGuiID out = ImGui::GetID(str_id_begin, str_id_end);
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 // skipping w_GetID_Override3 due to unimplemented argument type: "const void*"
 
 /*  raw text without formatting. Roughly equivalent to Text("%s", text) but: A) doesn't require null terminated string if 'text_end' is specified, B) it's faster, no memory copy is done, no buffer size limits, recommended for long chunks of text. */
-int w_TextUnformatted(lua_State *L)
+void w_TextUnformatted(WrenVM *vm)
 {
-	auto text = luaL_checkstring(L, 1);
-	auto text_end = luaL_optstring(L, 2, NULL);
+	auto text = wrenGetSlotString(vm, 1);
+	auto text_end = wrenExGetSlotStringDefault(vm, 2, NULL);
 	
 	ImGui::TextUnformatted(text, text_end);
 	
-	return 0;
 }
 
 /*  formatted text */
-int w_Text(lua_State *L)
+void w_Text(WrenVM *vm)
 {
-	auto fmt = luax_formatargs(L, 1);
+	auto fmt = wrenGetSlotString(vm, 1);
 	
-	ImGui::Text("%s", fmt);
+	ImGui::Text(fmt);
 	
-	return 0;
 }
 
-/*  shortcut for PushStyleColor(ImGuiCol_Text, col); Text(fmt, ...); PopStyleColor(); */
-int w_TextColored(lua_State *L)
-{
-	ImVec4 col;
-	col.x = luax_checkfloat(L, 1);
-	col.y = luax_checkfloat(L, 2);
-	col.z = luax_checkfloat(L, 3);
-	col.w = luax_checkfloat(L, 4);
-	auto fmt = luax_formatargs(L, 5);
-	
-	ImGui::TextColored(col, "%s", fmt);
-	
-	return 0;
-}
+// skipping w_TextColored due to unimplemented argument type: "const ImVec4&"
 
 /*  shortcut for PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]); Text(fmt, ...); PopStyleColor(); */
-int w_TextDisabled(lua_State *L)
+void w_TextDisabled(WrenVM *vm)
 {
-	auto fmt = luax_formatargs(L, 1);
+	auto fmt = wrenGetSlotString(vm, 1);
 	
-	ImGui::TextDisabled("%s", fmt);
+	ImGui::TextDisabled(fmt);
 	
-	return 0;
 }
 
 /*  shortcut for PushTextWrapPos(0.0f); Text(fmt, ...); PopTextWrapPos();. Note that this won't work on an auto-resizing window if there's no other widgets to extend the window width, yoy may need to set a size using SetNextWindowSize(). */
-int w_TextWrapped(lua_State *L)
+void w_TextWrapped(WrenVM *vm)
 {
-	auto fmt = luax_formatargs(L, 1);
+	auto fmt = wrenGetSlotString(vm, 1);
 	
-	ImGui::TextWrapped("%s", fmt);
+	ImGui::TextWrapped(fmt);
 	
-	return 0;
 }
 
 /*  display text+label aligned the same way as value+label widgets */
-int w_LabelText(lua_State *L)
+void w_LabelText(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto fmt = luax_formatargs(L, 2);
+	auto label = wrenGetSlotString(vm, 1);
+	auto fmt = wrenGetSlotString(vm, 2);
 	
-	ImGui::LabelText(label, "%s", fmt);
+	ImGui::LabelText(label, fmt);
 	
-	return 0;
 }
 
 /*  shortcut for Bullet()+Text() */
-int w_BulletText(lua_State *L)
+void w_BulletText(WrenVM *vm)
 {
-	auto fmt = luax_formatargs(L, 1);
+	auto fmt = wrenGetSlotString(vm, 1);
 	
-	ImGui::BulletText("%s", fmt);
+	ImGui::BulletText(fmt);
 	
-	return 0;
 }
 
-/*  button */
-int w_Button(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	auto size = ImVec2(0,0);
-	size.x = luax_optfloat(L, 2, size.x);
-	size.y = luax_optfloat(L, 3, size.y);
-	
-	bool out = ImGui::Button(label, size);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_Button due to unimplemented argument type: "const ImVec2&"
 
 /*  button with FramePadding=(0,0) to easily embed within text */
-int w_SmallButton(lua_State *L)
+void w_SmallButton(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
+	auto label = wrenGetSlotString(vm, 1);
 	
 	bool out = ImGui::SmallButton(label);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-/*  button behavior without the visuals, frequently useful to build custom behaviors using the public api (along with IsItemActive, IsItemHovered, etc.) */
-int w_InvisibleButton(lua_State *L)
-{
-	auto str_id = luaL_checkstring(L, 1);
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 2);
-	size.y = luax_checkfloat(L, 3);
-	
-	bool out = ImGui::InvisibleButton(str_id, size);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_InvisibleButton due to unimplemented argument type: "const ImVec2&"
 
 /*  square button with an arrow shape */
-int w_ArrowButton(lua_State *L)
+void w_ArrowButton(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
-	auto dir = luax_checkenum<ImGuiDir>(getImGuiDirFromString, L, 2);
+	auto str_id = wrenGetSlotString(vm, 1);
+	auto dir = wrenExGetSlotEnum<ImGuiDir>(getImGuiDirFromString, vm, 2);
 	
 	bool out = ImGui::ArrowButton(str_id, dir);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-int w_Image(lua_State *L)
-{
-	auto user_texture_id = luax_checkTextureID(L, 1);
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 2);
-	size.y = luax_checkfloat(L, 3);
-	auto uv0 = ImVec2(0,0);
-	uv0.x = luax_optfloat(L, 4, uv0.x);
-	uv0.y = luax_optfloat(L, 5, uv0.y);
-	auto uv1 = ImVec2(1,1);
-	uv1.x = luax_optfloat(L, 6, uv1.x);
-	uv1.y = luax_optfloat(L, 7, uv1.y);
-	ImVec4 tint_col = ImVec4(1,1,1,1);
-	tint_col.x = luax_optfloat(L, 8, tint_col.x);
-	tint_col.y = luax_optfloat(L, 9, tint_col.y);
-	tint_col.z = luax_optfloat(L, 10, tint_col.z);
-	tint_col.w = luax_optfloat(L, 11, tint_col.w);
-	ImVec4 border_col = ImVec4(0,0,0,0);
-	border_col.x = luax_optfloat(L, 12, border_col.x);
-	border_col.y = luax_optfloat(L, 13, border_col.y);
-	border_col.z = luax_optfloat(L, 14, border_col.z);
-	border_col.w = luax_optfloat(L, 15, border_col.w);
-	
-	ImGui::Image(user_texture_id, size, uv0, uv1, tint_col, border_col);
-	
-	return 0;
-}
+// skipping w_Image due to unimplemented argument type: "ImTextureID"
 
-/*  <0 frame_padding uses default frame padding settings. 0 for no padding */
-int w_ImageButton(lua_State *L)
-{
-	auto user_texture_id = luax_checkTextureID(L, 1);
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 2);
-	size.y = luax_checkfloat(L, 3);
-	auto uv0 = ImVec2(0,0);
-	uv0.x = luax_optfloat(L, 4, uv0.x);
-	uv0.y = luax_optfloat(L, 5, uv0.y);
-	auto uv1 = ImVec2(1,1);
-	uv1.x = luax_optfloat(L, 6, uv1.x);
-	uv1.y = luax_optfloat(L, 7, uv1.y);
-	auto frame_padding = luaL_optint(L, 8, -1);
-	ImVec4 bg_col = ImVec4(0,0,0,0);
-	bg_col.x = luax_optfloat(L, 9, bg_col.x);
-	bg_col.y = luax_optfloat(L, 10, bg_col.y);
-	bg_col.z = luax_optfloat(L, 11, bg_col.z);
-	bg_col.w = luax_optfloat(L, 12, bg_col.w);
-	ImVec4 tint_col = ImVec4(1,1,1,1);
-	tint_col.x = luax_optfloat(L, 13, tint_col.x);
-	tint_col.y = luax_optfloat(L, 14, tint_col.y);
-	tint_col.z = luax_optfloat(L, 15, tint_col.z);
-	tint_col.w = luax_optfloat(L, 16, tint_col.w);
-	
-	bool out = ImGui::ImageButton(user_texture_id, size, uv0, uv1, frame_padding, bg_col, tint_col);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_ImageButton due to unimplemented argument type: "ImTextureID"
 
-int w_Checkbox(lua_State *L)
+void w_Checkbox(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	bool v = luax_checkboolean(L, 2);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<bool>(Box::getCPP<bool>(vm, 2));
 	
 	bool out = ImGui::Checkbox(label, &v);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<bool>(vm, 2, v);
 }
 
-int w_CheckboxFlags(lua_State *L)
+void w_CheckboxFlags(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto flags = static_cast<unsigned int>(luaL_checkint(L, 2));
-	auto flags_value = static_cast<unsigned int>(luaL_checklong(L, 3));
+	auto label = wrenGetSlotString(vm, 1);
+	auto flags = static_cast<unsigned int>(Box::getCPP<double>(vm, 2));
+	auto flags_value = wrenExGetSlotUInt(vm, 3);
 	
 	bool out = ImGui::CheckboxFlags(label, &flags, flags_value);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushinteger(L, flags);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, flags);
 }
 
 /*  use with e.g. if (RadioButton("one", my_value==1)) { my_value = 1; } */
-int w_RadioButton_Override1(lua_State *L)
+void w_RadioButton_Override1(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto active = luax_checkboolean(L, 2);
+	auto label = wrenGetSlotString(vm, 1);
+	auto active = wrenGetSlotBool(vm, 2);
 	
 	bool out = ImGui::RadioButton(label, active);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  shortcut to handle the above pattern when value is an integer */
-int w_RadioButton_Override2(lua_State *L)
+void w_RadioButton_Override2(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	int v = luaL_checkint(L, 2);
-	auto v_button = luaL_checkint(L, 3);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_button = wrenExGetSlotInt(vm, 3);
 	
 	bool out = ImGui::RadioButton(label, &v, v_button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushinteger(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_ProgressBar(lua_State *L)
-{
-	auto fraction = luax_checkfloat(L, 1);
-	auto size_arg = ImVec2(-1,0);
-	size_arg.x = luax_optfloat(L, 2, size_arg.x);
-	size_arg.y = luax_optfloat(L, 3, size_arg.y);
-	auto overlay = luaL_optstring(L, 4, NULL);
-	
-	ImGui::ProgressBar(fraction, size_arg, overlay);
-	
-	return 0;
-}
+// skipping w_ProgressBar due to unimplemented argument type: "const ImVec2&"
 
 /*  draw a small circle and keep the cursor on the same line. advance cursor x position by GetTreeNodeToLabelSpacing(), same distance that TreeNode() uses */
-int w_Bullet(lua_State *L)
+void w_Bullet(WrenVM *vm)
 {
 	ImGui::Bullet();
 	
-	return 0;
 }
 
-int w_BeginCombo(lua_State *L)
+void w_BeginCombo(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto preview_value = luaL_checkstring(L, 2);
-	auto flags = luax_optflags<ImGuiComboFlags>(getImGuiComboFlagsFromString, L, 3, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto preview_value = wrenGetSlotString(vm, 2);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiComboFlags>(getImGuiComboFlagsFromString, vm, 3, 0);
 	
 	bool out = ImGui::BeginCombo(label, preview_value, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  only call EndCombo() if BeginCombo() returns true! */
-int w_EndCombo(lua_State *L)
+void w_EndCombo(WrenVM *vm)
 {
 	ImGui::EndCombo();
 	
-	return 0;
 }
 
 // skipping w_Combo_Override1 due to unimplemented argument type: "const char* const[]"
 
 /*  Separate items with \0 within a string, end item-list with \0\0. e.g. "One\0Two\0Three\0" */
-int w_Combo_Override2(lua_State *L)
+void w_Combo_Override2(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	int current_item = luaL_checkint(L, 2);
-	auto items_separated_by_zeros = luaL_checkstring(L, 3);
-	auto popup_max_height_in_items = luaL_optint(L, 4, -1);
+	auto label = wrenGetSlotString(vm, 1);
+	auto current_item = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto items_separated_by_zeros = wrenGetSlotString(vm, 3);
+	auto popup_max_height_in_items = wrenExGetSlotIntDefault(vm, 4, -1);
 	
 	bool out = ImGui::Combo(label, &current_item, items_separated_by_zeros, popup_max_height_in_items);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushinteger(L, current_item);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, current_item);
 }
 
 // skipping w_Combo_Override3 due to unimplemented argument type: " bool(*items_getter)(void* data, int idx, const char** out_text)"
 
 /*  If v_min >= v_max we have no bound */
-int w_DragFloat(lua_State *L)
+void w_DragFloat(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto v = static_cast<float>(luaL_checknumber(L, 2));
-	auto v_speed = luax_optfloat(L, 3, 1.0f);
-	auto v_min = luax_optfloat(L, 4, 0.0f);
-	auto v_max = luax_optfloat(L, 5, 0.0f);
-	auto format = luaL_optstring(L, 6, "%.3f");
-	auto power = luax_optfloat(L, 7, 1.0f);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_speed = wrenExGetSlotFloatDefault(vm, 3, 1.0f);
+	auto v_min = wrenExGetSlotFloatDefault(vm, 4, 0.0f);
+	auto v_max = wrenExGetSlotFloatDefault(vm, 5, 0.0f);
+	auto format = wrenExGetSlotStringDefault(vm, 6, "%.3f");
+	auto power = wrenExGetSlotFloatDefault(vm, 7, 1.0f);
 	
 	bool out = ImGui::DragFloat(label, &v, v_speed, v_min, v_max, format, power);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushnumber(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_DragFloat2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[2];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	auto v_speed = luax_optfloat(L, 4, 1.0f);
-	auto v_min = luax_optfloat(L, 5, 0.0f);
-	auto v_max = luax_optfloat(L, 6, 0.0f);
-	auto format = luaL_optstring(L, 7, "%.3f");
-	auto power = luax_optfloat(L, 8, 1.0f);
-	
-	bool out = ImGui::DragFloat2(label, v, v_speed, v_min, v_max, format, power);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushboolean(L, out);
-	return 3;
-}
+// skipping w_DragFloat2 due to unimplemented argument type: "float[2]"
 
-int w_DragFloat3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[3];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	auto v_speed = luax_optfloat(L, 5, 1.0f);
-	auto v_min = luax_optfloat(L, 6, 0.0f);
-	auto v_max = luax_optfloat(L, 7, 0.0f);
-	auto format = luaL_optstring(L, 8, "%.3f");
-	auto power = luax_optfloat(L, 9, 1.0f);
-	
-	bool out = ImGui::DragFloat3(label, v, v_speed, v_min, v_max, format, power);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushnumber(L, v[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_DragFloat3 due to unimplemented argument type: "float[3]"
 
-int w_DragFloat4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[4];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	v[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto v_speed = luax_optfloat(L, 6, 1.0f);
-	auto v_min = luax_optfloat(L, 7, 0.0f);
-	auto v_max = luax_optfloat(L, 8, 0.0f);
-	auto format = luaL_optstring(L, 9, "%.3f");
-	auto power = luax_optfloat(L, 10, 1.0f);
-	
-	bool out = ImGui::DragFloat4(label, v, v_speed, v_min, v_max, format, power);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushnumber(L, v[2]);
-	lua_pushnumber(L, v[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
+// skipping w_DragFloat4 due to unimplemented argument type: "float[4]"
 
-int w_DragFloatRange2(lua_State *L)
+void w_DragFloatRange2(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto v_current_min = static_cast<float>(luaL_checknumber(L, 2));
-	auto v_current_max = static_cast<float>(luaL_checknumber(L, 3));
-	auto v_speed = luax_optfloat(L, 4, 1.0f);
-	auto v_min = luax_optfloat(L, 5, 0.0f);
-	auto v_max = luax_optfloat(L, 6, 0.0f);
-	auto format = luaL_optstring(L, 7, "%.3f");
-	auto format_max = luaL_optstring(L, 8, NULL);
-	auto power = luax_optfloat(L, 9, 1.0f);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v_current_min = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_current_max = static_cast<float>(Box::getCPP<double>(vm, 3));
+	auto v_speed = wrenExGetSlotFloatDefault(vm, 4, 1.0f);
+	auto v_min = wrenExGetSlotFloatDefault(vm, 5, 0.0f);
+	auto v_max = wrenExGetSlotFloatDefault(vm, 6, 0.0f);
+	auto format = wrenExGetSlotStringDefault(vm, 7, "%.3f");
+	auto format_max = wrenExGetSlotStringDefault(vm, 8, NULL);
+	auto power = wrenExGetSlotFloatDefault(vm, 9, 1.0f);
 	
 	bool out = ImGui::DragFloatRange2(label, &v_current_min, &v_current_max, v_speed, v_min, v_max, format, format_max, power);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushnumber(L, v_current_min);
-	lua_pushnumber(L, v_current_max);
-	lua_pushboolean(L, out);
-	return 3;
+	Box::setCPP<double>(vm, 2, v_current_min);
+	Box::setCPP<double>(vm, 3, v_current_max);
 }
 
 /*  If v_min >= v_max we have no bound */
-int w_DragInt(lua_State *L)
+void w_DragInt(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	int v = luaL_checkint(L, 2);
-	auto v_speed = luax_optfloat(L, 3, 1.0f);
-	auto v_min = luaL_optint(L, 4, 0);
-	auto v_max = luaL_optint(L, 5, 0);
-	auto format = luaL_optstring(L, 6, "%d");
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_speed = wrenExGetSlotFloatDefault(vm, 3, 1.0f);
+	auto v_min = wrenExGetSlotIntDefault(vm, 4, 0);
+	auto v_max = wrenExGetSlotIntDefault(vm, 5, 0);
+	auto format = wrenExGetSlotStringDefault(vm, 6, "%d");
 	
 	bool out = ImGui::DragInt(label, &v, v_speed, v_min, v_max, format);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushinteger(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_DragInt2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[2];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	auto v_speed = luax_optfloat(L, 4, 1.0f);
-	auto v_min = luaL_optint(L, 5, 0);
-	auto v_max = luaL_optint(L, 6, 0);
-	auto format = luaL_optstring(L, 7, "%d");
-	
-	bool out = ImGui::DragInt2(label, v, v_speed, v_min, v_max, format);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushboolean(L, out);
-	return 3;
-}
+// skipping w_DragInt2 due to unimplemented argument type: "int[2]"
 
-int w_DragInt3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[3];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	v[2] = static_cast<int>(luaL_checkint(L, 4));
-	auto v_speed = luax_optfloat(L, 5, 1.0f);
-	auto v_min = luaL_optint(L, 6, 0);
-	auto v_max = luaL_optint(L, 7, 0);
-	auto format = luaL_optstring(L, 8, "%d");
-	
-	bool out = ImGui::DragInt3(label, v, v_speed, v_min, v_max, format);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushinteger(L, v[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_DragInt3 due to unimplemented argument type: "int[3]"
 
-int w_DragInt4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[4];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	v[2] = static_cast<int>(luaL_checkint(L, 4));
-	v[3] = static_cast<int>(luaL_checkint(L, 5));
-	auto v_speed = luax_optfloat(L, 6, 1.0f);
-	auto v_min = luaL_optint(L, 7, 0);
-	auto v_max = luaL_optint(L, 8, 0);
-	auto format = luaL_optstring(L, 9, "%d");
-	
-	bool out = ImGui::DragInt4(label, v, v_speed, v_min, v_max, format);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushinteger(L, v[2]);
-	lua_pushinteger(L, v[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
+// skipping w_DragInt4 due to unimplemented argument type: "int[4]"
 
-int w_DragIntRange2(lua_State *L)
+void w_DragIntRange2(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	int v_current_min = luaL_checkint(L, 2);
-	int v_current_max = luaL_checkint(L, 3);
-	auto v_speed = luax_optfloat(L, 4, 1.0f);
-	auto v_min = luaL_optint(L, 5, 0);
-	auto v_max = luaL_optint(L, 6, 0);
-	auto format = luaL_optstring(L, 7, "%d");
-	auto format_max = luaL_optstring(L, 8, NULL);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v_current_min = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_current_max = static_cast<int>(Box::getCPP<double>(vm, 3));
+	auto v_speed = wrenExGetSlotFloatDefault(vm, 4, 1.0f);
+	auto v_min = wrenExGetSlotIntDefault(vm, 5, 0);
+	auto v_max = wrenExGetSlotIntDefault(vm, 6, 0);
+	auto format = wrenExGetSlotStringDefault(vm, 7, "%d");
+	auto format_max = wrenExGetSlotStringDefault(vm, 8, NULL);
 	
 	bool out = ImGui::DragIntRange2(label, &v_current_min, &v_current_max, v_speed, v_min, v_max, format, format_max);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushinteger(L, v_current_min);
-	lua_pushinteger(L, v_current_max);
-	lua_pushboolean(L, out);
-	return 3;
+	Box::setCPP<double>(vm, 2, v_current_min);
+	Box::setCPP<double>(vm, 3, v_current_max);
 }
 
 /*  adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. Use power!=1.0 for power curve sliders */
-int w_SliderFloat(lua_State *L)
+void w_SliderFloat(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto v = static_cast<float>(luaL_checknumber(L, 2));
-	auto v_min = luax_checkfloat(L, 3);
-	auto v_max = luax_checkfloat(L, 4);
-	auto format = luaL_optstring(L, 5, "%.3f");
-	auto power = luax_optfloat(L, 6, 1.0f);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_min = wrenExGetSlotFloat(vm, 3);
+	auto v_max = wrenExGetSlotFloat(vm, 4);
+	auto format = wrenExGetSlotStringDefault(vm, 5, "%.3f");
+	auto power = wrenExGetSlotFloatDefault(vm, 6, 1.0f);
 	
 	bool out = ImGui::SliderFloat(label, &v, v_min, v_max, format, power);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushnumber(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_SliderFloat2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[2];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	auto v_min = luax_checkfloat(L, 4);
-	auto v_max = luax_checkfloat(L, 5);
-	auto format = luaL_optstring(L, 6, "%.3f");
-	auto power = luax_optfloat(L, 7, 1.0f);
-	
-	bool out = ImGui::SliderFloat2(label, v, v_min, v_max, format, power);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushboolean(L, out);
-	return 3;
-}
+// skipping w_SliderFloat2 due to unimplemented argument type: "float[2]"
 
-int w_SliderFloat3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[3];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	auto v_min = luax_checkfloat(L, 5);
-	auto v_max = luax_checkfloat(L, 6);
-	auto format = luaL_optstring(L, 7, "%.3f");
-	auto power = luax_optfloat(L, 8, 1.0f);
-	
-	bool out = ImGui::SliderFloat3(label, v, v_min, v_max, format, power);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushnumber(L, v[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_SliderFloat3 due to unimplemented argument type: "float[3]"
 
-int w_SliderFloat4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[4];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	v[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto v_min = luax_checkfloat(L, 6);
-	auto v_max = luax_checkfloat(L, 7);
-	auto format = luaL_optstring(L, 8, "%.3f");
-	auto power = luax_optfloat(L, 9, 1.0f);
-	
-	bool out = ImGui::SliderFloat4(label, v, v_min, v_max, format, power);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushnumber(L, v[2]);
-	lua_pushnumber(L, v[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
+// skipping w_SliderFloat4 due to unimplemented argument type: "float[4]"
 
-int w_SliderAngle(lua_State *L)
+void w_SliderAngle(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto v_rad = static_cast<float>(luaL_checknumber(L, 2));
-	auto v_degrees_min = luax_optfloat(L, 3, -360.0f);
-	auto v_degrees_max = luax_optfloat(L, 4, +360.0f);
-	auto format = luaL_optstring(L, 5, "%.0f deg");
+	auto label = wrenGetSlotString(vm, 1);
+	auto v_rad = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_degrees_min = wrenExGetSlotFloatDefault(vm, 3, -360.0f);
+	auto v_degrees_max = wrenExGetSlotFloatDefault(vm, 4, +360.0f);
+	auto format = wrenExGetSlotStringDefault(vm, 5, "%.0f deg");
 	
 	bool out = ImGui::SliderAngle(label, &v_rad, v_degrees_min, v_degrees_max, format);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushnumber(L, v_rad);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v_rad);
 }
 
-int w_SliderInt(lua_State *L)
+void w_SliderInt(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	int v = luaL_checkint(L, 2);
-	auto v_min = luaL_checkint(L, 3);
-	auto v_max = luaL_checkint(L, 4);
-	auto format = luaL_optstring(L, 5, "%d");
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_min = wrenExGetSlotInt(vm, 3);
+	auto v_max = wrenExGetSlotInt(vm, 4);
+	auto format = wrenExGetSlotStringDefault(vm, 5, "%d");
 	
 	bool out = ImGui::SliderInt(label, &v, v_min, v_max, format);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushinteger(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_SliderInt2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[2];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	auto v_min = luaL_checkint(L, 4);
-	auto v_max = luaL_checkint(L, 5);
-	auto format = luaL_optstring(L, 6, "%d");
-	
-	bool out = ImGui::SliderInt2(label, v, v_min, v_max, format);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushboolean(L, out);
-	return 3;
-}
+// skipping w_SliderInt2 due to unimplemented argument type: "int[2]"
 
-int w_SliderInt3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[3];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	v[2] = static_cast<int>(luaL_checkint(L, 4));
-	auto v_min = luaL_checkint(L, 5);
-	auto v_max = luaL_checkint(L, 6);
-	auto format = luaL_optstring(L, 7, "%d");
-	
-	bool out = ImGui::SliderInt3(label, v, v_min, v_max, format);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushinteger(L, v[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_SliderInt3 due to unimplemented argument type: "int[3]"
 
-int w_SliderInt4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[4];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	v[2] = static_cast<int>(luaL_checkint(L, 4));
-	v[3] = static_cast<int>(luaL_checkint(L, 5));
-	auto v_min = luaL_checkint(L, 6);
-	auto v_max = luaL_checkint(L, 7);
-	auto format = luaL_optstring(L, 8, "%d");
-	
-	bool out = ImGui::SliderInt4(label, v, v_min, v_max, format);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushinteger(L, v[2]);
-	lua_pushinteger(L, v[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
+// skipping w_SliderInt4 due to unimplemented argument type: "int[4]"
 
-int w_VSliderFloat(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 2);
-	size.y = luax_checkfloat(L, 3);
-	auto v = static_cast<float>(luaL_checknumber(L, 4));
-	auto v_min = luax_checkfloat(L, 5);
-	auto v_max = luax_checkfloat(L, 6);
-	auto format = luaL_optstring(L, 7, "%.3f");
-	auto power = luax_optfloat(L, 8, 1.0f);
-	
-	bool out = ImGui::VSliderFloat(label, size, &v, v_min, v_max, format, power);
-	
-	lua_pushnumber(L, v);
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_VSliderFloat due to unimplemented argument type: "const ImVec2&"
 
-int w_VSliderInt(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 2);
-	size.y = luax_checkfloat(L, 3);
-	int v = luaL_checkint(L, 4);
-	auto v_min = luaL_checkint(L, 5);
-	auto v_max = luaL_checkint(L, 6);
-	auto format = luaL_optstring(L, 7, "%d");
-	
-	bool out = ImGui::VSliderInt(label, size, &v, v_min, v_max, format);
-	
-	lua_pushinteger(L, v);
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_VSliderInt due to unimplemented argument type: "const ImVec2&"
 
 // skipping w_InputText_Override1 due to unimplemented argument type: "(TODO) const buf*"
 
@@ -3213,437 +2347,213 @@ int w_VSliderInt(lua_State *L)
 
 // skipping w_InputTextWithHint_Override1 due to unimplemented argument type: "(TODO) const buf*"
 
-int w_InputFloat(lua_State *L)
+void w_InputFloat(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto v = static_cast<float>(luaL_checknumber(L, 2));
-	auto step = luax_optfloat(L, 3, 0.0f);
-	auto step_fast = luax_optfloat(L, 4, 0.0f);
-	auto format = luaL_optstring(L, 5, "%.3f");
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 6, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto step = wrenExGetSlotFloatDefault(vm, 3, 0.0f);
+	auto step_fast = wrenExGetSlotFloatDefault(vm, 4, 0.0f);
+	auto format = wrenExGetSlotStringDefault(vm, 5, "%.3f");
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 6, 0);
 	
 	bool out = ImGui::InputFloat(label, &v, step, step_fast, format, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushnumber(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_InputFloat2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[2];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	auto format = luaL_optstring(L, 4, "%.3f");
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 5, 0);
-	
-	bool out = ImGui::InputFloat2(label, v, format, flags);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushboolean(L, out);
-	return 3;
-}
+// skipping w_InputFloat2 due to unimplemented argument type: "float[2]"
 
-int w_InputFloat3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[3];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	auto format = luaL_optstring(L, 5, "%.3f");
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 6, 0);
-	
-	bool out = ImGui::InputFloat3(label, v, format, flags);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushnumber(L, v[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_InputFloat3 due to unimplemented argument type: "float[3]"
 
-int w_InputFloat4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float v[4];
-	v[0] = static_cast<float>(luaL_checknumber(L, 2));
-	v[1] = static_cast<float>(luaL_checknumber(L, 3));
-	v[2] = static_cast<float>(luaL_checknumber(L, 4));
-	v[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto format = luaL_optstring(L, 6, "%.3f");
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 7, 0);
-	
-	bool out = ImGui::InputFloat4(label, v, format, flags);
-	
-	lua_pushnumber(L, v[0]);
-	lua_pushnumber(L, v[1]);
-	lua_pushnumber(L, v[2]);
-	lua_pushnumber(L, v[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
+// skipping w_InputFloat4 due to unimplemented argument type: "float[4]"
 
-int w_InputInt(lua_State *L)
+void w_InputInt(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	int v = luaL_checkint(L, 2);
-	auto step = luaL_optint(L, 3, 1);
-	auto step_fast = luaL_optint(L, 4, 100);
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 5, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto step = wrenExGetSlotIntDefault(vm, 3, 1);
+	auto step_fast = wrenExGetSlotIntDefault(vm, 4, 100);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 5, 0);
 	
 	bool out = ImGui::InputInt(label, &v, step, step_fast, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushinteger(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_InputInt2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[2];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 4, 0);
-	
-	bool out = ImGui::InputInt2(label, v, flags);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushboolean(L, out);
-	return 3;
-}
+// skipping w_InputInt2 due to unimplemented argument type: "int[2]"
 
-int w_InputInt3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[3];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	v[2] = static_cast<int>(luaL_checkint(L, 4));
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 5, 0);
-	
-	bool out = ImGui::InputInt3(label, v, flags);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushinteger(L, v[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_InputInt3 due to unimplemented argument type: "int[3]"
 
-int w_InputInt4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int v[4];
-	v[0] = static_cast<int>(luaL_checkint(L, 2));
-	v[1] = static_cast<int>(luaL_checkint(L, 3));
-	v[2] = static_cast<int>(luaL_checkint(L, 4));
-	v[3] = static_cast<int>(luaL_checkint(L, 5));
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 6, 0);
-	
-	bool out = ImGui::InputInt4(label, v, flags);
-	
-	lua_pushinteger(L, v[0]);
-	lua_pushinteger(L, v[1]);
-	lua_pushinteger(L, v[2]);
-	lua_pushinteger(L, v[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
+// skipping w_InputInt4 due to unimplemented argument type: "int[4]"
 
-int w_InputDouble(lua_State *L)
+void w_InputDouble(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	double v = luaL_checknumber(L, 2);
-	auto step = luaL_optnumber(L, 3, 0.0);
-	auto step_fast = luaL_optnumber(L, 4, 0.0);
-	auto format = luaL_optstring(L, 5, "%.6f");
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 6, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto v = static_cast<double>(Box::getCPP<double>(vm, 2));
+	auto step = wrenExGetSlotDoubleDefault(vm, 3, 0.0);
+	auto step_fast = wrenExGetSlotDoubleDefault(vm, 4, 0.0);
+	auto format = wrenExGetSlotStringDefault(vm, 5, "%.6f");
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 6, 0);
 	
 	bool out = ImGui::InputDouble(label, &v, step, step_fast, format, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushnumber(L, v);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<double>(vm, 2, v);
 }
 
-int w_ColorEdit3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float col[3];
-	col[0] = static_cast<float>(luaL_checknumber(L, 2));
-	col[1] = static_cast<float>(luaL_checknumber(L, 3));
-	col[2] = static_cast<float>(luaL_checknumber(L, 4));
-	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 5, 0);
-	
-	bool out = ImGui::ColorEdit3(label, col, flags);
-	
-	lua_pushnumber(L, col[0]);
-	lua_pushnumber(L, col[1]);
-	lua_pushnumber(L, col[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_ColorEdit3 due to unimplemented argument type: "float[3]"
 
-int w_ColorEdit4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float col[4];
-	col[0] = static_cast<float>(luaL_checknumber(L, 2));
-	col[1] = static_cast<float>(luaL_checknumber(L, 3));
-	col[2] = static_cast<float>(luaL_checknumber(L, 4));
-	col[3] = static_cast<float>(luaL_checknumber(L, 5));
-	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
-	
-	bool out = ImGui::ColorEdit4(label, col, flags);
-	
-	lua_pushnumber(L, col[0]);
-	lua_pushnumber(L, col[1]);
-	lua_pushnumber(L, col[2]);
-	lua_pushnumber(L, col[3]);
-	lua_pushboolean(L, out);
-	return 5;
-}
+// skipping w_ColorEdit4 due to unimplemented argument type: "float[4]"
 
-int w_ColorPicker3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	float col[3];
-	col[0] = static_cast<float>(luaL_checknumber(L, 2));
-	col[1] = static_cast<float>(luaL_checknumber(L, 3));
-	col[2] = static_cast<float>(luaL_checknumber(L, 4));
-	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 5, 0);
-	
-	bool out = ImGui::ColorPicker3(label, col, flags);
-	
-	lua_pushnumber(L, col[0]);
-	lua_pushnumber(L, col[1]);
-	lua_pushnumber(L, col[2]);
-	lua_pushboolean(L, out);
-	return 4;
-}
+// skipping w_ColorPicker3 due to unimplemented argument type: "float[3]"
 
-// skipping w_ColorPicker4: already implemented
+// skipping w_ColorPicker4 due to unimplemented argument type: "float[4]"
 
-/*  display a colored square/button, hover for details, return true when pressed. */
-int w_ColorButton(lua_State *L)
-{
-	auto desc_id = luaL_checkstring(L, 1);
-	ImVec4 col;
-	col.x = luax_checkfloat(L, 2);
-	col.y = luax_checkfloat(L, 3);
-	col.z = luax_checkfloat(L, 4);
-	col.w = luax_checkfloat(L, 5);
-	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
-	auto size = ImVec2(0,0);
-	size.x = luax_optfloat(L, 7, size.x);
-	size.y = luax_optfloat(L, 8, size.y);
-	
-	bool out = ImGui::ColorButton(desc_id, col, flags, size);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_ColorButton due to unimplemented argument type: "const ImVec4&"
 
 /*  initialize current options (generally on application startup) if you want to select a default format, picker type, etc. User will be able to change many settings, unless you pass the _NoOptions flag to your calls. */
-int w_SetColorEditOptions(lua_State *L)
+void w_SetColorEditOptions(WrenVM *vm)
 {
-	auto flags = luax_checkflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 1);
+	auto flags = wrenExGetSlotFlags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, vm, 1);
 	
 	ImGui::SetColorEditOptions(flags);
 	
-	return 0;
 }
 
-int w_TreeNode_Override1(lua_State *L)
+void w_TreeNode_Override1(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
+	auto label = wrenGetSlotString(vm, 1);
 	
 	bool out = ImGui::TreeNode(label);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  helper variation to easily decorelate the id from the displayed string. Read the FAQ about why and how to use ID. to align arbitrary text at the same level as a TreeNode() you can use Bullet(). */
-int w_TreeNode_Override2(lua_State *L)
+void w_TreeNode_Override2(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
-	auto fmt = luax_formatargs(L, 2);
+	auto str_id = wrenGetSlotString(vm, 1);
+	auto fmt = wrenGetSlotString(vm, 2);
 	
-	bool out = ImGui::TreeNode(str_id, "%s", fmt);
+	bool out = ImGui::TreeNode(str_id, fmt);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 // skipping w_TreeNode_Override3 due to unimplemented argument type: "const void*"
 
-int w_TreeNodeEx_Override1(lua_State *L)
+void w_TreeNodeEx_Override1(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto flags = luax_optflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 2, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 2, 0);
 	
 	bool out = ImGui::TreeNodeEx(label, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-int w_TreeNodeEx_Override2(lua_State *L)
+void w_TreeNodeEx_Override2(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
-	auto flags = luax_checkflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 2);
-	auto fmt = luax_formatargs(L, 3);
+	auto str_id = wrenGetSlotString(vm, 1);
+	auto flags = wrenExGetSlotFlags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 2);
+	auto fmt = wrenGetSlotString(vm, 3);
 	
-	bool out = ImGui::TreeNodeEx(str_id, flags, "%s", fmt);
+	bool out = ImGui::TreeNodeEx(str_id, flags, fmt);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 // skipping w_TreeNodeEx_Override3 due to unimplemented argument type: "const void*"
 
 /*  ~ Indent()+PushId(). Already called by TreeNode() when returning true, but you can call TreePush/TreePop yourself if desired. */
-int w_TreePush_Override1(lua_State *L)
+void w_TreePush_Override1(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
+	auto str_id = wrenGetSlotString(vm, 1);
 	
 	ImGui::TreePush(str_id);
 	
-	return 0;
 }
 
 // skipping w_TreePush_Override2 due to unimplemented argument type: "const void*"
 
 /*  ~ Unindent()+PopId() */
-int w_TreePop(lua_State *L)
+void w_TreePop(WrenVM *vm)
 {
 	ImGui::TreePop();
 	
-	return 0;
 }
 
 /*  horizontal distance preceding label when using TreeNode*() or Bullet() == (g.FontSize + style.FramePadding.x*2) for a regular unframed TreeNode */
-int w_GetTreeNodeToLabelSpacing(lua_State *L)
+void w_GetTreeNodeToLabelSpacing(WrenVM *vm)
 {
 	float out = ImGui::GetTreeNodeToLabelSpacing();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop(). */
-int w_CollapsingHeader_Override1(lua_State *L)
+void w_CollapsingHeader_Override1(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto flags = luax_optflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 2, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 2, 0);
 	
 	bool out = ImGui::CollapsingHeader(label, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  when 'p_open' isn't NULL, display an additional small close button on upper right of the header */
-int w_CollapsingHeader_Override2(lua_State *L)
+void w_CollapsingHeader_Override2(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	bool p_open = luax_checkboolean(L, 2);
-	auto flags = luax_optflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 3, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 3, 0);
 	
 	bool out = ImGui::CollapsingHeader(label, &p_open, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, p_open);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<bool>(vm, 2, p_open);
 }
 
 /*  set next TreeNode/CollapsingHeader open state. */
-int w_SetNextItemOpen(lua_State *L)
+void w_SetNextItemOpen(WrenVM *vm)
 {
-	auto is_open = luax_checkboolean(L, 1);
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 2, 0);
+	auto is_open = wrenGetSlotBool(vm, 1);
+	auto cond = wrenExGetSlotEnumsDefault<ImGuiCond>(getImGuiCondFromString, vm, 2, 0);
 	
 	ImGui::SetNextItemOpen(is_open, cond);
 	
-	return 0;
 }
 
-/*  "bool selected" carry the selection state (read-only). Selectable() is clicked is returns true so you can modify your selection state. size.x==0.0: use remaining width, size.x>0.0: specify width. size.y==0.0: use label height, size.y>0.0: specify height */
-int w_Selectable_Override1(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	auto selected = luax_optboolean(L, 2, false);
-	auto flags = luax_optflags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, L, 3, 0);
-	auto size = ImVec2(0,0);
-	size.x = luax_optfloat(L, 4, size.x);
-	size.y = luax_optfloat(L, 5, size.y);
-	
-	bool out = ImGui::Selectable(label, selected, flags, size);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_Selectable_Override1 due to unimplemented argument type: "const ImVec2&"
 
-/*  "bool* p_selected" point to the selection state (read-write), as a convenient helper. */
-int w_Selectable_Override2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	bool p_selected = luax_checkboolean(L, 2);
-	auto flags = luax_optflags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, L, 3, 0);
-	auto size = ImVec2(0,0);
-	size.x = luax_optfloat(L, 4, size.x);
-	size.y = luax_optfloat(L, 5, size.y);
-	
-	bool out = ImGui::Selectable(label, &p_selected, flags, size);
-	
-	lua_pushboolean(L, p_selected);
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_Selectable_Override2 due to unimplemented argument type: "const ImVec2&"
 
 // skipping w_ListBox_Override1 due to unimplemented argument type: "const char* const[]"
 
 // skipping w_ListBox_Override2 due to unimplemented argument type: " bool (*items_getter)(void* data, int idx, const char** out_text)"
 
-/*  use if you want to reimplement ListBox() will custom data or interactions. if the function return true, you can output elements then call ListBoxFooter() afterwards. */
-int w_ListBoxHeader_Override1(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	auto size = ImVec2(0,0);
-	size.x = luax_optfloat(L, 2, size.x);
-	size.y = luax_optfloat(L, 3, size.y);
-	
-	bool out = ImGui::ListBoxHeader(label, size);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_ListBoxHeader_Override1 due to unimplemented argument type: "const ImVec2&"
 
 /*  " */
-int w_ListBoxHeader_Override2(lua_State *L)
+void w_ListBoxHeader_Override2(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto items_count = luaL_checkint(L, 2);
-	auto height_in_items = luaL_optint(L, 3, -1);
+	auto label = wrenGetSlotString(vm, 1);
+	auto items_count = wrenExGetSlotInt(vm, 2);
+	auto height_in_items = wrenExGetSlotIntDefault(vm, 3, -1);
 	
 	bool out = ImGui::ListBoxHeader(label, items_count, height_in_items);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  terminate the scrolling region. only call ListBoxFooter() if ListBoxHeader() returned true! */
-int w_ListBoxFooter(lua_State *L)
+void w_ListBoxFooter(WrenVM *vm)
 {
 	ImGui::ListBoxFooter();
 	
-	return 0;
 }
 
 // skipping w_PlotLines_Override1 due to unimplemented argument type: "const float*"
@@ -3654,825 +2564,658 @@ int w_ListBoxFooter(lua_State *L)
 
 // skipping w_PlotHistogram_Override2 due to unimplemented argument type: " float(*values_getter)(void* data, int idx)"
 
-int w_Value_Override1(lua_State *L)
+void w_Value_Override1(WrenVM *vm)
 {
-	auto prefix = luaL_checkstring(L, 1);
-	auto b = luax_checkboolean(L, 2);
+	auto prefix = wrenGetSlotString(vm, 1);
+	auto b = wrenGetSlotBool(vm, 2);
 	
 	ImGui::Value(prefix, b);
 	
-	return 0;
 }
 
-int w_Value_Override2(lua_State *L)
+void w_Value_Override2(WrenVM *vm)
 {
-	auto prefix = luaL_checkstring(L, 1);
-	auto v = luaL_checkint(L, 2);
+	auto prefix = wrenGetSlotString(vm, 1);
+	auto v = wrenExGetSlotInt(vm, 2);
 	
 	ImGui::Value(prefix, v);
 	
-	return 0;
 }
 
-int w_Value_Override3(lua_State *L)
+void w_Value_Override3(WrenVM *vm)
 {
-	auto prefix = luaL_checkstring(L, 1);
-	auto v = static_cast<unsigned int>(luaL_checklong(L, 2));
+	auto prefix = wrenGetSlotString(vm, 1);
+	auto v = wrenExGetSlotUInt(vm, 2);
 	
 	ImGui::Value(prefix, v);
 	
-	return 0;
 }
 
-int w_Value_Override4(lua_State *L)
+void w_Value_Override4(WrenVM *vm)
 {
-	auto prefix = luaL_checkstring(L, 1);
-	auto v = luax_checkfloat(L, 2);
-	auto float_format = luaL_optstring(L, 3, NULL);
+	auto prefix = wrenGetSlotString(vm, 1);
+	auto v = wrenExGetSlotFloat(vm, 2);
+	auto float_format = wrenExGetSlotStringDefault(vm, 3, NULL);
 	
 	ImGui::Value(prefix, v, float_format);
 	
-	return 0;
 }
 
 /*  append to menu-bar of current window (requires ImGuiWindowFlags_MenuBar flag set on parent window). */
-int w_BeginMenuBar(lua_State *L)
+void w_BeginMenuBar(WrenVM *vm)
 {
 	bool out = ImGui::BeginMenuBar();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  only call EndMenuBar() if BeginMenuBar() returns true! */
-int w_EndMenuBar(lua_State *L)
+void w_EndMenuBar(WrenVM *vm)
 {
 	ImGui::EndMenuBar();
 	
-	return 0;
 }
 
 /*  create and append to a full screen menu-bar. */
-int w_BeginMainMenuBar(lua_State *L)
+void w_BeginMainMenuBar(WrenVM *vm)
 {
 	bool out = ImGui::BeginMainMenuBar();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  only call EndMainMenuBar() if BeginMainMenuBar() returns true! */
-int w_EndMainMenuBar(lua_State *L)
+void w_EndMainMenuBar(WrenVM *vm)
 {
 	ImGui::EndMainMenuBar();
 	
-	return 0;
 }
 
 /*  create a sub-menu entry. only call EndMenu() if this returns true! */
-int w_BeginMenu(lua_State *L)
+void w_BeginMenu(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto enabled = luax_optboolean(L, 2, true);
+	auto label = wrenGetSlotString(vm, 1);
+	auto enabled = wrenExGetSlotBoolDefault(vm, 2, true);
 	
 	bool out = ImGui::BeginMenu(label, enabled);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  only call EndMenu() if BeginMenu() returns true! */
-int w_EndMenu(lua_State *L)
+void w_EndMenu(WrenVM *vm)
 {
 	ImGui::EndMenu();
 	
-	return 0;
 }
 
 /*  return true when activated. shortcuts are displayed for convenience but not processed by ImGui at the moment */
-int w_MenuItem_Override1(lua_State *L)
+void w_MenuItem_Override1(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto shortcut = luaL_optstring(L, 2, NULL);
-	auto selected = luax_optboolean(L, 3, false);
-	auto enabled = luax_optboolean(L, 4, true);
+	auto label = wrenGetSlotString(vm, 1);
+	auto shortcut = wrenExGetSlotStringDefault(vm, 2, NULL);
+	auto selected = wrenExGetSlotBoolDefault(vm, 3, false);
+	auto enabled = wrenExGetSlotBoolDefault(vm, 4, true);
 	
 	bool out = ImGui::MenuItem(label, shortcut, selected, enabled);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  return true when activated + toggle (*p_selected) if p_selected != NULL */
-int w_MenuItem_Override2(lua_State *L)
+void w_MenuItem_Override2(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	auto shortcut = luaL_checkstring(L, 2);
-	bool p_selected = luax_checkboolean(L, 3);
-	auto enabled = luax_optboolean(L, 4, true);
+	auto label = wrenGetSlotString(vm, 1);
+	auto shortcut = wrenGetSlotString(vm, 2);
+	auto p_selected = static_cast<bool>(Box::getCPP<bool>(vm, 3));
+	auto enabled = wrenExGetSlotBoolDefault(vm, 4, true);
 	
 	bool out = ImGui::MenuItem(label, shortcut, &p_selected, enabled);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, p_selected);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<bool>(vm, 3, p_selected);
 }
 
 /*  begin/append a tooltip window. to create full-featured tooltip (with any kind of items). */
-int w_BeginTooltip(lua_State *L)
+void w_BeginTooltip(WrenVM *vm)
 {
 	ImGui::BeginTooltip();
 	
-	return 0;
 }
 
-int w_EndTooltip(lua_State *L)
+void w_EndTooltip(WrenVM *vm)
 {
 	ImGui::EndTooltip();
 	
-	return 0;
 }
 
 /*  set a text-only tooltip, typically use with ImGui::IsItemHovered(). override any previous call to SetTooltip(). */
-int w_SetTooltip(lua_State *L)
+void w_SetTooltip(WrenVM *vm)
 {
-	auto fmt = luax_formatargs(L, 1);
+	auto fmt = wrenGetSlotString(vm, 1);
 	
-	ImGui::SetTooltip("%s", fmt);
+	ImGui::SetTooltip(fmt);
 	
-	return 0;
 }
 
 /*  call to mark popup as open (don't call every frame!). popups are closed when user click outside, or if CloseCurrentPopup() is called within a BeginPopup()/EndPopup() block. By default, Selectable()/MenuItem() are calling CloseCurrentPopup(). Popup identifiers are relative to the current ID-stack (so OpenPopup and BeginPopup needs to be at the same level). */
-int w_OpenPopup(lua_State *L)
+void w_OpenPopup(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
+	auto str_id = wrenGetSlotString(vm, 1);
 	
 	ImGui::OpenPopup(str_id);
 	
-	return 0;
 }
 
 /*  return true if the popup is open, and you can start outputting to it. only call EndPopup() if BeginPopup() returns true! */
-int w_BeginPopup(lua_State *L)
+void w_BeginPopup(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
-	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 2, 0);
+	auto str_id = wrenGetSlotString(vm, 1);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 2, 0);
 	
 	bool out = ImGui::BeginPopup(str_id, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  helper to open and begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp! */
-int w_BeginPopupContextItem(lua_State *L)
+void w_BeginPopupContextItem(WrenVM *vm)
 {
-	auto str_id = luaL_optstring(L, 1, NULL);
-	auto mouse_button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 2, 1);
+	auto str_id = wrenExGetSlotStringDefault(vm, 1, NULL);
+	auto mouse_button = wrenExGetSlotEnumsDefault<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2, 1);
 	
 	bool out = ImGui::BeginPopupContextItem(str_id, mouse_button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  helper to open and begin popup when clicked on current window. */
-int w_BeginPopupContextWindow(lua_State *L)
+void w_BeginPopupContextWindow(WrenVM *vm)
 {
-	auto str_id = luaL_optstring(L, 1, NULL);
-	auto mouse_button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 2, 1);
-	auto also_over_items = luax_optboolean(L, 3, true);
+	auto str_id = wrenExGetSlotStringDefault(vm, 1, NULL);
+	auto mouse_button = wrenExGetSlotEnumsDefault<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2, 1);
+	auto also_over_items = wrenExGetSlotBoolDefault(vm, 3, true);
 	
 	bool out = ImGui::BeginPopupContextWindow(str_id, mouse_button, also_over_items);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  helper to open and begin popup when clicked in void (where there are no imgui windows). */
-int w_BeginPopupContextVoid(lua_State *L)
+void w_BeginPopupContextVoid(WrenVM *vm)
 {
-	auto str_id = luaL_optstring(L, 1, NULL);
-	auto mouse_button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 2, 1);
+	auto str_id = wrenExGetSlotStringDefault(vm, 1, NULL);
+	auto mouse_button = wrenExGetSlotEnumsDefault<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2, 1);
 	
 	bool out = ImGui::BeginPopupContextVoid(str_id, mouse_button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  modal dialog (regular window with title bar, block interactions behind the modal window, can't close the modal window by clicking outside) */
-int w_BeginPopupModal(lua_State *L)
+void w_BeginPopupModal(WrenVM *vm)
 {
-	auto name = luaL_checkstring(L, 1);
-	bool p_open = luax_optboolean(L, 2, NULL);
-	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 3, 0);
+	auto name = wrenGetSlotString(vm, 1);
+	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 3, 0);
 	
 	bool out = ImGui::BeginPopupModal(name, &p_open, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, p_open);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<bool>(vm, 2, p_open);
 }
 
 /*  only call EndPopup() if BeginPopupXXX() returns true! */
-int w_EndPopup(lua_State *L)
+void w_EndPopup(WrenVM *vm)
 {
 	ImGui::EndPopup();
 	
-	return 0;
 }
 
 /*  helper to open popup when clicked on last item (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors). return true when just opened. */
-int w_OpenPopupOnItemClick(lua_State *L)
+void w_OpenPopupOnItemClick(WrenVM *vm)
 {
-	auto str_id = luaL_optstring(L, 1, NULL);
-	auto mouse_button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 2, 1);
+	auto str_id = wrenExGetSlotStringDefault(vm, 1, NULL);
+	auto mouse_button = wrenExGetSlotEnumsDefault<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2, 1);
 	
 	bool out = ImGui::OpenPopupOnItemClick(str_id, mouse_button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  return true if the popup is open at the current begin-ed level of the popup stack. */
-int w_IsPopupOpen(lua_State *L)
+void w_IsPopupOpen(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
+	auto str_id = wrenGetSlotString(vm, 1);
 	
 	bool out = ImGui::IsPopupOpen(str_id);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  close the popup we have begin-ed into. clicking on a MenuItem or Selectable automatically close the current popup. */
-int w_CloseCurrentPopup(lua_State *L)
+void w_CloseCurrentPopup(WrenVM *vm)
 {
 	ImGui::CloseCurrentPopup();
 	
-	return 0;
 }
 
-int w_Columns(lua_State *L)
+void w_Columns(WrenVM *vm)
 {
-	auto count = luaL_optint(L, 1, 1);
-	auto id = luaL_optstring(L, 2, NULL);
-	auto border = luax_optboolean(L, 3, true);
+	auto count = wrenExGetSlotIntDefault(vm, 1, 1);
+	auto id = wrenExGetSlotStringDefault(vm, 2, NULL);
+	auto border = wrenExGetSlotBoolDefault(vm, 3, true);
 	
 	ImGui::Columns(count, id, border);
 	
-	return 0;
 }
 
 /*  next column, defaults to current row or next row if the current row is finished */
-int w_NextColumn(lua_State *L)
+void w_NextColumn(WrenVM *vm)
 {
 	ImGui::NextColumn();
 	
-	return 0;
 }
 
 /*  get current column index */
-int w_GetColumnIndex(lua_State *L)
+void w_GetColumnIndex(WrenVM *vm)
 {
 	int out = ImGui::GetColumnIndex();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 /*  get column width (in pixels). pass -1 to use current column */
-int w_GetColumnWidth(lua_State *L)
+void w_GetColumnWidth(WrenVM *vm)
 {
-	auto column_index = luaL_optint(L, 1, -1);
+	auto column_index = wrenExGetSlotIntDefault(vm, 1, -1);
 	
 	float out = ImGui::GetColumnWidth(column_index);
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  set column width (in pixels). pass -1 to use current column */
-int w_SetColumnWidth(lua_State *L)
+void w_SetColumnWidth(WrenVM *vm)
 {
-	auto column_index = luaL_checkint(L, 1);
-	auto width = luax_checkfloat(L, 2);
+	auto column_index = wrenExGetSlotInt(vm, 1);
+	auto width = wrenExGetSlotFloat(vm, 2);
 	
 	ImGui::SetColumnWidth(column_index, width);
 	
-	return 0;
 }
 
 /*  get position of column line (in pixels, from the left side of the contents region). pass -1 to use current column, otherwise 0..GetColumnsCount() inclusive. column 0 is typically 0.0f */
-int w_GetColumnOffset(lua_State *L)
+void w_GetColumnOffset(WrenVM *vm)
 {
-	auto column_index = luaL_optint(L, 1, -1);
+	auto column_index = wrenExGetSlotIntDefault(vm, 1, -1);
 	
 	float out = ImGui::GetColumnOffset(column_index);
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  set position of column line (in pixels, from the left side of the contents region). pass -1 to use current column */
-int w_SetColumnOffset(lua_State *L)
+void w_SetColumnOffset(WrenVM *vm)
 {
-	auto column_index = luaL_checkint(L, 1);
-	auto offset_x = luax_checkfloat(L, 2);
+	auto column_index = wrenExGetSlotInt(vm, 1);
+	auto offset_x = wrenExGetSlotFloat(vm, 2);
 	
 	ImGui::SetColumnOffset(column_index, offset_x);
 	
-	return 0;
 }
 
-int w_GetColumnsCount(lua_State *L)
+void w_GetColumnsCount(WrenVM *vm)
 {
 	int out = ImGui::GetColumnsCount();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 /*  create and append into a TabBar */
-int w_BeginTabBar(lua_State *L)
+void w_BeginTabBar(WrenVM *vm)
 {
-	auto str_id = luaL_checkstring(L, 1);
-	auto flags = luax_optflags<ImGuiTabBarFlags>(getImGuiTabBarFlagsFromString, L, 2, 0);
+	auto str_id = wrenGetSlotString(vm, 1);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiTabBarFlags>(getImGuiTabBarFlagsFromString, vm, 2, 0);
 	
 	bool out = ImGui::BeginTabBar(str_id, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  only call EndTabBar() if BeginTabBar() returns true! */
-int w_EndTabBar(lua_State *L)
+void w_EndTabBar(WrenVM *vm)
 {
 	ImGui::EndTabBar();
 	
-	return 0;
 }
 
 /*  create a Tab. Returns true if the Tab is selected. */
-int w_BeginTabItem(lua_State *L)
+void w_BeginTabItem(WrenVM *vm)
 {
-	auto label = luaL_checkstring(L, 1);
-	bool p_open = luax_optboolean(L, 2, NULL);
-	auto flags = luax_optflags<ImGuiTabItemFlags>(getImGuiTabItemFlagsFromString, L, 3, 0);
+	auto label = wrenGetSlotString(vm, 1);
+	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiTabItemFlags>(getImGuiTabItemFlagsFromString, vm, 3, 0);
 	
 	bool out = ImGui::BeginTabItem(label, &p_open, flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, p_open);
-	lua_pushboolean(L, out);
-	return 2;
+	Box::setCPP<bool>(vm, 2, p_open);
 }
 
 /*  only call EndTabItem() if BeginTabItem() returns true! */
-int w_EndTabItem(lua_State *L)
+void w_EndTabItem(WrenVM *vm)
 {
 	ImGui::EndTabItem();
 	
-	return 0;
 }
 
 /*  notify TabBar or Docking system of a closed tab/window ahead (useful to reduce visual flicker on reorderable tab bars). For tab-bar: call after BeginTabBar() and before Tab submissions. Otherwise call with a window name. */
-int w_SetTabItemClosed(lua_State *L)
+void w_SetTabItemClosed(WrenVM *vm)
 {
-	auto tab_or_docked_window_label = luaL_checkstring(L, 1);
+	auto tab_or_docked_window_label = wrenGetSlotString(vm, 1);
 	
 	ImGui::SetTabItemClosed(tab_or_docked_window_label);
 	
-	return 0;
 }
 
-int w_DockSpace(lua_State *L)
-{
-	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
-	auto size = ImVec2(0, 0);
-	size.x = luax_optfloat(L, 2, size.x);
-	size.y = luax_optfloat(L, 3, size.y);
-	auto flags = luax_optflags<ImGuiDockNodeFlags>(getImGuiDockNodeFlagsFromString, L, 4, 0);
-	const ImGuiWindowClass* window_class = NULL; // skipping
-	
-	ImGui::DockSpace(id, size, flags, window_class);
-	
-	return 0;
-}
+// skipping w_DockSpace due to unimplemented argument type: "const ImVec2&"
 
-int w_DockSpaceOverViewport(lua_State *L)
+void w_DockSpaceOverViewport(WrenVM *vm)
 {
 	ImGuiViewport* viewport = NULL; // skipping
-	auto flags = luax_optflags<ImGuiDockNodeFlags>(getImGuiDockNodeFlagsFromString, L, 1, 0);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiDockNodeFlags>(getImGuiDockNodeFlagsFromString, vm, 1, 0);
 	const ImGuiWindowClass* window_class = NULL; // skipping
 	
 	ImGuiID out = ImGui::DockSpaceOverViewport(viewport, flags, window_class);
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 /*  set next window dock id (FIXME-DOCK) */
-int w_SetNextWindowDockID(lua_State *L)
+void w_SetNextWindowDockID(WrenVM *vm)
 {
-	auto dock_id = static_cast<ImGuiID>(luaL_checkint(L, 1));
-	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 2, 0);
+	auto dock_id = static_cast<ImGuiID>(wrenExGetSlotInt(vm, 1));
+	auto cond = wrenExGetSlotEnumsDefault<ImGuiCond>(getImGuiCondFromString, vm, 2, 0);
 	
 	ImGui::SetNextWindowDockID(dock_id, cond);
 	
-	return 0;
 }
 
 // skipping w_SetNextWindowClass due to unimplemented argument type: "const ImGuiWindowClass*"
 
-int w_GetWindowDockID(lua_State *L)
+void w_GetWindowDockID(WrenVM *vm)
 {
 	ImGuiID out = ImGui::GetWindowDockID();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 /*  is current window docked into another window? */
-int w_IsWindowDocked(lua_State *L)
+void w_IsWindowDocked(WrenVM *vm)
 {
 	bool out = ImGui::IsWindowDocked();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  start logging to tty (stdout) */
-int w_LogToTTY(lua_State *L)
+void w_LogToTTY(WrenVM *vm)
 {
-	auto auto_open_depth = luaL_optint(L, 1, -1);
+	auto auto_open_depth = wrenExGetSlotIntDefault(vm, 1, -1);
 	
 	ImGui::LogToTTY(auto_open_depth);
 	
-	return 0;
 }
 
 /*  start logging to file */
-int w_LogToFile(lua_State *L)
+void w_LogToFile(WrenVM *vm)
 {
-	auto auto_open_depth = luaL_optint(L, 1, -1);
-	auto filename = luaL_optstring(L, 2, NULL);
+	auto auto_open_depth = wrenExGetSlotIntDefault(vm, 1, -1);
+	auto filename = wrenExGetSlotStringDefault(vm, 2, NULL);
 	
 	ImGui::LogToFile(auto_open_depth, filename);
 	
-	return 0;
 }
 
 /*  start logging to OS clipboard */
-int w_LogToClipboard(lua_State *L)
+void w_LogToClipboard(WrenVM *vm)
 {
-	auto auto_open_depth = luaL_optint(L, 1, -1);
+	auto auto_open_depth = wrenExGetSlotIntDefault(vm, 1, -1);
 	
 	ImGui::LogToClipboard(auto_open_depth);
 	
-	return 0;
 }
 
 /*  stop logging (close file, etc.) */
-int w_LogFinish(lua_State *L)
+void w_LogFinish(WrenVM *vm)
 {
 	ImGui::LogFinish();
 	
-	return 0;
 }
 
 /*  helper to display buttons for logging to tty/file/clipboard */
-int w_LogButtons(lua_State *L)
+void w_LogButtons(WrenVM *vm)
 {
 	ImGui::LogButtons();
 	
-	return 0;
 }
 
 /*  pass text data straight to log (without being displayed) */
-int w_LogText(lua_State *L)
+void w_LogText(WrenVM *vm)
 {
-	auto fmt = luax_formatargs(L, 1);
+	auto fmt = wrenGetSlotString(vm, 1);
 	
-	ImGui::LogText("%s", fmt);
+	ImGui::LogText(fmt);
 	
-	return 0;
 }
 
 /*  call when the current item is active. If this return true, you can call SetDragDropPayload() + EndDragDropSource() */
-int w_BeginDragDropSource(lua_State *L)
+void w_BeginDragDropSource(WrenVM *vm)
 {
-	auto flags = luax_optflags<ImGuiDragDropFlags>(getImGuiDragDropFlagsFromString, L, 1, 0);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiDragDropFlags>(getImGuiDragDropFlagsFromString, vm, 1, 0);
 	
 	bool out = ImGui::BeginDragDropSource(flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 // skipping w_SetDragDropPayload due to unimplemented argument type: "(TODO) const buf*"
 
 /*  only call EndDragDropSource() if BeginDragDropSource() returns true! */
-int w_EndDragDropSource(lua_State *L)
+void w_EndDragDropSource(WrenVM *vm)
 {
 	ImGui::EndDragDropSource();
 	
-	return 0;
 }
 
 /*  call after submitting an item that may receive a payload. If this returns true, you can call AcceptDragDropPayload() + EndDragDropTarget() */
-int w_BeginDragDropTarget(lua_State *L)
+void w_BeginDragDropTarget(WrenVM *vm)
 {
 	bool out = ImGui::BeginDragDropTarget();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 // skipping w_AcceptDragDropPayload due to unimplemented return type: "const ImGuiPayload*"
 
 /*  only call EndDragDropTarget() if BeginDragDropTarget() returns true! */
-int w_EndDragDropTarget(lua_State *L)
+void w_EndDragDropTarget(WrenVM *vm)
 {
 	ImGui::EndDragDropTarget();
 	
-	return 0;
 }
 
 // skipping w_GetDragDropPayload due to unimplemented return type: "const ImGuiPayload*"
 
-int w_PushClipRect(lua_State *L)
-{
-	ImVec2 clip_rect_min;
-	clip_rect_min.x = luax_checkfloat(L, 1);
-	clip_rect_min.y = luax_checkfloat(L, 2);
-	ImVec2 clip_rect_max;
-	clip_rect_max.x = luax_checkfloat(L, 3);
-	clip_rect_max.y = luax_checkfloat(L, 4);
-	auto intersect_with_current_clip_rect = luax_checkboolean(L, 5);
-	
-	ImGui::PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect);
-	
-	return 0;
-}
+// skipping w_PushClipRect due to unimplemented argument type: "const ImVec2&"
 
-int w_PopClipRect(lua_State *L)
+void w_PopClipRect(WrenVM *vm)
 {
 	ImGui::PopClipRect();
 	
-	return 0;
 }
 
 /*  make last item the default focused item of a window. */
-int w_SetItemDefaultFocus(lua_State *L)
+void w_SetItemDefaultFocus(WrenVM *vm)
 {
 	ImGui::SetItemDefaultFocus();
 	
-	return 0;
 }
 
 /*  focus keyboard on the next widget. Use positive 'offset' to access sub components of a multiple component widget. Use -1 to access previous widget. */
-int w_SetKeyboardFocusHere(lua_State *L)
+void w_SetKeyboardFocusHere(WrenVM *vm)
 {
-	auto offset = luaL_optint(L, 1, 0);
+	auto offset = wrenExGetSlotIntDefault(vm, 1, 0);
 	
 	ImGui::SetKeyboardFocusHere(offset);
 	
-	return 0;
 }
 
 /*  is the last item hovered? (and usable, aka not blocked by a popup, etc.). See ImGuiHoveredFlags for more options. */
-int w_IsItemHovered(lua_State *L)
+void w_IsItemHovered(WrenVM *vm)
 {
-	auto flags = luax_optflags<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, L, 1, 0);
+	auto flags = wrenExGetSlotFlagsDefault<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, vm, 1, 0);
 	
 	bool out = ImGui::IsItemHovered(flags);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is the last item active? (e.g. button being held, text field being edited. This will continuously return true while holding mouse button on an item. Items that don't interact will always return false) */
-int w_IsItemActive(lua_State *L)
+void w_IsItemActive(WrenVM *vm)
 {
 	bool out = ImGui::IsItemActive();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is the last item focused for keyboard/gamepad navigation? */
-int w_IsItemFocused(lua_State *L)
+void w_IsItemFocused(WrenVM *vm)
 {
 	bool out = ImGui::IsItemFocused();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is the last item clicked? (e.g. button/node just clicked on) == IsMouseClicked(mouse_button) && IsItemHovered() */
-int w_IsItemClicked(lua_State *L)
+void w_IsItemClicked(WrenVM *vm)
 {
-	auto mouse_button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1, 0);
+	auto mouse_button = wrenExGetSlotEnumsDefault<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 1, 0);
 	
 	bool out = ImGui::IsItemClicked(mouse_button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is the last item visible? (items may be out of sight because of clipping/scrolling) */
-int w_IsItemVisible(lua_State *L)
+void w_IsItemVisible(WrenVM *vm)
 {
 	bool out = ImGui::IsItemVisible();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  did the last item modify its underlying value this frame? or was pressed? This is generally the same as the "bool" return value of many widgets. */
-int w_IsItemEdited(lua_State *L)
+void w_IsItemEdited(WrenVM *vm)
 {
 	bool out = ImGui::IsItemEdited();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  was the last item just made active (item was previously inactive). */
-int w_IsItemActivated(lua_State *L)
+void w_IsItemActivated(WrenVM *vm)
 {
 	bool out = ImGui::IsItemActivated();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  was the last item just made inactive (item was previously active). Useful for Undo/Redo patterns with widgets that requires continuous editing. */
-int w_IsItemDeactivated(lua_State *L)
+void w_IsItemDeactivated(WrenVM *vm)
 {
 	bool out = ImGui::IsItemDeactivated();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  was the last item just made inactive and made a value change when it was active? (e.g. Slider/Drag moved). Useful for Undo/Redo patterns with widgets that requires continuous editing. Note that you may get false positives (some widgets such as Combo()/ListBox()/Selectable() will return true even when clicking an already selected item). */
-int w_IsItemDeactivatedAfterEdit(lua_State *L)
+void w_IsItemDeactivatedAfterEdit(WrenVM *vm)
 {
 	bool out = ImGui::IsItemDeactivatedAfterEdit();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  was the last item open state toggled? set by TreeNode(). */
-int w_IsItemToggledOpen(lua_State *L)
+void w_IsItemToggledOpen(WrenVM *vm)
 {
 	bool out = ImGui::IsItemToggledOpen();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is any item hovered? */
-int w_IsAnyItemHovered(lua_State *L)
+void w_IsAnyItemHovered(WrenVM *vm)
 {
 	bool out = ImGui::IsAnyItemHovered();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is any item active? */
-int w_IsAnyItemActive(lua_State *L)
+void w_IsAnyItemActive(WrenVM *vm)
 {
 	bool out = ImGui::IsAnyItemActive();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  is any item focused? */
-int w_IsAnyItemFocused(lua_State *L)
+void w_IsAnyItemFocused(WrenVM *vm)
 {
 	bool out = ImGui::IsAnyItemFocused();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-/*  get upper-left bounding rectangle of the last item (screen space) */
-int w_GetItemRectMin(lua_State *L)
-{
-	ImVec2 out = ImGui::GetItemRectMin();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetItemRectMin due to unimplemented return type: "ImVec2"
 
-/*  get lower-right bounding rectangle of the last item (screen space) */
-int w_GetItemRectMax(lua_State *L)
-{
-	ImVec2 out = ImGui::GetItemRectMax();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetItemRectMax due to unimplemented return type: "ImVec2"
 
-/*  get size of last item */
-int w_GetItemRectSize(lua_State *L)
-{
-	ImVec2 out = ImGui::GetItemRectSize();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetItemRectSize due to unimplemented return type: "ImVec2"
 
 /*  allow last item to be overlapped by a subsequent item. sometimes useful with invisible buttons, selectables, etc. to catch unused area. */
-int w_SetItemAllowOverlap(lua_State *L)
+void w_SetItemAllowOverlap(WrenVM *vm)
 {
 	ImGui::SetItemAllowOverlap();
 	
-	return 0;
 }
 
-/*  test if rectangle (of given size, starting from cursor position) is visible / not clipped. */
-int w_IsRectVisible_Override1(lua_State *L)
-{
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 1);
-	size.y = luax_checkfloat(L, 2);
-	
-	bool out = ImGui::IsRectVisible(size);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_IsRectVisible_Override1 due to unimplemented argument type: "const ImVec2&"
 
-/*  test if rectangle (in screen space) is visible / not clipped. to perform coarse clipping on user's side. */
-int w_IsRectVisible_Override2(lua_State *L)
-{
-	ImVec2 rect_min;
-	rect_min.x = luax_checkfloat(L, 1);
-	rect_min.y = luax_checkfloat(L, 2);
-	ImVec2 rect_max;
-	rect_max.x = luax_checkfloat(L, 3);
-	rect_max.y = luax_checkfloat(L, 4);
-	
-	bool out = ImGui::IsRectVisible(rect_min, rect_max);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_IsRectVisible_Override2 due to unimplemented argument type: "const ImVec2&"
 
 /*  get global imgui time. incremented by io.DeltaTime every frame. */
-int w_GetTime(lua_State *L)
+void w_GetTime(WrenVM *vm)
 {
 	double out = ImGui::GetTime();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushnumber(L, out);
-	return 1;
 }
 
 /*  get global imgui frame count. incremented by 1 every frame. */
-int w_GetFrameCount(lua_State *L)
+void w_GetFrameCount(WrenVM *vm)
 {
 	int out = ImGui::GetFrameCount();
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
-/*  get background draw list for the viewport associated to the current window. this draw list will be the first rendering one. Useful to quickly draw shapes/text behind dear imgui contents. */
-int w_GetBackgroundDrawList_Override1(lua_State *L)
-{
-	ImDrawList* out = ImGui::GetBackgroundDrawList();
-	
-	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
-	out_udata->value = out;
-	out_udata->init();
-	luaL_getmetatable(L, "ImDrawList");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+// skipping w_GetBackgroundDrawList_Override1 due to unimplemented return type: "ImDrawList*"
 
-/*  get foreground draw list for the viewport associated to the current window. this draw list will be the last rendered one. Useful to quickly draw shapes/text over dear imgui contents. */
-int w_GetForegroundDrawList_Override1(lua_State *L)
-{
-	ImDrawList* out = ImGui::GetForegroundDrawList();
-	
-	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
-	out_udata->value = out;
-	out_udata->init();
-	luaL_getmetatable(L, "ImDrawList");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+// skipping w_GetForegroundDrawList_Override1 due to unimplemented return type: "ImDrawList*"
 
 // skipping w_GetBackgroundDrawList_Override2 due to unimplemented argument type: "ImGuiViewport*"
 
@@ -4481,360 +3224,245 @@ int w_GetForegroundDrawList_Override1(lua_State *L)
 // skipping w_GetDrawListSharedData due to unimplemented return type: "ImDrawListSharedData*"
 
 /*  get a string corresponding to the enum value (for display, saving, etc.). */
-int w_GetStyleColorName(lua_State *L)
+void w_GetStyleColorName(WrenVM *vm)
 {
-	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
+	auto idx = wrenExGetSlotEnum<ImGuiCol>(getImGuiColFromString, vm, 1);
 	
 	const char* out = ImGui::GetStyleColorName(idx);
+	wrenSetSlotString(vm, 0, out);
 	
-	lua_pushstring(L, out);
-	return 1;
 }
 
 // skipping w_SetStateStorage due to unimplemented argument type: "ImGuiStorage*"
 
 // skipping w_GetStateStorage due to unimplemented return type: "ImGuiStorage*"
 
-int w_CalcTextSize(lua_State *L)
-{
-	auto text = luaL_checkstring(L, 1);
-	auto text_end = luaL_optstring(L, 2, NULL);
-	auto hide_text_after_double_hash = luax_optboolean(L, 3, false);
-	auto wrap_width = luax_optfloat(L, 4, -1.0f);
-	
-	ImVec2 out = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_CalcTextSize due to unimplemented return type: "ImVec2"
 
 /*  calculate coarse clipping for large list of evenly sized items. Prefer using the ImGuiListClipper higher-level helper if you can. */
-int w_CalcListClipping(lua_State *L)
+void w_CalcListClipping(WrenVM *vm)
 {
-	auto items_count = luaL_checkint(L, 1);
-	auto items_height = luax_checkfloat(L, 2);
-	int out_items_display_start = luaL_checkint(L, 3);
-	int out_items_display_end = luaL_checkint(L, 4);
+	auto items_count = wrenExGetSlotInt(vm, 1);
+	auto items_height = wrenExGetSlotFloat(vm, 2);
+	auto out_items_display_start = static_cast<int>(Box::getCPP<double>(vm, 3));
+	auto out_items_display_end = static_cast<int>(Box::getCPP<double>(vm, 4));
 	
 	ImGui::CalcListClipping(items_count, items_height, &out_items_display_start, &out_items_display_end);
 	
-	lua_pushinteger(L, out_items_display_start);
-	lua_pushinteger(L, out_items_display_end);
-	return 2;
+	Box::setCPP<double>(vm, 3, out_items_display_start);
+	Box::setCPP<double>(vm, 4, out_items_display_end);
 }
 
-/*  helper to create a child window / scrolling region that looks like a normal widget frame */
-int w_BeginChildFrame(lua_State *L)
-{
-	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
-	ImVec2 size;
-	size.x = luax_checkfloat(L, 2);
-	size.y = luax_checkfloat(L, 3);
-	auto flags = luax_optflags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, L, 4, 0);
-	
-	bool out = ImGui::BeginChildFrame(id, size, flags);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_BeginChildFrame due to unimplemented argument type: "const ImVec2&"
 
 /*  always call EndChildFrame() regardless of BeginChildFrame() return values (which indicates a collapsed/clipped window) */
-int w_EndChildFrame(lua_State *L)
+void w_EndChildFrame(WrenVM *vm)
 {
 	ImGui::EndChildFrame();
 	
-	return 0;
 }
 
-int w_ColorConvertU32ToFloat4(lua_State *L)
-{
-	auto in = static_cast<ImU32>(luaL_checklong(L, 1));
-	
-	ImVec4 out = ImGui::ColorConvertU32ToFloat4(in);
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	lua_pushnumber(L, out.z);
-	lua_pushnumber(L, out.w);
-	return 2;
-}
+// skipping w_ColorConvertU32ToFloat4 due to unimplemented return type: "ImVec4"
 
 /*  map ImGuiKey_* values into user's key index. == io.KeyMap[key] */
-int w_GetKeyIndex(lua_State *L)
+void w_GetKeyIndex(WrenVM *vm)
 {
-	auto imgui_key = luax_checkenum<ImGuiKey>(getImGuiKeyFromString, L, 1);
+	auto imgui_key = wrenExGetSlotEnum<ImGuiKey>(getImGuiKeyFromString, vm, 1);
 	
 	int out = ImGui::GetKeyIndex(imgui_key);
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 /*  is key being held. == io.KeysDown[user_key_index]. */
-int w_IsKeyDown(lua_State *L)
+void w_IsKeyDown(WrenVM *vm)
 {
-	auto user_key_index = luaL_checkint(L, 1);
+	auto user_key_index = wrenExGetSlotInt(vm, 1);
 	
 	bool out = ImGui::IsKeyDown(user_key_index);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  was key pressed (went from !Down to Down)? if repeat=true, uses io.KeyRepeatDelay / KeyRepeatRate */
-int w_IsKeyPressed(lua_State *L)
+void w_IsKeyPressed(WrenVM *vm)
 {
-	auto user_key_index = luaL_checkint(L, 1);
-	auto repeat = luax_optboolean(L, 2, true);
+	auto user_key_index = wrenExGetSlotInt(vm, 1);
+	auto repeat = wrenExGetSlotBoolDefault(vm, 2, true);
 	
 	bool out = ImGui::IsKeyPressed(user_key_index, repeat);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  was key released (went from Down to !Down)? */
-int w_IsKeyReleased(lua_State *L)
+void w_IsKeyReleased(WrenVM *vm)
 {
-	auto user_key_index = luaL_checkint(L, 1);
+	auto user_key_index = wrenExGetSlotInt(vm, 1);
 	
 	bool out = ImGui::IsKeyReleased(user_key_index);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  uses provided repeat rate/delay. return a count, most often 0 or 1 but might be >1 if RepeatRate is small enough that DeltaTime > RepeatRate */
-int w_GetKeyPressedAmount(lua_State *L)
+void w_GetKeyPressedAmount(WrenVM *vm)
 {
-	auto key_index = luaL_checkint(L, 1);
-	auto repeat_delay = luax_checkfloat(L, 2);
-	auto rate = luax_checkfloat(L, 3);
+	auto key_index = wrenExGetSlotInt(vm, 1);
+	auto repeat_delay = wrenExGetSlotFloat(vm, 2);
+	auto rate = wrenExGetSlotFloat(vm, 3);
 	
 	int out = ImGui::GetKeyPressedAmount(key_index, repeat_delay, rate);
+	wrenSetSlotDouble(vm, 0, out);
 	
-	lua_pushinteger(L, out);
-	return 1;
 }
 
 /*  attention: misleading name! manually override io.WantCaptureKeyboard flag next frame (said flag is entirely left for your application to handle). e.g. force capture keyboard when your widget is being hovered. This is equivalent to setting "io.WantCaptureKeyboard = want_capture_keyboard_value"; after the next NewFrame() call. */
-int w_CaptureKeyboardFromApp(lua_State *L)
+void w_CaptureKeyboardFromApp(WrenVM *vm)
 {
-	auto want_capture_keyboard_value = luax_optboolean(L, 1, true);
+	auto want_capture_keyboard_value = wrenExGetSlotBoolDefault(vm, 1, true);
 	
 	ImGui::CaptureKeyboardFromApp(want_capture_keyboard_value);
 	
-	return 0;
 }
 
 /*  is mouse button held? */
-int w_IsMouseDown(lua_State *L)
+void w_IsMouseDown(WrenVM *vm)
 {
-	auto button = luax_checkenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1);
+	auto button = wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 1);
 	
 	bool out = ImGui::IsMouseDown(button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  did mouse button clicked? (went from !Down to Down) */
-int w_IsMouseClicked(lua_State *L)
+void w_IsMouseClicked(WrenVM *vm)
 {
-	auto button = luax_checkenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1);
-	auto repeat = luax_optboolean(L, 2, false);
+	auto button = wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 1);
+	auto repeat = wrenExGetSlotBoolDefault(vm, 2, false);
 	
 	bool out = ImGui::IsMouseClicked(button, repeat);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  did mouse button released? (went from Down to !Down) */
-int w_IsMouseReleased(lua_State *L)
+void w_IsMouseReleased(WrenVM *vm)
 {
-	auto button = luax_checkenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1);
+	auto button = wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 1);
 	
 	bool out = ImGui::IsMouseReleased(button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
 /*  did mouse button double-clicked? a double-click returns false in IsMouseClicked(). uses io.MouseDoubleClickTime. */
-int w_IsMouseDoubleClicked(lua_State *L)
+void w_IsMouseDoubleClicked(WrenVM *vm)
 {
-	auto button = luax_checkenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1);
+	auto button = wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 1);
 	
 	bool out = ImGui::IsMouseDoubleClicked(button);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-/*  is mouse hovering given bounding rect (in screen space). clipped by current clipping settings, but disregarding of other consideration of focus/window ordering/popup-block. */
-int w_IsMouseHoveringRect(lua_State *L)
-{
-	ImVec2 r_min;
-	r_min.x = luax_checkfloat(L, 1);
-	r_min.y = luax_checkfloat(L, 2);
-	ImVec2 r_max;
-	r_max.x = luax_checkfloat(L, 3);
-	r_max.y = luax_checkfloat(L, 4);
-	auto clip = luax_optboolean(L, 5, true);
-	
-	bool out = ImGui::IsMouseHoveringRect(r_min, r_max, clip);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_IsMouseHoveringRect due to unimplemented argument type: "const ImVec2&"
 
-/*  by convention we use (-FLT_MAX,-FLT_MAX) to denote that there is no mouse available */
-int w_IsMousePosValid(lua_State *L)
-{
-	ImVec2* mouse_pos = NULL;
-	ImVec2 mouse_pos_buf;
-	if(!lua_isnoneornil(L, 2)) {
-		mouse_pos_buf.x = luax_checkfloat(L, 1);
-		mouse_pos_buf.y = luax_checkfloat(L, 2);
-	}
-	
-	bool out = ImGui::IsMousePosValid(mouse_pos);
-	
-	lua_pushboolean(L, out);
-	return 1;
-}
+// skipping w_IsMousePosValid due to unimplemented argument type: "const ImVec2*"
 
 /*  is any mouse button held? */
-int w_IsAnyMouseDown(lua_State *L)
+void w_IsAnyMouseDown(WrenVM *vm)
 {
 	bool out = ImGui::IsAnyMouseDown();
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-/*  shortcut to ImGui::GetIO().MousePos provided by user, to be consistent with other calls */
-int w_GetMousePos(lua_State *L)
-{
-	ImVec2 out = ImGui::GetMousePos();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetMousePos due to unimplemented return type: "ImVec2"
 
-/*  retrieve mouse position at the time of opening popup we have BeginPopup() into (helper to avoid user backing that value themselves) */
-int w_GetMousePosOnOpeningCurrentPopup(lua_State *L)
-{
-	ImVec2 out = ImGui::GetMousePosOnOpeningCurrentPopup();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetMousePosOnOpeningCurrentPopup due to unimplemented return type: "ImVec2"
 
 /*  is mouse dragging? (if lock_threshold < -1.0f, uses io.MouseDraggingThreshold) */
-int w_IsMouseDragging(lua_State *L)
+void w_IsMouseDragging(WrenVM *vm)
 {
-	auto button = luax_checkenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1);
-	auto lock_threshold = luax_optfloat(L, 2, -1.0f);
+	auto button = wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 1);
+	auto lock_threshold = wrenExGetSlotFloatDefault(vm, 2, -1.0f);
 	
 	bool out = ImGui::IsMouseDragging(button, lock_threshold);
+	wrenSetSlotBool(vm, 0, out);
 	
-	lua_pushboolean(L, out);
-	return 1;
 }
 
-/*  return the delta from the initial clicking position while the mouse button is pressed or was just released. This is locked and return 0.0f until the mouse moves past a distance threshold at least once (if lock_threshold < -1.0f, uses io.MouseDraggingThreshold) */
-int w_GetMouseDragDelta(lua_State *L)
-{
-	auto button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1, 0);
-	auto lock_threshold = luax_optfloat(L, 2, -1.0f);
-	
-	ImVec2 out = ImGui::GetMouseDragDelta(button, lock_threshold);
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
+// skipping w_GetMouseDragDelta due to unimplemented return type: "ImVec2"
 
-int w_ResetMouseDragDelta(lua_State *L)
+void w_ResetMouseDragDelta(WrenVM *vm)
 {
-	auto button = luax_optenum<ImGuiMouseButton>(getImGuiMouseButtonFromString, L, 1, 0);
+	auto button = wrenExGetSlotEnumsDefault<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 1, 0);
 	
 	ImGui::ResetMouseDragDelta(button);
 	
-	return 0;
 }
 
 /*  get desired cursor type, reset in ImGui::NewFrame(), this is updated during the frame. valid before Render(). If you use software rendering by setting io.MouseDrawCursor ImGui will render those for you */
-int w_GetMouseCursor(lua_State *L)
+void w_GetMouseCursor(WrenVM *vm)
 {
 	ImGuiMouseCursor out = ImGui::GetMouseCursor();
+	wrenSetSlotString(vm, 0, getStringFromImGuiMouseCursor(out));
 	
-	lua_pushstring(L, getStringFromImGuiMouseCursor(out));
-	return 1;
 }
 
 /*  set desired cursor type */
-int w_SetMouseCursor(lua_State *L)
+void w_SetMouseCursor(WrenVM *vm)
 {
-	auto cursor_type = luax_checkenum<ImGuiMouseCursor>(getImGuiMouseCursorFromString, L, 1);
+	auto cursor_type = wrenExGetSlotEnum<ImGuiMouseCursor>(getImGuiMouseCursorFromString, vm, 1);
 	
 	ImGui::SetMouseCursor(cursor_type);
 	
-	return 0;
 }
 
 /*  attention: misleading name! manually override io.WantCaptureMouse flag next frame (said flag is entirely left for your application to handle). This is equivalent to setting "io.WantCaptureMouse = want_capture_mouse_value;" after the next NewFrame() call. */
-int w_CaptureMouseFromApp(lua_State *L)
+void w_CaptureMouseFromApp(WrenVM *vm)
 {
-	auto want_capture_mouse_value = luax_optboolean(L, 1, true);
+	auto want_capture_mouse_value = wrenExGetSlotBoolDefault(vm, 1, true);
 	
 	ImGui::CaptureMouseFromApp(want_capture_mouse_value);
 	
-	return 0;
 }
 
-int w_GetClipboardText(lua_State *L)
+void w_GetClipboardText(WrenVM *vm)
 {
 	const char* out = ImGui::GetClipboardText();
+	wrenSetSlotString(vm, 0, out);
 	
-	lua_pushstring(L, out);
-	return 1;
 }
 
-int w_SetClipboardText(lua_State *L)
+void w_SetClipboardText(WrenVM *vm)
 {
-	auto text = luaL_checkstring(L, 1);
+	auto text = wrenGetSlotString(vm, 1);
 	
 	ImGui::SetClipboardText(text);
 	
-	return 0;
 }
 
 /*  call after CreateContext() and before the first call to NewFrame(). NewFrame() automatically calls LoadIniSettingsFromDisk(io.IniFilename). */
-int w_LoadIniSettingsFromDisk(lua_State *L)
+void w_LoadIniSettingsFromDisk(WrenVM *vm)
 {
-	auto ini_filename = luaL_checkstring(L, 1);
+	auto ini_filename = wrenGetSlotString(vm, 1);
 	
 	ImGui::LoadIniSettingsFromDisk(ini_filename);
 	
-	return 0;
 }
 
 // skipping w_LoadIniSettingsFromMemory due to unimplemented argument type: "(TODO) const buf*"
 
 /*  this is automatically called (if io.IniFilename is not empty) a few seconds after any modification that should be reflected in the .ini file (and also by DestroyContext). */
-int w_SaveIniSettingsToDisk(lua_State *L)
+void w_SaveIniSettingsToDisk(WrenVM *vm)
 {
-	auto ini_filename = luaL_checkstring(L, 1);
+	auto ini_filename = wrenGetSlotString(vm, 1);
 	
 	ImGui::SaveIniSettingsToDisk(ini_filename);
 	
-	return 0;
 }
 
 // skipping w_SaveIniSettingsToMemory due to unimplemented argument type: "size_t*"
@@ -4844,1656 +3472,739 @@ int w_SaveIniSettingsToDisk(lua_State *L)
 // skipping w_GetMainViewport due to unimplemented return type: "ImGuiViewport*"
 
 /*  call in main loop. will call CreateWindow/ResizeWindow/etc. platform functions for each secondary viewport, and DestroyWindow for each inactive viewport. */
-int w_UpdatePlatformWindows(lua_State *L)
+void w_UpdatePlatformWindows(WrenVM *vm)
 {
 	ImGui::UpdatePlatformWindows();
 	
-	return 0;
 }
 
 // skipping w_RenderPlatformWindowsDefault due to unimplemented argument type: "void*"
 
 /*  call DestroyWindow platform functions for all viewports. call from back-end Shutdown() if you need to close platform windows before imgui shutdown. otherwise will be called by DestroyContext(). */
-int w_DestroyPlatformWindows(lua_State *L)
+void w_DestroyPlatformWindows(WrenVM *vm)
 {
 	ImGui::DestroyPlatformWindows();
 	
-	return 0;
 }
 
 // skipping w_FindViewportByID due to unimplemented return type: "ImGuiViewport*"
 
 // skipping w_FindViewportByPlatformHandle due to unimplemented argument type: "void*"
 
-int w_InputText_Override2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	std::string str = luaL_checkstring(L, 2);
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 3, 0);
-	ImGuiInputTextCallback callback = callLuaInputTextCallback;
-	void* user_data = luax_getImguiInputTextCallback(L, 4);
-	if (!user_data) { callback = nullptr; }
-	
-	bool out = ImGui::InputText(label, &str, flags, callback, user_data);
-	
-	lua_pushlstring(L, str.c_str(), str.size());
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_InputText_Override2 due to unimplemented argument type: "std::string*"
 
-int w_InputTextMultiline_Override2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	std::string str = luaL_checkstring(L, 2);
-	auto size = ImVec2(0, 0);
-	size.x = luax_optfloat(L, 3, size.x);
-	size.y = luax_optfloat(L, 4, size.y);
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 5, 0);
-	ImGuiInputTextCallback callback = callLuaInputTextCallback;
-	void* user_data = luax_getImguiInputTextCallback(L, 6);
-	if (!user_data) { callback = nullptr; }
-	
-	bool out = ImGui::InputTextMultiline(label, &str, size, flags, callback, user_data);
-	
-	lua_pushlstring(L, str.c_str(), str.size());
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_InputTextMultiline_Override2 due to unimplemented argument type: "std::string*"
 
-int w_InputTextWithHint_Override2(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	auto hint = luaL_checkstring(L, 2);
-	std::string str = luaL_checkstring(L, 3);
-	auto flags = luax_optflags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, L, 4, 0);
-	ImGuiInputTextCallback callback = callLuaInputTextCallback;
-	void* user_data = luax_getImguiInputTextCallback(L, 5);
-	if (!user_data) { callback = nullptr; }
-	
-	bool out = ImGui::InputTextWithHint(label, hint, &str, flags, callback, user_data);
-	
-	lua_pushlstring(L, str.c_str(), str.size());
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_InputTextWithHint_Override2 due to unimplemented argument type: "std::string*"
 
-int w_Combo_Override4(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int current_item = luaL_checkint(L, 2);
-	auto items = luax_checkstringvector(L, 3);
-	auto popup_max_height_in_items = luaL_optint(L, 4, -1);
-	
-	bool out = ImGui::Combo(label, &current_item, items, popup_max_height_in_items);
-	
-	lua_pushinteger(L, current_item);
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_Combo_Override4 due to unimplemented argument type: "const std::vector<const char*>&"
 
-int w_ListBox_Override3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	int current_item = luaL_checkint(L, 2);
-	auto items = luax_checkstringvector(L, 3);
-	auto height_in_items = luaL_optint(L, 4, -1);
-	
-	bool out = ImGui::ListBox(label, &current_item, items, height_in_items);
-	
-	lua_pushinteger(L, current_item);
-	lua_pushboolean(L, out);
-	return 2;
-}
+// skipping w_ListBox_Override3 due to unimplemented argument type: "const std::vector<const char*>&"
 
-int w_PlotLines_Override3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	std::vector<float> values = luax_checkfloatvector(L, 2);
-	auto values_offset = luaL_optint(L, 3, 0);
-	auto overlay_text = luaL_optstring(L, 4, NULL);
-	auto scale_min = luax_optfloat(L, 5, FLT_MAX);
-	auto scale_max = luax_optfloat(L, 6, FLT_MAX);
-	auto graph_size = ImVec2(0, 0);
-	graph_size.x = luax_optfloat(L, 7, graph_size.x);
-	graph_size.y = luax_optfloat(L, 8, graph_size.y);
-	
-	ImGui::PlotLines(label, values, values_offset, overlay_text, scale_min, scale_max, graph_size);
-	
-	return 0;
-}
+// skipping w_PlotLines_Override3 due to unimplemented argument type: "const std::vector<float>&"
 
-int w_PlotHistogram_Override3(lua_State *L)
-{
-	auto label = luaL_checkstring(L, 1);
-	std::vector<float> values = luax_checkfloatvector(L, 2);
-	auto values_offset = luaL_optint(L, 3, 0);
-	auto overlay_text = luaL_optstring(L, 4, NULL);
-	auto scale_min = luax_optfloat(L, 5, FLT_MAX);
-	auto scale_max = luax_optfloat(L, 6, FLT_MAX);
-	auto graph_size = ImVec2(0, 0);
-	graph_size.x = luax_optfloat(L, 7, graph_size.x);
-	graph_size.y = luax_optfloat(L, 8, graph_size.y);
-	
-	ImGui::PlotHistogram(label, values, values_offset, overlay_text, scale_min, scale_max, graph_size);
-	
-	return 0;
-}
+// skipping w_PlotHistogram_Override3 due to unimplemented argument type: "const std::vector<float>&"
 
-/*  Render-level scissoring. This is passed down to your render function but not used for CPU-side coarse clipping. Prefer using higher-level ImGui::PushClipRect() to affect logic (hit-testing and widget culling) */
-int w_ImDrawList_PushClipRect(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 clip_rect_min;
-	clip_rect_min.x = luax_checkfloat(L, 2);
-	clip_rect_min.y = luax_checkfloat(L, 3);
-	ImVec2 clip_rect_max;
-	clip_rect_max.x = luax_checkfloat(L, 4);
-	clip_rect_max.y = luax_checkfloat(L, 5);
-	auto intersect_with_current_clip_rect = luax_optboolean(L, 6, false);
-	
-	self->PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PushClipRect due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PushClipRectFullScreen(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->PushClipRectFullScreen();
-	
-	return 0;
-}
+// skipping w_ImDrawList_PushClipRectFullScreen due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PopClipRect(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->PopClipRect();
-	
-	return 0;
-}
+// skipping w_ImDrawList_PopClipRect due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PushTextureID(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	auto texture_id = luax_checkTextureID(L, 2);
-	
-	self->PushTextureID(texture_id);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PushTextureID due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PopTextureID(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->PopTextureID();
-	
-	return 0;
-}
+// skipping w_ImDrawList_PopTextureID due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddLine(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p1;
-	p1.x = luax_checkfloat(L, 2);
-	p1.y = luax_checkfloat(L, 3);
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 4);
-	p2.y = luax_checkfloat(L, 5);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
-	auto thickness = luax_optfloat(L, 7, 1.0f);
-	
-	self->AddLine(p1, p2, col, thickness);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddLine due to unimplemented foreign class type: "ImDrawList"
 
-/*  a: upper-left, b: lower-right (== upper-left + size), rounding_corners_flags: 4 bits corresponding to which corner to round */
-int w_ImDrawList_AddRect(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p_min;
-	p_min.x = luax_checkfloat(L, 2);
-	p_min.y = luax_checkfloat(L, 3);
-	ImVec2 p_max;
-	p_max.x = luax_checkfloat(L, 4);
-	p_max.y = luax_checkfloat(L, 5);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
-	auto rounding = luax_optfloat(L, 7, 0.0f);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
-	auto thickness = luax_optfloat(L, 9, 1.0f);
-	
-	self->AddRect(p_min, p_max, col, rounding, rounding_corners, thickness);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddRect due to unimplemented foreign class type: "ImDrawList"
 
-/*  a: upper-left, b: lower-right (== upper-left + size) */
-int w_ImDrawList_AddRectFilled(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p_min;
-	p_min.x = luax_checkfloat(L, 2);
-	p_min.y = luax_checkfloat(L, 3);
-	ImVec2 p_max;
-	p_max.x = luax_checkfloat(L, 4);
-	p_max.y = luax_checkfloat(L, 5);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
-	auto rounding = luax_optfloat(L, 7, 0.0f);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
-	
-	self->AddRectFilled(p_min, p_max, col, rounding, rounding_corners);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddRectFilled due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddRectFilledMultiColor(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p_min;
-	p_min.x = luax_checkfloat(L, 2);
-	p_min.y = luax_checkfloat(L, 3);
-	ImVec2 p_max;
-	p_max.x = luax_checkfloat(L, 4);
-	p_max.y = luax_checkfloat(L, 5);
-	auto col_upr_left = static_cast<ImU32>(luaL_checklong(L, 6));
-	auto col_upr_right = static_cast<ImU32>(luaL_checklong(L, 7));
-	auto col_bot_right = static_cast<ImU32>(luaL_checklong(L, 8));
-	auto col_bot_left = static_cast<ImU32>(luaL_checklong(L, 9));
-	
-	self->AddRectFilledMultiColor(p_min, p_max, col_upr_left, col_upr_right, col_bot_right, col_bot_left);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddRectFilledMultiColor due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddQuad(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p1;
-	p1.x = luax_checkfloat(L, 2);
-	p1.y = luax_checkfloat(L, 3);
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 4);
-	p2.y = luax_checkfloat(L, 5);
-	ImVec2 p3;
-	p3.x = luax_checkfloat(L, 6);
-	p3.y = luax_checkfloat(L, 7);
-	ImVec2 p4;
-	p4.x = luax_checkfloat(L, 8);
-	p4.y = luax_checkfloat(L, 9);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 10));
-	auto thickness = luax_optfloat(L, 11, 1.0f);
-	
-	self->AddQuad(p1, p2, p3, p4, col, thickness);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddQuad due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddQuadFilled(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p1;
-	p1.x = luax_checkfloat(L, 2);
-	p1.y = luax_checkfloat(L, 3);
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 4);
-	p2.y = luax_checkfloat(L, 5);
-	ImVec2 p3;
-	p3.x = luax_checkfloat(L, 6);
-	p3.y = luax_checkfloat(L, 7);
-	ImVec2 p4;
-	p4.x = luax_checkfloat(L, 8);
-	p4.y = luax_checkfloat(L, 9);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 10));
-	
-	self->AddQuadFilled(p1, p2, p3, p4, col);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddQuadFilled due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddTriangle(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p1;
-	p1.x = luax_checkfloat(L, 2);
-	p1.y = luax_checkfloat(L, 3);
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 4);
-	p2.y = luax_checkfloat(L, 5);
-	ImVec2 p3;
-	p3.x = luax_checkfloat(L, 6);
-	p3.y = luax_checkfloat(L, 7);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 8));
-	auto thickness = luax_optfloat(L, 9, 1.0f);
-	
-	self->AddTriangle(p1, p2, p3, col, thickness);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddTriangle due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddTriangleFilled(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p1;
-	p1.x = luax_checkfloat(L, 2);
-	p1.y = luax_checkfloat(L, 3);
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 4);
-	p2.y = luax_checkfloat(L, 5);
-	ImVec2 p3;
-	p3.x = luax_checkfloat(L, 6);
-	p3.y = luax_checkfloat(L, 7);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 8));
-	
-	self->AddTriangleFilled(p1, p2, p3, col);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddTriangleFilled due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddCircle(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 center;
-	center.x = luax_checkfloat(L, 2);
-	center.y = luax_checkfloat(L, 3);
-	auto radius = luax_checkfloat(L, 4);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
-	auto num_segments = luaL_optint(L, 6, 12);
-	auto thickness = luax_optfloat(L, 7, 1.0f);
-	
-	self->AddCircle(center, radius, col, num_segments, thickness);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddCircle due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddCircleFilled(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 center;
-	center.x = luax_checkfloat(L, 2);
-	center.y = luax_checkfloat(L, 3);
-	auto radius = luax_checkfloat(L, 4);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
-	auto num_segments = luaL_optint(L, 6, 12);
-	
-	self->AddCircleFilled(center, radius, col, num_segments);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddCircleFilled due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddNgon(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 center;
-	center.x = luax_checkfloat(L, 2);
-	center.y = luax_checkfloat(L, 3);
-	auto radius = luax_checkfloat(L, 4);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
-	auto num_segments = luaL_checkint(L, 6);
-	auto thickness = luax_optfloat(L, 7, 1.0f);
-	
-	self->AddNgon(center, radius, col, num_segments, thickness);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddNgon due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddNgonFilled(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 center;
-	center.x = luax_checkfloat(L, 2);
-	center.y = luax_checkfloat(L, 3);
-	auto radius = luax_checkfloat(L, 4);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 5));
-	auto num_segments = luaL_checkint(L, 6);
-	
-	self->AddNgonFilled(center, radius, col, num_segments);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddNgonFilled due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddText_Override1(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 pos;
-	pos.x = luax_checkfloat(L, 2);
-	pos.y = luax_checkfloat(L, 3);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 4));
-	auto text_begin = luaL_checkstring(L, 5);
-	auto text_end = luaL_optstring(L, 6, NULL);
-	
-	self->AddText(pos, col, text_begin, text_end);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddText_Override1 due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_AddText_Override2 due to unimplemented argument type: "const ImFont*"
+// skipping w_ImDrawList_AddText_Override2 due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_AddPolyline due to unimplemented argument type: "const ImVec2*"
+// skipping w_ImDrawList_AddPolyline due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_AddConvexPolyFilled due to unimplemented argument type: "const ImVec2*"
+// skipping w_ImDrawList_AddConvexPolyFilled due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddBezierCurve(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p1;
-	p1.x = luax_checkfloat(L, 2);
-	p1.y = luax_checkfloat(L, 3);
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 4);
-	p2.y = luax_checkfloat(L, 5);
-	ImVec2 p3;
-	p3.x = luax_checkfloat(L, 6);
-	p3.y = luax_checkfloat(L, 7);
-	ImVec2 p4;
-	p4.x = luax_checkfloat(L, 8);
-	p4.y = luax_checkfloat(L, 9);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 10));
-	auto thickness = luax_checkfloat(L, 11);
-	auto num_segments = luaL_optint(L, 12, 0);
-	
-	self->AddBezierCurve(p1, p2, p3, p4, col, thickness, num_segments);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddBezierCurve due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddImage(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	auto user_texture_id = luax_checkTextureID(L, 2);
-	ImVec2 p_min;
-	p_min.x = luax_checkfloat(L, 3);
-	p_min.y = luax_checkfloat(L, 4);
-	ImVec2 p_max;
-	p_max.x = luax_checkfloat(L, 5);
-	p_max.y = luax_checkfloat(L, 6);
-	auto uv_min = ImVec2(0, 0);
-	uv_min.x = luax_optfloat(L, 7, uv_min.x);
-	uv_min.y = luax_optfloat(L, 8, uv_min.y);
-	auto uv_max = ImVec2(1, 1);
-	uv_max.x = luax_optfloat(L, 9, uv_max.x);
-	uv_max.y = luax_optfloat(L, 10, uv_max.y);
-	auto col = static_cast<ImU32>(luaL_optlong(L, 11, IM_COL32_WHITE));
-	
-	self->AddImage(user_texture_id, p_min, p_max, uv_min, uv_max, col);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddImage due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddImageQuad(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	auto user_texture_id = luax_checkTextureID(L, 2);
-	ImVec2 p1;
-	p1.x = luax_checkfloat(L, 3);
-	p1.y = luax_checkfloat(L, 4);
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 5);
-	p2.y = luax_checkfloat(L, 6);
-	ImVec2 p3;
-	p3.x = luax_checkfloat(L, 7);
-	p3.y = luax_checkfloat(L, 8);
-	ImVec2 p4;
-	p4.x = luax_checkfloat(L, 9);
-	p4.y = luax_checkfloat(L, 10);
-	auto uv1 = ImVec2(0, 0);
-	uv1.x = luax_optfloat(L, 11, uv1.x);
-	uv1.y = luax_optfloat(L, 12, uv1.y);
-	auto uv2 = ImVec2(1, 0);
-	uv2.x = luax_optfloat(L, 13, uv2.x);
-	uv2.y = luax_optfloat(L, 14, uv2.y);
-	auto uv3 = ImVec2(1, 1);
-	uv3.x = luax_optfloat(L, 15, uv3.x);
-	uv3.y = luax_optfloat(L, 16, uv3.y);
-	auto uv4 = ImVec2(0, 1);
-	uv4.x = luax_optfloat(L, 17, uv4.x);
-	uv4.y = luax_optfloat(L, 18, uv4.y);
-	auto col = static_cast<ImU32>(luaL_optlong(L, 19, IM_COL32_WHITE));
-	
-	self->AddImageQuad(user_texture_id, p1, p2, p3, p4, uv1, uv2, uv3, uv4, col);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddImageQuad due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_AddImageRounded(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	auto user_texture_id = luax_checkTextureID(L, 2);
-	ImVec2 p_min;
-	p_min.x = luax_checkfloat(L, 3);
-	p_min.y = luax_checkfloat(L, 4);
-	ImVec2 p_max;
-	p_max.x = luax_checkfloat(L, 5);
-	p_max.y = luax_checkfloat(L, 6);
-	ImVec2 uv_min;
-	uv_min.x = luax_checkfloat(L, 7);
-	uv_min.y = luax_checkfloat(L, 8);
-	ImVec2 uv_max;
-	uv_max.x = luax_checkfloat(L, 9);
-	uv_max.y = luax_checkfloat(L, 10);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 11));
-	auto rounding = luax_checkfloat(L, 12);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 13, ImDrawCornerFlags_All);
-	
-	self->AddImageRounded(user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners);
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddImageRounded due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PathArcTo(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 center;
-	center.x = luax_checkfloat(L, 2);
-	center.y = luax_checkfloat(L, 3);
-	auto radius = luax_checkfloat(L, 4);
-	auto a_min = luax_checkfloat(L, 5);
-	auto a_max = luax_checkfloat(L, 6);
-	auto num_segments = luaL_optint(L, 7, 10);
-	
-	self->PathArcTo(center, radius, a_min, a_max, num_segments);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PathArcTo due to unimplemented foreign class type: "ImDrawList"
 
-/*  Use precomputed angles for a 12 steps circle */
-int w_ImDrawList_PathArcToFast(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 center;
-	center.x = luax_checkfloat(L, 2);
-	center.y = luax_checkfloat(L, 3);
-	auto radius = luax_checkfloat(L, 4);
-	auto a_min_of_12 = luaL_checkint(L, 5);
-	auto a_max_of_12 = luaL_checkint(L, 6);
-	
-	self->PathArcToFast(center, radius, a_min_of_12, a_max_of_12);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PathArcToFast due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PathBezierCurveTo(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 p2;
-	p2.x = luax_checkfloat(L, 2);
-	p2.y = luax_checkfloat(L, 3);
-	ImVec2 p3;
-	p3.x = luax_checkfloat(L, 4);
-	p3.y = luax_checkfloat(L, 5);
-	ImVec2 p4;
-	p4.x = luax_checkfloat(L, 6);
-	p4.y = luax_checkfloat(L, 7);
-	auto num_segments = luaL_optint(L, 8, 0);
-	
-	self->PathBezierCurveTo(p2, p3, p4, num_segments);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PathBezierCurveTo due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PathRect(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 rect_min;
-	rect_min.x = luax_checkfloat(L, 2);
-	rect_min.y = luax_checkfloat(L, 3);
-	ImVec2 rect_max;
-	rect_max.x = luax_checkfloat(L, 4);
-	rect_max.y = luax_checkfloat(L, 5);
-	auto rounding = luax_optfloat(L, 6, 0.0f);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 7, ImDrawCornerFlags_All);
-	
-	self->PathRect(rect_min, rect_max, rounding, rounding_corners);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PathRect due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_AddCallback due to unimplemented argument type: "ImDrawCallback"
+// skipping w_ImDrawList_AddCallback due to unimplemented foreign class type: "ImDrawList"
 
-/*  This is useful if you need to forcefully create a new draw call (to allow for dependent rendering / blending). Otherwise primitives are merged into the same draw-call as much as possible */
-int w_ImDrawList_AddDrawCmd(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->AddDrawCmd();
-	
-	return 0;
-}
+// skipping w_ImDrawList_AddDrawCmd due to unimplemented foreign class type: "ImDrawList"
 
-/*  Create a clone of the CmdBuffer/IdxBuffer/VtxBuffer. */
-int w_ImDrawList_CloneOutput(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImDrawList* out = self->CloneOutput();
-	
-	auto* out_udata = static_cast<WrapImDrawList*>(lua_newuserdata(L, sizeof(WrapImDrawList)));
-	out_udata->value = out;
-	out_udata->init();
-	luaL_getmetatable(L, "ImDrawList");
-	lua_setmetatable(L, -2);
-	return 1;
-}
+// skipping w_ImDrawList_CloneOutput due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_Clear(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->Clear();
-	
-	return 0;
-}
+// skipping w_ImDrawList_Clear due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_ClearFreeMemory(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->ClearFreeMemory();
-	
-	return 0;
-}
+// skipping w_ImDrawList_ClearFreeMemory due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PrimReserve(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	auto idx_count = luaL_checkint(L, 2);
-	auto vtx_count = luaL_checkint(L, 3);
-	
-	self->PrimReserve(idx_count, vtx_count);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PrimReserve due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_PrimUnreserve(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	auto idx_count = luaL_checkint(L, 2);
-	auto vtx_count = luaL_checkint(L, 3);
-	
-	self->PrimUnreserve(idx_count, vtx_count);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PrimUnreserve due to unimplemented foreign class type: "ImDrawList"
 
-/*  Axis aligned rectangle (composed of two triangles) */
-int w_ImDrawList_PrimRect(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	ImVec2 a;
-	a.x = luax_checkfloat(L, 2);
-	a.y = luax_checkfloat(L, 3);
-	ImVec2 b;
-	b.x = luax_checkfloat(L, 4);
-	b.y = luax_checkfloat(L, 5);
-	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
-	
-	self->PrimRect(a, b, col);
-	
-	return 0;
-}
+// skipping w_ImDrawList_PrimRect due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_UpdateClipRect(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->UpdateClipRect();
-	
-	return 0;
-}
+// skipping w_ImDrawList_UpdateClipRect due to unimplemented foreign class type: "ImDrawList"
 
-int w_ImDrawList_UpdateTextureID(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->UpdateTextureID();
-	
-	return 0;
-}
+// skipping w_ImDrawList_UpdateTextureID due to unimplemented foreign class type: "ImDrawList"
 
 // End Functions }}}
 
-// Function Overrides (manually written) {{{
-// FIXME: these overrides create a a source of breakage when the imgui API
-// changes. if IMGUI ever changes the order of function overrides on their end,
-// or removes one of the API calls, we're in trouble!
+const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
+{"Box::init new(_)", Box::init},
+{"Box::value", Box::get},
+{"Box::value=(_)", Box::set},
+{"ImGui::SetColumnOffset(_,_)", w_SetColumnOffset},
+{"ImGui::IsItemDeactivatedAfterEdit()", w_IsItemDeactivatedAfterEdit},
+{"ImGui::IsMouseDoubleClicked(_)", w_IsMouseDoubleClicked},
+{"ImGui::GetTreeNodeToLabelSpacing()", w_GetTreeNodeToLabelSpacing},
+{"ImGui::SetNextItemOpen(_)", w_SetNextItemOpen},
+{"ImGui::SetNextItemOpen(_,_)", w_SetNextItemOpen},
+{"ImGui::PopTextWrapPos()", w_PopTextWrapPos},
+{"ImGui::EndDragDropSource()", w_EndDragDropSource},
+{"ImGui::GetWindowWidth()", w_GetWindowWidth},
+{"ImGui::SetNextWindowCollapsed(_)", w_SetNextWindowCollapsed},
+{"ImGui::SetNextWindowCollapsed(_,_)", w_SetNextWindowCollapsed},
+{"ImGui::TextWrapped(_)", w_TextWrapped},
+{"ImGui::GetStyleColorName(_)", w_GetStyleColorName},
+{"ImGui::BeginCombo(_,_)", w_BeginCombo},
+{"ImGui::BeginCombo(_,_,_)", w_BeginCombo},
+{"ImGui::SmallButton(_)", w_SmallButton},
+{"ImGui::IsMouseClicked(_)", w_IsMouseClicked},
+{"ImGui::IsMouseClicked(_,_)", w_IsMouseClicked},
+{"ImGui::BeginPopupContextWindow()", w_BeginPopupContextWindow},
+{"ImGui::BeginPopupContextWindow(_)", w_BeginPopupContextWindow},
+{"ImGui::BeginPopupContextWindow(_,_)", w_BeginPopupContextWindow},
+{"ImGui::BeginPopupContextWindow(_,_,_)", w_BeginPopupContextWindow},
+{"ImGui::Checkbox(_,_)", w_Checkbox},
+{"ImGui::InputFloat(_,_)", w_InputFloat},
+{"ImGui::InputFloat(_,_,_)", w_InputFloat},
+{"ImGui::InputFloat(_,_,_,_)", w_InputFloat},
+{"ImGui::InputFloat(_,_,_,_,_)", w_InputFloat},
+{"ImGui::InputFloat(_,_,_,_,_,_)", w_InputFloat},
+{"ImGui::IsMouseDown(_)", w_IsMouseDown},
+{"ImGui::LogFinish()", w_LogFinish},
+{"ImGui::ShowFontSelector(_)", w_ShowFontSelector},
+{"ImGui::GetCursorPosX()", w_GetCursorPosX},
+{"ImGui::PushAllowKeyboardFocus(_)", w_PushAllowKeyboardFocus},
+{"ImGui::PopStyleVar()", w_PopStyleVar},
+{"ImGui::PopStyleVar(_)", w_PopStyleVar},
+{"ImGui::SetScrollHereY()", w_SetScrollHereY},
+{"ImGui::SetScrollHereY(_)", w_SetScrollHereY},
+{"ImGui::ShowMetricsWindow()", w_ShowMetricsWindow},
+{"ImGui::ShowMetricsWindow(_)", w_ShowMetricsWindow},
+{"ImGui::IsMouseDragging(_)", w_IsMouseDragging},
+{"ImGui::IsMouseDragging(_,_)", w_IsMouseDragging},
+{"ImGui::IsKeyDown(_)", w_IsKeyDown},
+{"ImGui::GetColumnIndex()", w_GetColumnIndex},
+{"ImGui::GetColumnOffset()", w_GetColumnOffset},
+{"ImGui::GetColumnOffset(_)", w_GetColumnOffset},
+{"ImGui::IsKeyPressed(_)", w_IsKeyPressed},
+{"ImGui::IsKeyPressed(_,_)", w_IsKeyPressed},
+{"ImGui::GetFontSize()", w_GetFontSize},
+{"ImGui::SameLine()", w_SameLine},
+{"ImGui::SameLine(_)", w_SameLine},
+{"ImGui::SameLine(_,_)", w_SameLine},
+{"ImGui::Begin(_)", w_Begin},
+{"ImGui::Begin(_,_)", w_Begin},
+{"ImGui::Begin(_,_,_)", w_Begin},
+{"ImGui::Render()", w_Render},
+{"ImGui::BeginMenu(_)", w_BeginMenu},
+{"ImGui::BeginMenu(_,_)", w_BeginMenu},
+{"ImGui::ShowUserGuide()", w_ShowUserGuide},
+{"ImGui::SetTooltip(_)", w_SetTooltip},
+{"ImGui::InputDouble(_,_)", w_InputDouble},
+{"ImGui::InputDouble(_,_,_)", w_InputDouble},
+{"ImGui::InputDouble(_,_,_,_)", w_InputDouble},
+{"ImGui::InputDouble(_,_,_,_,_)", w_InputDouble},
+{"ImGui::InputDouble(_,_,_,_,_,_)", w_InputDouble},
+{"ImGui::UpdatePlatformWindows()", w_UpdatePlatformWindows},
+{"ImGui::IsWindowHovered()", w_IsWindowHovered},
+{"ImGui::IsWindowHovered(_)", w_IsWindowHovered},
+{"ImGui::PopFont()", w_PopFont},
+{"ImGui::IsItemHovered()", w_IsItemHovered},
+{"ImGui::IsItemHovered(_)", w_IsItemHovered},
+{"ImGui::GetTextLineHeightWithSpacing()", w_GetTextLineHeightWithSpacing},
+{"ImGui::BeginTabBar(_)", w_BeginTabBar},
+{"ImGui::BeginTabBar(_,_)", w_BeginTabBar},
+{"ImGui::SetTabItemClosed(_)", w_SetTabItemClosed},
+{"ImGui::BeginTabItem(_)", w_BeginTabItem},
+{"ImGui::BeginTabItem(_,_)", w_BeginTabItem},
+{"ImGui::BeginTabItem(_,_,_)", w_BeginTabItem},
+{"ImGui::IsItemEdited()", w_IsItemEdited},
+{"ImGui::GetClipboardText()", w_GetClipboardText},
+{"ImGui::ListBoxFooter()", w_ListBoxFooter},
+{"ImGui::DragFloatRange2(_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::GetVersion()", w_GetVersion},
+{"ImGui::BeginMainMenuBar()", w_BeginMainMenuBar},
+{"ImGui::EndMenuBar()", w_EndMenuBar},
+{"ImGui::ShowAboutWindow()", w_ShowAboutWindow},
+{"ImGui::ShowAboutWindow(_)", w_ShowAboutWindow},
+{"ImGui::GetFrameHeight()", w_GetFrameHeight},
+{"ImGui::SetNextWindowFocus()", w_SetNextWindowFocus},
+{"ImGui::DragIntRange2(_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::GetScrollY()", w_GetScrollY},
+{"ImGui::BeginMenuBar()", w_BeginMenuBar},
+{"ImGui::IsWindowDocked()", w_IsWindowDocked},
+{"ImGui::GetFrameHeightWithSpacing()", w_GetFrameHeightWithSpacing},
+{"ImGui::LogToTTY()", w_LogToTTY},
+{"ImGui::LogToTTY(_)", w_LogToTTY},
+{"ImGui::NextColumn()", w_NextColumn},
+{"ImGui::EndFrame()", w_EndFrame},
+{"ImGui::GetWindowHeight()", w_GetWindowHeight},
+{"ImGui::IsWindowAppearing()", w_IsWindowAppearing},
+{"ImGui::EndCombo()", w_EndCombo},
+{"ImGui::AlignTextToFramePadding()", w_AlignTextToFramePadding},
+{"ImGui::CloseCurrentPopup()", w_CloseCurrentPopup},
+{"ImGui::LogToFile()", w_LogToFile},
+{"ImGui::LogToFile(_)", w_LogToFile},
+{"ImGui::LogToFile(_,_)", w_LogToFile},
+{"ImGui::CaptureKeyboardFromApp()", w_CaptureKeyboardFromApp},
+{"ImGui::CaptureKeyboardFromApp(_)", w_CaptureKeyboardFromApp},
+{"ImGui::IsAnyItemHovered()", w_IsAnyItemHovered},
+{"ImGui::BeginDragDropSource()", w_BeginDragDropSource},
+{"ImGui::BeginDragDropSource(_)", w_BeginDragDropSource},
+{"ImGui::GetCursorPosY()", w_GetCursorPosY},
+{"ImGui::SetNextWindowViewport(_)", w_SetNextWindowViewport},
+{"ImGui::SetCursorPosX(_)", w_SetCursorPosX},
+{"ImGui::GetScrollMaxX()", w_GetScrollMaxX},
+{"ImGui::TextDisabled(_)", w_TextDisabled},
+{"ImGui::LoadIniSettingsFromDisk(_)", w_LoadIniSettingsFromDisk},
+{"ImGui::Unindent()", w_Unindent},
+{"ImGui::Unindent(_)", w_Unindent},
+{"ImGui::SetClipboardText(_)", w_SetClipboardText},
+{"ImGui::Indent()", w_Indent},
+{"ImGui::Indent(_)", w_Indent},
+{"ImGui::IsItemFocused()", w_IsItemFocused},
+{"ImGui::PopButtonRepeat()", w_PopButtonRepeat},
+{"ImGui::IsAnyItemFocused()", w_IsAnyItemFocused},
+{"ImGui::SetCursorPosY(_)", w_SetCursorPosY},
+{"ImGui::SetScrollFromPosX(_)", w_SetScrollFromPosX},
+{"ImGui::SetScrollFromPosX(_,_)", w_SetScrollFromPosX},
+{"ImGui::ResetMouseDragDelta()", w_ResetMouseDragDelta},
+{"ImGui::ResetMouseDragDelta(_)", w_ResetMouseDragDelta},
+{"ImGui::End()", w_End},
+{"ImGui::EndGroup()", w_EndGroup},
+{"ImGui::SetNextWindowBgAlpha(_)", w_SetNextWindowBgAlpha},
+{"ImGui::SetScrollY(_)", w_SetScrollY},
+{"ImGui::CheckboxFlags(_,_,_)", w_CheckboxFlags},
+{"ImGui::IsAnyMouseDown()", w_IsAnyMouseDown},
+{"ImGui::GetKeyIndex(_)", w_GetKeyIndex},
+{"ImGui::SetItemDefaultFocus()", w_SetItemDefaultFocus},
+{"ImGui::GetKeyPressedAmount(_,_,_)", w_GetKeyPressedAmount},
+{"ImGui::IsKeyReleased(_)", w_IsKeyReleased},
+{"ImGui::LogToClipboard()", w_LogToClipboard},
+{"ImGui::LogToClipboard(_)", w_LogToClipboard},
+{"ImGui::IsWindowCollapsed()", w_IsWindowCollapsed},
+{"ImGui::IsMouseReleased(_)", w_IsMouseReleased},
+{"ImGui::EndChildFrame()", w_EndChildFrame},
+{"ImGui::IsItemActive()", w_IsItemActive},
+{"ImGui::Spacing()", w_Spacing},
+{"ImGui::SetKeyboardFocusHere()", w_SetKeyboardFocusHere},
+{"ImGui::SetKeyboardFocusHere(_)", w_SetKeyboardFocusHere},
+{"ImGui::NewLine()", w_NewLine},
+{"ImGui::IsItemClicked()", w_IsItemClicked},
+{"ImGui::IsItemClicked(_)", w_IsItemClicked},
+{"ImGui::GetTime()", w_GetTime},
+{"ImGui::PushButtonRepeat(_)", w_PushButtonRepeat},
+{"ImGui::SetItemAllowOverlap()", w_SetItemAllowOverlap},
+{"ImGui::CalcItemWidth()", w_CalcItemWidth},
+{"ImGui::BeginPopupModal(_)", w_BeginPopupModal},
+{"ImGui::BeginPopupModal(_,_)", w_BeginPopupModal},
+{"ImGui::BeginPopupModal(_,_,_)", w_BeginPopupModal},
+{"ImGui::OpenPopupOnItemClick()", w_OpenPopupOnItemClick},
+{"ImGui::OpenPopupOnItemClick(_)", w_OpenPopupOnItemClick},
+{"ImGui::OpenPopupOnItemClick(_,_)", w_OpenPopupOnItemClick},
+{"ImGui::CaptureMouseFromApp()", w_CaptureMouseFromApp},
+{"ImGui::CaptureMouseFromApp(_)", w_CaptureMouseFromApp},
+{"ImGui::IsAnyItemActive()", w_IsAnyItemActive},
+{"ImGui::DestroyPlatformWindows()", w_DestroyPlatformWindows},
+{"ImGui::SetNextItemWidth(_)", w_SetNextItemWidth},
+{"ImGui::IsItemDeactivated()", w_IsItemDeactivated},
+{"ImGui::IsItemActivated()", w_IsItemActivated},
+{"ImGui::ShowDemoWindow()", w_ShowDemoWindow},
+{"ImGui::ShowDemoWindow(_)", w_ShowDemoWindow},
+{"ImGui::EndTooltip()", w_EndTooltip},
+{"ImGui::InputInt(_,_)", w_InputInt},
+{"ImGui::InputInt(_,_,_)", w_InputInt},
+{"ImGui::InputInt(_,_,_,_)", w_InputInt},
+{"ImGui::InputInt(_,_,_,_,_)", w_InputInt},
+{"ImGui::SliderAngle(_,_)", w_SliderAngle},
+{"ImGui::SliderAngle(_,_,_)", w_SliderAngle},
+{"ImGui::SliderAngle(_,_,_,_)", w_SliderAngle},
+{"ImGui::SliderAngle(_,_,_,_,_)", w_SliderAngle},
+{"ImGui::IsItemVisible()", w_IsItemVisible},
+{"ImGui::BeginPopup(_)", w_BeginPopup},
+{"ImGui::BeginPopup(_,_)", w_BeginPopup},
+{"ImGui::GetColumnWidth()", w_GetColumnWidth},
+{"ImGui::GetColumnWidth(_)", w_GetColumnWidth},
+{"ImGui::PopStyleColor()", w_PopStyleColor},
+{"ImGui::PopStyleColor(_)", w_PopStyleColor},
+{"ImGui::GetFrameCount()", w_GetFrameCount},
+{"ImGui::GetWindowDpiScale()", w_GetWindowDpiScale},
+{"ImGui::CalcListClipping(_,_,_,_)", w_CalcListClipping},
+{"ImGui::GetScrollMaxY()", w_GetScrollMaxY},
+{"ImGui::GetColumnsCount()", w_GetColumnsCount},
+{"ImGui::IsPopupOpen(_)", w_IsPopupOpen},
+{"ImGui::SaveIniSettingsToDisk(_)", w_SaveIniSettingsToDisk},
+{"ImGui::SetWindowFontScale(_)", w_SetWindowFontScale},
+{"ImGui::BeginPopupContextItem()", w_BeginPopupContextItem},
+{"ImGui::BeginPopupContextItem(_)", w_BeginPopupContextItem},
+{"ImGui::BeginPopupContextItem(_,_)", w_BeginPopupContextItem},
+{"ImGui::BeginDragDropTarget()", w_BeginDragDropTarget},
+{"ImGui::SetScrollX(_)", w_SetScrollX},
+{"ImGui::LogButtons()", w_LogButtons},
+{"ImGui::IsItemToggledOpen()", w_IsItemToggledOpen},
+{"ImGui::SetNextWindowDockID(_)", w_SetNextWindowDockID},
+{"ImGui::SetNextWindowDockID(_,_)", w_SetNextWindowDockID},
+{"ImGui::DockSpaceOverViewport()", w_DockSpaceOverViewport},
+{"ImGui::DockSpaceOverViewport(_)", w_DockSpaceOverViewport},
+{"ImGui::DockSpaceOverViewport(_,_)", w_DockSpaceOverViewport},
+{"ImGui::DockSpaceOverViewport(_,_,_)", w_DockSpaceOverViewport},
+{"ImGui::SetColumnWidth(_,_)", w_SetColumnWidth},
+{"ImGui::LogText(_)", w_LogText},
+{"ImGui::PopAllowKeyboardFocus()", w_PopAllowKeyboardFocus},
+{"ImGui::SetScrollFromPosY(_)", w_SetScrollFromPosY},
+{"ImGui::SetScrollFromPosY(_,_)", w_SetScrollFromPosY},
+{"ImGui::GetScrollX()", w_GetScrollX},
+{"ImGui::TreePop()", w_TreePop},
+{"ImGui::GetWindowContentRegionWidth()", w_GetWindowContentRegionWidth},
+{"ImGui::PushItemWidth(_)", w_PushItemWidth},
+{"ImGui::SetScrollHereX()", w_SetScrollHereX},
+{"ImGui::SetScrollHereX(_)", w_SetScrollHereX},
+{"ImGui::ArrowButton(_,_)", w_ArrowButton},
+{"ImGui::BeginPopupContextVoid()", w_BeginPopupContextVoid},
+{"ImGui::BeginPopupContextVoid(_)", w_BeginPopupContextVoid},
+{"ImGui::BeginPopupContextVoid(_,_)", w_BeginPopupContextVoid},
+{"ImGui::PushTextWrapPos()", w_PushTextWrapPos},
+{"ImGui::PushTextWrapPos(_)", w_PushTextWrapPos},
+{"ImGui::GetWindowDockID()", w_GetWindowDockID},
+{"ImGui::IsWindowFocused()", w_IsWindowFocused},
+{"ImGui::IsWindowFocused(_)", w_IsWindowFocused},
+{"ImGui::DragInt(_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_,_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_,_,_,_)", w_DragInt},
+{"ImGui::NewFrame()", w_NewFrame},
+{"ImGui::SetColorEditOptions(_)", w_SetColorEditOptions},
+{"ImGui::GetMouseCursor()", w_GetMouseCursor},
+{"ImGui::PopID()", w_PopID},
+{"ImGui::LabelText(_,_)", w_LabelText},
+{"ImGui::BeginGroup()", w_BeginGroup},
+{"ImGui::SliderInt(_,_,_,_)", w_SliderInt},
+{"ImGui::SliderInt(_,_,_,_,_)", w_SliderInt},
+{"ImGui::EndTabItem()", w_EndTabItem},
+{"ImGui::Separator()", w_Separator},
+{"ImGui::GetTextLineHeight()", w_GetTextLineHeight},
+{"ImGui::Bullet()", w_Bullet},
+{"ImGui::OpenPopup(_)", w_OpenPopup},
+{"ImGui::DragFloat(_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_,_,_,_)", w_DragFloat},
+{"ImGui::ShowStyleSelector(_)", w_ShowStyleSelector},
+{"ImGui::SetMouseCursor(_)", w_SetMouseCursor},
+{"ImGui::EndTabBar()", w_EndTabBar},
+{"ImGui::EndMainMenuBar()", w_EndMainMenuBar},
+{"ImGui::EndMenu()", w_EndMenu},
+{"ImGui::SliderFloat(_,_,_,_)", w_SliderFloat},
+{"ImGui::SliderFloat(_,_,_,_,_)", w_SliderFloat},
+{"ImGui::SliderFloat(_,_,_,_,_,_)", w_SliderFloat},
+{"ImGui::BeginTooltip()", w_BeginTooltip},
+{"ImGui::TextUnformatted(_)", w_TextUnformatted},
+{"ImGui::TextUnformatted(_,_)", w_TextUnformatted},
+{"ImGui::PopClipRect()", w_PopClipRect},
+{"ImGui::BulletText(_)", w_BulletText},
+{"ImGui::EndChild()", w_EndChild},
+{"ImGui::EndPopup()", w_EndPopup},
+{"ImGui::Columns()", w_Columns},
+{"ImGui::Columns(_)", w_Columns},
+{"ImGui::Columns(_,_)", w_Columns},
+{"ImGui::Columns(_,_,_)", w_Columns},
+{"ImGui::PopItemWidth()", w_PopItemWidth},
+{"ImGui::EndDragDropTarget()", w_EndDragDropTarget},
+{"ImGui::Text(_)", w_Text},
+};
 
-int w_Value(lua_State* L)
-{
-	if (lua_isboolean(L, 2)) {
-		return w_Value_Override1(L); // prefix, b
-	} else {
-		return w_Value_Override4(L); // prefix, v, float_format=nil
+const char* foreignModuleString = R"MODULE(
+foreign class Box {
+	foreign construct new(v)
+	foreign value
+	foreign value=(v)
+	set(v) {
+		this.value = v
+		return this
+	}
+	get() {
+		return this.value
 	}
 }
 
-int w_MenuItem(lua_State* L)
+class ImGui {
+	foreign static SetColumnOffset(column_index, offset_x)
+	foreign static IsItemDeactivatedAfterEdit()
+	foreign static IsMouseDoubleClicked(button)
+	foreign static GetTreeNodeToLabelSpacing()
+	foreign static SetNextItemOpen(is_open)
+	foreign static SetNextItemOpen(is_open, cond)
+	foreign static PopTextWrapPos()
+	foreign static EndDragDropSource()
+	foreign static GetWindowWidth()
+	foreign static SetNextWindowCollapsed(collapsed)
+	foreign static SetNextWindowCollapsed(collapsed, cond)
+	foreign static TextWrapped(fmt)
+	foreign static GetStyleColorName(idx)
+	foreign static BeginCombo(label, preview_value)
+	foreign static BeginCombo(label, preview_value, flags)
+	foreign static SmallButton(label)
+	foreign static IsMouseClicked(button)
+	foreign static IsMouseClicked(button, repeat)
+	foreign static BeginPopupContextWindow()
+	foreign static BeginPopupContextWindow(str_id)
+	foreign static BeginPopupContextWindow(str_id, mouse_button)
+	foreign static BeginPopupContextWindow(str_id, mouse_button, also_over_items)
+	foreign static Checkbox(label, v)
+	foreign static InputFloat(label, v)
+	foreign static InputFloat(label, v, step)
+	foreign static InputFloat(label, v, step, step_fast)
+	foreign static InputFloat(label, v, step, step_fast, format)
+	foreign static InputFloat(label, v, step, step_fast, format, flags)
+	foreign static IsMouseDown(button)
+	foreign static LogFinish()
+	foreign static ShowFontSelector(label)
+	foreign static GetCursorPosX()
+	foreign static PushAllowKeyboardFocus(allow_keyboard_focus)
+	foreign static PopStyleVar()
+	foreign static PopStyleVar(count)
+	foreign static SetScrollHereY()
+	foreign static SetScrollHereY(center_y_ratio)
+	foreign static ShowMetricsWindow()
+	foreign static ShowMetricsWindow(p_open)
+	foreign static IsMouseDragging(button)
+	foreign static IsMouseDragging(button, lock_threshold)
+	foreign static IsKeyDown(user_key_index)
+	foreign static GetColumnIndex()
+	foreign static GetColumnOffset()
+	foreign static GetColumnOffset(column_index)
+	foreign static IsKeyPressed(user_key_index)
+	foreign static IsKeyPressed(user_key_index, repeat)
+	foreign static GetFontSize()
+	foreign static SameLine()
+	foreign static SameLine(offset_from_start_x)
+	foreign static SameLine(offset_from_start_x, spacing)
+	foreign static Begin(name)
+	foreign static Begin(name, p_open)
+	foreign static Begin(name, p_open, flags)
+	foreign static Render()
+	foreign static BeginMenu(label)
+	foreign static BeginMenu(label, enabled)
+	foreign static ShowUserGuide()
+	foreign static SetTooltip(fmt)
+	foreign static InputDouble(label, v)
+	foreign static InputDouble(label, v, step)
+	foreign static InputDouble(label, v, step, step_fast)
+	foreign static InputDouble(label, v, step, step_fast, format)
+	foreign static InputDouble(label, v, step, step_fast, format, flags)
+	foreign static UpdatePlatformWindows()
+	foreign static IsWindowHovered()
+	foreign static IsWindowHovered(flags)
+	foreign static PopFont()
+	foreign static IsItemHovered()
+	foreign static IsItemHovered(flags)
+	foreign static GetTextLineHeightWithSpacing()
+	foreign static BeginTabBar(str_id)
+	foreign static BeginTabBar(str_id, flags)
+	foreign static SetTabItemClosed(tab_or_docked_window_label)
+	foreign static BeginTabItem(label)
+	foreign static BeginTabItem(label, p_open)
+	foreign static BeginTabItem(label, p_open, flags)
+	foreign static IsItemEdited()
+	foreign static GetClipboardText()
+	foreign static ListBoxFooter()
+	foreign static DragFloatRange2(label, v_current_min, v_current_max)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, power)
+	foreign static GetVersion()
+	foreign static BeginMainMenuBar()
+	foreign static EndMenuBar()
+	foreign static ShowAboutWindow()
+	foreign static ShowAboutWindow(p_open)
+	foreign static GetFrameHeight()
+	foreign static SetNextWindowFocus()
+	foreign static DragIntRange2(label, v_current_min, v_current_max)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
+	foreign static GetScrollY()
+	foreign static BeginMenuBar()
+	foreign static IsWindowDocked()
+	foreign static GetFrameHeightWithSpacing()
+	foreign static LogToTTY()
+	foreign static LogToTTY(auto_open_depth)
+	foreign static NextColumn()
+	foreign static EndFrame()
+	foreign static GetWindowHeight()
+	foreign static IsWindowAppearing()
+	foreign static EndCombo()
+	foreign static AlignTextToFramePadding()
+	foreign static CloseCurrentPopup()
+	foreign static LogToFile()
+	foreign static LogToFile(auto_open_depth)
+	foreign static LogToFile(auto_open_depth, filename)
+	foreign static CaptureKeyboardFromApp()
+	foreign static CaptureKeyboardFromApp(want_capture_keyboard_value)
+	foreign static IsAnyItemHovered()
+	foreign static BeginDragDropSource()
+	foreign static BeginDragDropSource(flags)
+	foreign static GetCursorPosY()
+	foreign static SetNextWindowViewport(viewport_id)
+	foreign static SetCursorPosX(local_x)
+	foreign static GetScrollMaxX()
+	foreign static TextDisabled(fmt)
+	foreign static LoadIniSettingsFromDisk(ini_filename)
+	foreign static Unindent()
+	foreign static Unindent(indent_w)
+	foreign static SetClipboardText(text)
+	foreign static Indent()
+	foreign static Indent(indent_w)
+	foreign static IsItemFocused()
+	foreign static PopButtonRepeat()
+	foreign static IsAnyItemFocused()
+	foreign static SetCursorPosY(local_y)
+	foreign static SetScrollFromPosX(local_x)
+	foreign static SetScrollFromPosX(local_x, center_x_ratio)
+	foreign static ResetMouseDragDelta()
+	foreign static ResetMouseDragDelta(button)
+	foreign static End()
+	foreign static EndGroup()
+	foreign static SetNextWindowBgAlpha(alpha)
+	foreign static SetScrollY(scroll_y)
+	foreign static CheckboxFlags(label, flags, flags_value)
+	foreign static IsAnyMouseDown()
+	foreign static GetKeyIndex(imgui_key)
+	foreign static SetItemDefaultFocus()
+	foreign static GetKeyPressedAmount(key_index, repeat_delay, rate)
+	foreign static IsKeyReleased(user_key_index)
+	foreign static LogToClipboard()
+	foreign static LogToClipboard(auto_open_depth)
+	foreign static IsWindowCollapsed()
+	foreign static IsMouseReleased(button)
+	foreign static EndChildFrame()
+	foreign static IsItemActive()
+	foreign static Spacing()
+	foreign static SetKeyboardFocusHere()
+	foreign static SetKeyboardFocusHere(offset)
+	foreign static NewLine()
+	foreign static IsItemClicked()
+	foreign static IsItemClicked(mouse_button)
+	foreign static GetTime()
+	foreign static PushButtonRepeat(repeat)
+	foreign static SetItemAllowOverlap()
+	foreign static CalcItemWidth()
+	foreign static BeginPopupModal(name)
+	foreign static BeginPopupModal(name, p_open)
+	foreign static BeginPopupModal(name, p_open, flags)
+	foreign static OpenPopupOnItemClick()
+	foreign static OpenPopupOnItemClick(str_id)
+	foreign static OpenPopupOnItemClick(str_id, mouse_button)
+	foreign static CaptureMouseFromApp()
+	foreign static CaptureMouseFromApp(want_capture_mouse_value)
+	foreign static IsAnyItemActive()
+	foreign static DestroyPlatformWindows()
+	foreign static SetNextItemWidth(item_width)
+	foreign static IsItemDeactivated()
+	foreign static IsItemActivated()
+	foreign static ShowDemoWindow()
+	foreign static ShowDemoWindow(p_open)
+	foreign static EndTooltip()
+	foreign static InputInt(label, v)
+	foreign static InputInt(label, v, step)
+	foreign static InputInt(label, v, step, step_fast)
+	foreign static InputInt(label, v, step, step_fast, flags)
+	foreign static SliderAngle(label, v_rad)
+	foreign static SliderAngle(label, v_rad, v_degrees_min)
+	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max)
+	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format)
+	foreign static IsItemVisible()
+	foreign static BeginPopup(str_id)
+	foreign static BeginPopup(str_id, flags)
+	foreign static GetColumnWidth()
+	foreign static GetColumnWidth(column_index)
+	foreign static PopStyleColor()
+	foreign static PopStyleColor(count)
+	foreign static GetFrameCount()
+	foreign static GetWindowDpiScale()
+	foreign static CalcListClipping(items_count, items_height, out_items_display_start, out_items_display_end)
+	foreign static GetScrollMaxY()
+	foreign static GetColumnsCount()
+	foreign static IsPopupOpen(str_id)
+	foreign static SaveIniSettingsToDisk(ini_filename)
+	foreign static SetWindowFontScale(scale)
+	foreign static BeginPopupContextItem()
+	foreign static BeginPopupContextItem(str_id)
+	foreign static BeginPopupContextItem(str_id, mouse_button)
+	foreign static BeginDragDropTarget()
+	foreign static SetScrollX(scroll_x)
+	foreign static LogButtons()
+	foreign static IsItemToggledOpen()
+	foreign static SetNextWindowDockID(dock_id)
+	foreign static SetNextWindowDockID(dock_id, cond)
+	foreign static DockSpaceOverViewport()
+	foreign static DockSpaceOverViewport(viewport)
+	foreign static DockSpaceOverViewport(viewport, flags)
+	foreign static DockSpaceOverViewport(viewport, flags, window_class)
+	foreign static SetColumnWidth(column_index, width)
+	foreign static LogText(fmt)
+	foreign static PopAllowKeyboardFocus()
+	foreign static SetScrollFromPosY(local_y)
+	foreign static SetScrollFromPosY(local_y, center_y_ratio)
+	foreign static GetScrollX()
+	foreign static TreePop()
+	foreign static GetWindowContentRegionWidth()
+	foreign static PushItemWidth(item_width)
+	foreign static SetScrollHereX()
+	foreign static SetScrollHereX(center_x_ratio)
+	foreign static ArrowButton(str_id, dir)
+	foreign static BeginPopupContextVoid()
+	foreign static BeginPopupContextVoid(str_id)
+	foreign static BeginPopupContextVoid(str_id, mouse_button)
+	foreign static PushTextWrapPos()
+	foreign static PushTextWrapPos(wrap_local_pos_x)
+	foreign static GetWindowDockID()
+	foreign static IsWindowFocused()
+	foreign static IsWindowFocused(flags)
+	foreign static DragInt(label, v)
+	foreign static DragInt(label, v, v_speed)
+	foreign static DragInt(label, v, v_speed, v_min)
+	foreign static DragInt(label, v, v_speed, v_min, v_max)
+	foreign static DragInt(label, v, v_speed, v_min, v_max, format)
+	foreign static NewFrame()
+	foreign static SetColorEditOptions(flags)
+	foreign static GetMouseCursor()
+	foreign static PopID()
+	foreign static LabelText(label, fmt)
+	foreign static BeginGroup()
+	foreign static SliderInt(label, v, v_min, v_max)
+	foreign static SliderInt(label, v, v_min, v_max, format)
+	foreign static EndTabItem()
+	foreign static Separator()
+	foreign static GetTextLineHeight()
+	foreign static Bullet()
+	foreign static OpenPopup(str_id)
+	foreign static DragFloat(label, v)
+	foreign static DragFloat(label, v, v_speed)
+	foreign static DragFloat(label, v, v_speed, v_min)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max, format)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max, format, power)
+	foreign static ShowStyleSelector(label)
+	foreign static SetMouseCursor(cursor_type)
+	foreign static EndTabBar()
+	foreign static EndMainMenuBar()
+	foreign static EndMenu()
+	foreign static SliderFloat(label, v, v_min, v_max)
+	foreign static SliderFloat(label, v, v_min, v_max, format)
+	foreign static SliderFloat(label, v, v_min, v_max, format, power)
+	foreign static BeginTooltip()
+	foreign static TextUnformatted(text)
+	foreign static TextUnformatted(text, text_end)
+	foreign static PopClipRect()
+	foreign static BulletText(fmt)
+	foreign static EndChild()
+	foreign static EndPopup()
+	foreign static Columns()
+	foreign static Columns(count)
+	foreign static Columns(count, id)
+	foreign static Columns(count, id, border)
+	foreign static PopItemWidth()
+	foreign static EndDragDropTarget()
+	foreign static Text(fmt)
+}
+
+)MODULE";
+
+}
+
+char* wrap_imgui::loadModule(WrenVM* vm)
 {
-	if (lua_gettop(L) < 3) {
-		return w_MenuItem_Override1(L); // label, shortcut
-	} else {
-		return w_MenuItem_Override2(L); // label, shortcut, p_selected, enabled
+	char* buf = (char*)malloc(strlen(foreignModuleString));
+	strcpy(buf, foreignModuleString);
+	return buf;
+}
+
+bool wrap_imgui::bindForeignClass(WrenVM* vm, const char* className, WrenForeignClassMethods& methods)
+{
+	if(strcmp("Box", className) == 0) {
+		methods.allocate = Box::alloc;
+		methods.finalize = Box::finalize;
+		return true;
 	}
+	return false;
 }
 
-int w_IsRectVisible(lua_State* L)
+WrenForeignMethodFn wrap_imgui::bindForeignMethod(WrenVM* vm, const char* className, bool isStatic, const char* signature)
 {
-	if (lua_gettop(L) <= 2) {
-		return w_IsRectVisible_Override1(L); // size_x, size_y
-	} else {
-		return w_IsRectVisible_Override2(L); // rect_min_x, rect_min_y, rect_max_x, rect_max_y
+	char buf[255];
+	snprintf(buf, 255, "%s::%s", className, signature);
+	auto pair = foreignMethods.find(buf);
+
+	if(pair != foreignMethods.end()) {
+		return pair->second;
 	}
+	return nullptr;
 }
-
-int w_BeginChild(lua_State* L)
-{
-	if (lua_isstring(L, 1)) {
-		return w_BeginChild_Override1(L); // str_id, size_x, size_y, border, flags
-	} else {
-		return w_BeginChild_Override2(L); // id, size_x, size_y, border, flags
-	}
-}
-
-int w_InputText(lua_State* L)
-{
-	return w_InputText_Override2(L); // std::string variant
-}
-
-int w_InputTextMultiline(lua_State* L)
-{
-	return w_InputTextMultiline_Override2(L); // std::string variant
-}
-
-int w_InputTextWithHint(lua_State* L)
-{
-	return w_InputTextWithHint_Override2(L); // std::string variant
-}
-
-
-int w_SetWindowPos(lua_State* L)
-{
-	if (lua_isstring(L, 1)) {
-		return w_SetWindowPos_Override2(L); // with window name
-	} else {
-		return w_SetWindowPos_Override1(L); // no window name
-	}
-}
-
-int w_SetWindowSize(lua_State* L)
-{
-	if (lua_isstring(L, 1)) {
-		return w_SetWindowSize_Override2(L); // with window name
-	} else {
-		return w_SetWindowSize_Override1(L); // no window name
-	}
-}
-
-int w_SetWindowCollapsed(lua_State* L)
-{
-	if (lua_isstring(L, 1)) {
-		return w_SetWindowCollapsed_Override2(L); // with window name
-	} else {
-		return w_SetWindowCollapsed_Override1(L); // no window name
-	}
-}
-
-int w_SetWindowFocus(lua_State* L)
-{
-	if (lua_isstring(L, 1)) {
-		return w_SetWindowFocus_Override2(L); // with window name
-	} else {
-		return w_SetWindowFocus_Override1(L); // no window name
-	}
-}
-
-
-int w_PushStyleColor(lua_State* L)
-{
-	// Only one interesting override
-	return w_PushStyleColor_Override2(L); // idx, col_r, col_g, col_b, col_a
-}
-
-int w_PushStyleVar(lua_State* L)
-{
-	if (lua_isnumber(L, 3)) {
-		return w_PushStyleVar_Override2(L); // idx, val_x, val_y
-	} 
-
-	return w_PushStyleVar_Override1(L); // idx, val_float
-}
-
-int w_PushID(lua_State* L)
-{
-	if (lua_isstring(L, 2)) {
-		return w_PushID_Override2(L); // str_id_begin, str_id_end
-	} else if (lua_isstring(L, 1)) {
-		return w_PushID_Override1(L); // str_id
-	} 
-
-	return w_PushID_Override4(L); // id
-}
-
-int w_GetID(lua_State* L)
-{
-	if (lua_isstring(L, 2)) {
-		return w_GetID_Override2(L); // str_id_begin, str_id_end
-	}
-
-	return w_GetID_Override1(L); // str_id
-}
-
-int w_RadioButton(lua_State* L)
-{
-	if (lua_isboolean(L, 2)) {
-		return w_RadioButton_Override1(L); // label, active
-	} else {
-		return w_RadioButton_Override2(L); // label, v, v_button
-	}
-}
-
-int w_TreeNode(lua_State* L)
-{
-	// TODO: Override2, Override3
-	return w_TreeNode_Override1(L); // label
-}
-
-int w_TreeNodeEx(lua_State* L)
-{
-	// TODO: Override2, Override3
-	return w_TreeNodeEx_Override1(L); // label, flags
-}
-
-int w_TreePush(lua_State* L)
-{
-	// intentionally only one override
-	return w_TreePush_Override1(L); // str_id
-}
-
-int w_CollapsingHeader(lua_State* L)
-{
-	if (lua_isboolean(L, 2)) {
-		return w_CollapsingHeader_Override2(L); // label, p_open, flags
-	} else {
-		return w_CollapsingHeader_Override1(L); // label, flags
-	}
-}
-
-int w_Selectable(lua_State* L)
-{
-	// Only one interesting override
-	return w_Selectable_Override2(L); // label, p_selected, flags, size
-}
-
-int w_Combo(lua_State* L)
-{
-	if (lua_istable(L, 3)) {
-		return w_Combo_Override4(L); // label, current_item, items, popup_max_height_in_items
-	} else {
-		return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
-	}
-}
-
-int w_ListBox(lua_State* L)
-{
-	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
-}
-
-int w_PlotLines(lua_State* L)
-{
-	return w_PlotLines_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
-}
-
-int w_PlotHistogram(lua_State* L)
-{
-	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
-}
-
-int w_ListBoxHeaderXY(lua_State* L)
-{
-		// There's no way to distinguish these two
-	return w_ListBoxHeader_Override1(L); // label, size
-}
-
-int w_ListBoxHeaderItems(lua_State* L)
-{
-		// There's no way to distinguish these two
-	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
-}
-
-int w_GetForegroundDrawList(lua_State* L)
-{
-	return w_GetForegroundDrawList_Override1(L);
-}
-
-int w_GetBackgroundDrawList(lua_State* L)
-{
-	return w_GetBackgroundDrawList_Override1(L);
-}
-
-int w_ImDrawList_AddText(lua_State* L)
-{
-	return w_ImDrawList_AddText_Override1(L);
-}
-
-// End Function Overrides }}}
-}
-
-// API entry points {{{
-
-void wrap_imgui::addImguiWrappers(lua_State* L)
-{
-	lua_pushcfunction(L, w_SetColumnOffset);
-	lua_setfield(L, -2, "SetColumnOffset");
-	lua_pushcfunction(L, w_IsItemDeactivatedAfterEdit);
-	lua_setfield(L, -2, "IsItemDeactivatedAfterEdit");
-	lua_pushcfunction(L, w_GetTreeNodeToLabelSpacing);
-	lua_setfield(L, -2, "GetTreeNodeToLabelSpacing");
-	lua_pushcfunction(L, w_PopTextWrapPos);
-	lua_setfield(L, -2, "PopTextWrapPos");
-	lua_pushcfunction(L, w_EndDragDropSource);
-	lua_setfield(L, -2, "EndDragDropSource");
-	lua_pushcfunction(L, w_GetMousePos);
-	lua_setfield(L, -2, "GetMousePos");
-	lua_pushcfunction(L, w_GetForegroundDrawList);
-	lua_setfield(L, -2, "GetForegroundDrawList");
-	lua_pushcfunction(L, w_GetID);
-	lua_setfield(L, -2, "GetID");
-	lua_pushcfunction(L, w_ColorButton);
-	lua_setfield(L, -2, "ColorButton");
-	lua_pushcfunction(L, w_PushStyleVar);
-	lua_setfield(L, -2, "PushStyleVar");
-	lua_pushcfunction(L, w_InputFloat);
-	lua_setfield(L, -2, "InputFloat");
-	lua_pushcfunction(L, w_IsMouseDown);
-	lua_setfield(L, -2, "IsMouseDown");
-	lua_pushcfunction(L, w_ShowStyleEditor);
-	lua_setfield(L, -2, "ShowStyleEditor");
-	lua_pushcfunction(L, w_BeginChild);
-	lua_setfield(L, -2, "BeginChild");
-	lua_pushcfunction(L, w_SliderInt3);
-	lua_setfield(L, -2, "SliderInt3");
-	lua_pushcfunction(L, w_GetCursorPosX);
-	lua_setfield(L, -2, "GetCursorPosX");
-	lua_pushcfunction(L, w_GetItemRectMin);
-	lua_setfield(L, -2, "GetItemRectMin");
-	lua_pushcfunction(L, w_EndChildFrame);
-	lua_setfield(L, -2, "EndChildFrame");
-	lua_pushcfunction(L, w_SetScrollHereY);
-	lua_setfield(L, -2, "SetScrollHereY");
-	lua_pushcfunction(L, w_GetContentRegionMax);
-	lua_setfield(L, -2, "GetContentRegionMax");
-	lua_pushcfunction(L, w_InputFloat3);
-	lua_setfield(L, -2, "InputFloat3");
-	lua_pushcfunction(L, w_SliderFloat2);
-	lua_setfield(L, -2, "SliderFloat2");
-	lua_pushcfunction(L, w_GetColumnOffset);
-	lua_setfield(L, -2, "GetColumnOffset");
-	lua_pushcfunction(L, w_VSliderFloat);
-	lua_setfield(L, -2, "VSliderFloat");
-	lua_pushcfunction(L, w_DockSpace);
-	lua_setfield(L, -2, "DockSpace");
-	lua_pushcfunction(L, w_IsKeyPressed);
-	lua_setfield(L, -2, "IsKeyPressed");
-	lua_pushcfunction(L, w_GetFontSize);
-	lua_setfield(L, -2, "GetFontSize");
-	lua_pushcfunction(L, w_Render);
-	lua_setfield(L, -2, "Render");
-	lua_pushcfunction(L, w_DockSpaceOverViewport);
-	lua_setfield(L, -2, "DockSpaceOverViewport");
-	lua_pushcfunction(L, w_BeginChildFrame);
-	lua_setfield(L, -2, "BeginChildFrame");
-	lua_pushcfunction(L, w_SetClipboardText);
-	lua_setfield(L, -2, "SetClipboardText");
-	lua_pushcfunction(L, w_PlotHistogram);
-	lua_setfield(L, -2, "PlotHistogram");
-	lua_pushcfunction(L, w_UpdatePlatformWindows);
-	lua_setfield(L, -2, "UpdatePlatformWindows");
-	lua_pushcfunction(L, w_IsWindowHovered);
-	lua_setfield(L, -2, "IsWindowHovered");
-	lua_pushcfunction(L, w_ProgressBar);
-	lua_setfield(L, -2, "ProgressBar");
-	lua_pushcfunction(L, w_DragFloat2);
-	lua_setfield(L, -2, "DragFloat2");
-	lua_pushcfunction(L, w_IsRectVisible);
-	lua_setfield(L, -2, "IsRectVisible");
-	lua_pushcfunction(L, w_GetKeyIndex);
-	lua_setfield(L, -2, "GetKeyIndex");
-	lua_pushcfunction(L, w_PlotLines);
-	lua_setfield(L, -2, "PlotLines");
-	lua_pushcfunction(L, w_RadioButton);
-	lua_setfield(L, -2, "RadioButton");
-	lua_pushcfunction(L, w_BeginTabItem);
-	lua_setfield(L, -2, "BeginTabItem");
-	lua_pushcfunction(L, w_IsItemEdited);
-	lua_setfield(L, -2, "IsItemEdited");
-	lua_pushcfunction(L, w_GetClipboardText);
-	lua_setfield(L, -2, "GetClipboardText");
-	lua_pushcfunction(L, w_CheckboxFlags);
-	lua_setfield(L, -2, "CheckboxFlags");
-	lua_pushcfunction(L, w_DragFloatRange2);
-	lua_setfield(L, -2, "DragFloatRange2");
-	lua_pushcfunction(L, w_GetVersion);
-	lua_setfield(L, -2, "GetVersion");
-	lua_pushcfunction(L, w_SetWindowPos);
-	lua_setfield(L, -2, "SetWindowPos");
-	lua_pushcfunction(L, w_DragInt3);
-	lua_setfield(L, -2, "DragInt3");
-	lua_pushcfunction(L, w_PushStyleColor);
-	lua_setfield(L, -2, "PushStyleColor");
-	lua_pushcfunction(L, w_EndMenuBar);
-	lua_setfield(L, -2, "EndMenuBar");
-	lua_pushcfunction(L, w_ShowAboutWindow);
-	lua_setfield(L, -2, "ShowAboutWindow");
-	lua_pushcfunction(L, w_SetNextWindowPos);
-	lua_setfield(L, -2, "SetNextWindowPos");
-	lua_pushcfunction(L, w_SetNextWindowFocus);
-	lua_setfield(L, -2, "SetNextWindowFocus");
-	lua_pushcfunction(L, w_GetWindowPos);
-	lua_setfield(L, -2, "GetWindowPos");
-	lua_pushcfunction(L, w_IsItemClicked);
-	lua_setfield(L, -2, "IsItemClicked");
-	lua_pushcfunction(L, w_CollapsingHeader);
-	lua_setfield(L, -2, "CollapsingHeader");
-	lua_pushcfunction(L, w_LogToTTY);
-	lua_setfield(L, -2, "LogToTTY");
-	lua_pushcfunction(L, w_GetWindowSize);
-	lua_setfield(L, -2, "GetWindowSize");
-	lua_pushcfunction(L, w_GetWindowHeight);
-	lua_setfield(L, -2, "GetWindowHeight");
-	lua_pushcfunction(L, w_IsMouseHoveringRect);
-	lua_setfield(L, -2, "IsMouseHoveringRect");
-	lua_pushcfunction(L, w_GetItemRectSize);
-	lua_setfield(L, -2, "GetItemRectSize");
-	lua_pushcfunction(L, w_AlignTextToFramePadding);
-	lua_setfield(L, -2, "AlignTextToFramePadding");
-	lua_pushcfunction(L, w_CloseCurrentPopup);
-	lua_setfield(L, -2, "CloseCurrentPopup");
-	lua_pushcfunction(L, w_SetColumnWidth);
-	lua_setfield(L, -2, "SetColumnWidth");
-	lua_pushcfunction(L, w_SetCursorPosX);
-	lua_setfield(L, -2, "SetCursorPosX");
-	lua_pushcfunction(L, w_GetWindowContentRegionMin);
-	lua_setfield(L, -2, "GetWindowContentRegionMin");
-	lua_pushcfunction(L, w_IsItemActivated);
-	lua_setfield(L, -2, "IsItemActivated");
-	lua_pushcfunction(L, w_Unindent);
-	lua_setfield(L, -2, "Unindent");
-	lua_pushcfunction(L, w_Combo);
-	lua_setfield(L, -2, "Combo");
-	lua_pushcfunction(L, w_SetScrollX);
-	lua_setfield(L, -2, "SetScrollX");
-	lua_pushcfunction(L, w_ImageButton);
-	lua_setfield(L, -2, "ImageButton");
-	lua_pushcfunction(L, w_PopAllowKeyboardFocus);
-	lua_setfield(L, -2, "PopAllowKeyboardFocus");
-	lua_pushcfunction(L, w_EndPopup);
-	lua_setfield(L, -2, "EndPopup");
-	lua_pushcfunction(L, w_SetNextWindowBgAlpha);
-	lua_setfield(L, -2, "SetNextWindowBgAlpha");
-	lua_pushcfunction(L, w_SliderInt4);
-	lua_setfield(L, -2, "SliderInt4");
-	lua_pushcfunction(L, w_SetWindowFocus);
-	lua_setfield(L, -2, "SetWindowFocus");
-	lua_pushcfunction(L, w_PushClipRect);
-	lua_setfield(L, -2, "PushClipRect");
-	lua_pushcfunction(L, w_LogToClipboard);
-	lua_setfield(L, -2, "LogToClipboard");
-	lua_pushcfunction(L, w_IsWindowCollapsed);
-	lua_setfield(L, -2, "IsWindowCollapsed");
-	lua_pushcfunction(L, w_IsMouseReleased);
-	lua_setfield(L, -2, "IsMouseReleased");
-	lua_pushcfunction(L, w_CreateContext);
-	lua_setfield(L, -2, "CreateContext");
-	lua_pushcfunction(L, w_NewLine);
-	lua_setfield(L, -2, "NewLine");
-	lua_pushcfunction(L, w_SetWindowSize);
-	lua_setfield(L, -2, "SetWindowSize");
-	lua_pushcfunction(L, w_SetCursorScreenPos);
-	lua_setfield(L, -2, "SetCursorScreenPos");
-	lua_pushcfunction(L, w_InputInt2);
-	lua_setfield(L, -2, "InputInt2");
-	lua_pushcfunction(L, w_Bullet);
-	lua_setfield(L, -2, "Bullet");
-	lua_pushcfunction(L, w_InputInt);
-	lua_setfield(L, -2, "InputInt");
-	lua_pushcfunction(L, w_SliderAngle);
-	lua_setfield(L, -2, "SliderAngle");
-	lua_pushcfunction(L, w_GetWindowDrawList);
-	lua_setfield(L, -2, "GetWindowDrawList");
-	lua_pushcfunction(L, w_ColorConvertU32ToFloat4);
-	lua_setfield(L, -2, "ColorConvertU32ToFloat4");
-	lua_pushcfunction(L, w_GetWindowDpiScale);
-	lua_setfield(L, -2, "GetWindowDpiScale");
-	lua_pushcfunction(L, w_GetColumnsCount);
-	lua_setfield(L, -2, "GetColumnsCount");
-	lua_pushcfunction(L, w_IsPopupOpen);
-	lua_setfield(L, -2, "IsPopupOpen");
-	lua_pushcfunction(L, w_SaveIniSettingsToDisk);
-	lua_setfield(L, -2, "SaveIniSettingsToDisk");
-	lua_pushcfunction(L, w_SetWindowCollapsed);
-	lua_setfield(L, -2, "SetWindowCollapsed");
-	lua_pushcfunction(L, w_TreePop);
-	lua_setfield(L, -2, "TreePop");
-	lua_pushcfunction(L, w_MenuItem);
-	lua_setfield(L, -2, "MenuItem");
-	lua_pushcfunction(L, w_GetFontTexUvWhitePixel);
-	lua_setfield(L, -2, "GetFontTexUvWhitePixel");
-	lua_pushcfunction(L, w_LogButtons);
-	lua_setfield(L, -2, "LogButtons");
-	lua_pushcfunction(L, w_GetWindowDockID);
-	lua_setfield(L, -2, "GetWindowDockID");
-	lua_pushcfunction(L, w_SetColorEditOptions);
-	lua_setfield(L, -2, "SetColorEditOptions");
-	lua_pushcfunction(L, w_GetMouseCursor);
-	lua_setfield(L, -2, "GetMouseCursor");
-	lua_pushcfunction(L, w_PopID);
-	lua_setfield(L, -2, "PopID");
-	lua_pushcfunction(L, w_Value);
-	lua_setfield(L, -2, "Value");
-	lua_pushcfunction(L, w_OpenPopup);
-	lua_setfield(L, -2, "OpenPopup");
-	lua_pushcfunction(L, w_ColorPicker3);
-	lua_setfield(L, -2, "ColorPicker3");
-	lua_pushcfunction(L, w_SetMouseCursor);
-	lua_setfield(L, -2, "SetMouseCursor");
-	lua_pushcfunction(L, w_EndTabBar);
-	lua_setfield(L, -2, "EndTabBar");
-	lua_pushcfunction(L, w_InputFloat2);
-	lua_setfield(L, -2, "InputFloat2");
-	lua_pushcfunction(L, w_SliderFloat);
-	lua_setfield(L, -2, "SliderFloat");
-	lua_pushcfunction(L, w_SliderFloat4);
-	lua_setfield(L, -2, "SliderFloat4");
-	lua_pushcfunction(L, w_GetCursorPos);
-	lua_setfield(L, -2, "GetCursorPos");
-	lua_pushcfunction(L, w_InvisibleButton);
-	lua_setfield(L, -2, "InvisibleButton");
-	lua_pushcfunction(L, w_EndDragDropTarget);
-	lua_setfield(L, -2, "EndDragDropTarget");
-	lua_pushcfunction(L, w_BeginDragDropTarget);
-	lua_setfield(L, -2, "BeginDragDropTarget");
-	lua_pushcfunction(L, w_IsMouseDoubleClicked);
-	lua_setfield(L, -2, "IsMouseDoubleClicked");
-	lua_pushcfunction(L, w_SetNextItemOpen);
-	lua_setfield(L, -2, "SetNextItemOpen");
-	lua_pushcfunction(L, w_GetWindowWidth);
-	lua_setfield(L, -2, "GetWindowWidth");
-	lua_pushcfunction(L, w_SetNextWindowCollapsed);
-	lua_setfield(L, -2, "SetNextWindowCollapsed");
-	lua_pushcfunction(L, w_TextWrapped);
-	lua_setfield(L, -2, "TextWrapped");
-	lua_pushcfunction(L, w_GetStyleColorName);
-	lua_setfield(L, -2, "GetStyleColorName");
-	lua_pushcfunction(L, w_ColorEdit4);
-	lua_setfield(L, -2, "ColorEdit4");
-	lua_pushcfunction(L, w_BeginCombo);
-	lua_setfield(L, -2, "BeginCombo");
-	lua_pushcfunction(L, w_SmallButton);
-	lua_setfield(L, -2, "SmallButton");
-	lua_pushcfunction(L, w_IsMouseClicked);
-	lua_setfield(L, -2, "IsMouseClicked");
-	lua_pushcfunction(L, w_InputFloat4);
-	lua_setfield(L, -2, "InputFloat4");
-	lua_pushcfunction(L, w_BeginPopupContextWindow);
-	lua_setfield(L, -2, "BeginPopupContextWindow");
-	lua_pushcfunction(L, w_Checkbox);
-	lua_setfield(L, -2, "Checkbox");
-	lua_pushcfunction(L, w_SliderFloat3);
-	lua_setfield(L, -2, "SliderFloat3");
-	lua_pushcfunction(L, w_VSliderInt);
-	lua_setfield(L, -2, "VSliderInt");
-	lua_pushcfunction(L, w_TreeNodeEx);
-	lua_setfield(L, -2, "TreeNodeEx");
-	lua_pushcfunction(L, w_ShowFontSelector);
-	lua_setfield(L, -2, "ShowFontSelector");
-	lua_pushcfunction(L, w_SetScrollHereX);
-	lua_setfield(L, -2, "SetScrollHereX");
-	lua_pushcfunction(L, w_PushAllowKeyboardFocus);
-	lua_setfield(L, -2, "PushAllowKeyboardFocus");
-	lua_pushcfunction(L, w_PopStyleVar);
-	lua_setfield(L, -2, "PopStyleVar");
-	lua_pushcfunction(L, w_IsKeyReleased);
-	lua_setfield(L, -2, "IsKeyReleased");
-	lua_pushcfunction(L, w_IsMouseDragging);
-	lua_setfield(L, -2, "IsMouseDragging");
-	lua_pushcfunction(L, w_InputInt4);
-	lua_setfield(L, -2, "InputInt4");
-	lua_pushcfunction(L, w_IsKeyDown);
-	lua_setfield(L, -2, "IsKeyDown");
-	lua_pushcfunction(L, w_SameLine);
-	lua_setfield(L, -2, "SameLine");
-	lua_pushcfunction(L, w_Begin);
-	lua_setfield(L, -2, "Begin");
-	lua_pushcfunction(L, w_BeginMenu);
-	lua_setfield(L, -2, "BeginMenu");
-	lua_pushcfunction(L, w_ShowUserGuide);
-	lua_setfield(L, -2, "ShowUserGuide");
-	lua_pushcfunction(L, w_DragFloat);
-	lua_setfield(L, -2, "DragFloat");
-	lua_pushcfunction(L, w_InputDouble);
-	lua_setfield(L, -2, "InputDouble");
-	lua_pushcfunction(L, w_DragFloat3);
-	lua_setfield(L, -2, "DragFloat3");
-	lua_pushcfunction(L, w_SliderInt2);
-	lua_setfield(L, -2, "SliderInt2");
-	lua_pushcfunction(L, w_PopFont);
-	lua_setfield(L, -2, "PopFont");
-	lua_pushcfunction(L, w_IsItemHovered);
-	lua_setfield(L, -2, "IsItemHovered");
-	lua_pushcfunction(L, w_GetTextLineHeightWithSpacing);
-	lua_setfield(L, -2, "GetTextLineHeightWithSpacing");
-	lua_pushcfunction(L, w_BeginTabBar);
-	lua_setfield(L, -2, "BeginTabBar");
-	lua_pushcfunction(L, w_SetTabItemClosed);
-	lua_setfield(L, -2, "SetTabItemClosed");
-	lua_pushcfunction(L, w_GetStyle);
-	lua_setfield(L, -2, "GetStyle");
-	lua_pushcfunction(L, w_DragInt2);
-	lua_setfield(L, -2, "DragInt2");
-	lua_pushcfunction(L, w_ListBoxFooter);
-	lua_setfield(L, -2, "ListBoxFooter");
-	lua_pushcfunction(L, w_StyleColorsClassic);
-	lua_setfield(L, -2, "StyleColorsClassic");
-	lua_pushcfunction(L, w_BeginMainMenuBar);
-	lua_setfield(L, -2, "BeginMainMenuBar");
-	lua_pushcfunction(L, w_GetFrameHeight);
-	lua_setfield(L, -2, "GetFrameHeight");
-	lua_pushcfunction(L, w_DragIntRange2);
-	lua_setfield(L, -2, "DragIntRange2");
-	lua_pushcfunction(L, w_GetScrollY);
-	lua_setfield(L, -2, "GetScrollY");
-	lua_pushcfunction(L, w_GetCurrentContext);
-	lua_setfield(L, -2, "GetCurrentContext");
-	lua_pushcfunction(L, w_IsMousePosValid);
-	lua_setfield(L, -2, "IsMousePosValid");
-	lua_pushcfunction(L, w_IsWindowDocked);
-	lua_setfield(L, -2, "IsWindowDocked");
-	lua_pushcfunction(L, w_GetFrameHeightWithSpacing);
-	lua_setfield(L, -2, "GetFrameHeightWithSpacing");
-	lua_pushcfunction(L, w_NextColumn);
-	lua_setfield(L, -2, "NextColumn");
-	lua_pushcfunction(L, w_EndFrame);
-	lua_setfield(L, -2, "EndFrame");
-	lua_pushcfunction(L, w_PopItemWidth);
-	lua_setfield(L, -2, "PopItemWidth");
-	lua_pushcfunction(L, w_IsWindowAppearing);
-	lua_setfield(L, -2, "IsWindowAppearing");
-	lua_pushcfunction(L, w_EndCombo);
-	lua_setfield(L, -2, "EndCombo");
-	lua_pushcfunction(L, w_IsAnyMouseDown);
-	lua_setfield(L, -2, "IsAnyMouseDown");
-	lua_pushcfunction(L, w_LogToFile);
-	lua_setfield(L, -2, "LogToFile");
-	lua_pushcfunction(L, w_CaptureKeyboardFromApp);
-	lua_setfield(L, -2, "CaptureKeyboardFromApp");
-	lua_pushcfunction(L, w_BeginDragDropSource);
-	lua_setfield(L, -2, "BeginDragDropSource");
-	lua_pushcfunction(L, w_Columns);
-	lua_setfield(L, -2, "Columns");
-	lua_pushcfunction(L, w_ListBoxHeaderItems);
-	lua_setfield(L, -2, "ListBoxHeaderItems");
-	lua_pushcfunction(L, w_ListBoxHeaderXY);
-	lua_setfield(L, -2, "ListBoxHeaderXY");
-	lua_pushcfunction(L, w_GetTime);
-	lua_setfield(L, -2, "GetTime");
-	lua_pushcfunction(L, w_SetNextWindowDockID);
-	lua_setfield(L, -2, "SetNextWindowDockID");
-	lua_pushcfunction(L, w_GetColumnWidth);
-	lua_setfield(L, -2, "GetColumnWidth");
-	lua_pushcfunction(L, w_InputTextWithHint);
-	lua_setfield(L, -2, "InputTextWithHint");
-	lua_pushcfunction(L, w_InputTextMultiline);
-	lua_setfield(L, -2, "InputTextMultiline");
-	lua_pushcfunction(L, w_InputText);
-	lua_setfield(L, -2, "InputText");
-	lua_pushcfunction(L, w_IsItemFocused);
-	lua_setfield(L, -2, "IsItemFocused");
-	lua_pushcfunction(L, w_PopButtonRepeat);
-	lua_setfield(L, -2, "PopButtonRepeat");
-	lua_pushcfunction(L, w_BeginTooltip);
-	lua_setfield(L, -2, "BeginTooltip");
-	lua_pushcfunction(L, w_SetNextWindowContentSize);
-	lua_setfield(L, -2, "SetNextWindowContentSize");
-	lua_pushcfunction(L, w_SetScrollFromPosX);
-	lua_setfield(L, -2, "SetScrollFromPosX");
-	lua_pushcfunction(L, w_ResetMouseDragDelta);
-	lua_setfield(L, -2, "ResetMouseDragDelta");
-	lua_pushcfunction(L, w_End);
-	lua_setfield(L, -2, "End");
-	lua_pushcfunction(L, w_LoadIniSettingsFromDisk);
-	lua_setfield(L, -2, "LoadIniSettingsFromDisk");
-	lua_pushcfunction(L, w_StyleColorsLight);
-	lua_setfield(L, -2, "StyleColorsLight");
-	lua_pushcfunction(L, w_SetScrollY);
-	lua_setfield(L, -2, "SetScrollY");
-	lua_pushcfunction(L, w_IsWindowFocused);
-	lua_setfield(L, -2, "IsWindowFocused");
-	lua_pushcfunction(L, w_GetMouseDragDelta);
-	lua_setfield(L, -2, "GetMouseDragDelta");
-	lua_pushcfunction(L, w_TextColored);
-	lua_setfield(L, -2, "TextColored");
-	lua_pushcfunction(L, w_SetItemDefaultFocus);
-	lua_setfield(L, -2, "SetItemDefaultFocus");
-	lua_pushcfunction(L, w_GetKeyPressedAmount);
-	lua_setfield(L, -2, "GetKeyPressedAmount");
-	lua_pushcfunction(L, w_SetItemAllowOverlap);
-	lua_setfield(L, -2, "SetItemAllowOverlap");
-	lua_pushcfunction(L, w_LabelText);
-	lua_setfield(L, -2, "LabelText");
-	lua_pushcfunction(L, w_ShowDemoWindow);
-	lua_setfield(L, -2, "ShowDemoWindow");
-	lua_pushcfunction(L, w_StyleColorsDark);
-	lua_setfield(L, -2, "StyleColorsDark");
-	lua_pushcfunction(L, w_SetCursorPosY);
-	lua_setfield(L, -2, "SetCursorPosY");
-	lua_pushcfunction(L, w_IsItemActive);
-	lua_setfield(L, -2, "IsItemActive");
-	lua_pushcfunction(L, w_Spacing);
-	lua_setfield(L, -2, "Spacing");
-	lua_pushcfunction(L, w_Button);
-	lua_setfield(L, -2, "Button");
-	lua_pushcfunction(L, w_BeginMenuBar);
-	lua_setfield(L, -2, "BeginMenuBar");
-	lua_pushcfunction(L, w_Dummy);
-	lua_setfield(L, -2, "Dummy");
-	lua_pushcfunction(L, w_SetNextItemWidth);
-	lua_setfield(L, -2, "SetNextItemWidth");
-	lua_pushcfunction(L, w_PushButtonRepeat);
-	lua_setfield(L, -2, "PushButtonRepeat");
-	lua_pushcfunction(L, w_PushItemWidth);
-	lua_setfield(L, -2, "PushItemWidth");
-	lua_pushcfunction(L, w_CalcItemWidth);
-	lua_setfield(L, -2, "CalcItemWidth");
-	lua_pushcfunction(L, w_BeginPopupModal);
-	lua_setfield(L, -2, "BeginPopupModal");
-	lua_pushcfunction(L, w_OpenPopupOnItemClick);
-	lua_setfield(L, -2, "OpenPopupOnItemClick");
-	lua_pushcfunction(L, w_CaptureMouseFromApp);
-	lua_setfield(L, -2, "CaptureMouseFromApp");
-	lua_pushcfunction(L, w_Separator);
-	lua_setfield(L, -2, "Separator");
-	lua_pushcfunction(L, w_DestroyPlatformWindows);
-	lua_setfield(L, -2, "DestroyPlatformWindows");
-	lua_pushcfunction(L, w_BeginGroup);
-	lua_setfield(L, -2, "BeginGroup");
-	lua_pushcfunction(L, w_SetNextWindowViewport);
-	lua_setfield(L, -2, "SetNextWindowViewport");
-	lua_pushcfunction(L, w_GetStyleColorVec4);
-	lua_setfield(L, -2, "GetStyleColorVec4");
-	lua_pushcfunction(L, w_ShowMetricsWindow);
-	lua_setfield(L, -2, "ShowMetricsWindow");
-	lua_pushcfunction(L, w_EndTooltip);
-	lua_setfield(L, -2, "EndTooltip");
-	lua_pushcfunction(L, w_ColorEdit3);
-	lua_setfield(L, -2, "ColorEdit3");
-	lua_pushcfunction(L, w_GetScrollMaxX);
-	lua_setfield(L, -2, "GetScrollMaxX");
-	lua_pushcfunction(L, w_GetContentRegionAvail);
-	lua_setfield(L, -2, "GetContentRegionAvail");
-	lua_pushcfunction(L, w_BeginPopup);
-	lua_setfield(L, -2, "BeginPopup");
-	lua_pushcfunction(L, w_IsItemVisible);
-	lua_setfield(L, -2, "IsItemVisible");
-	lua_pushcfunction(L, w_IsAnyItemActive);
-	lua_setfield(L, -2, "IsAnyItemActive");
-	lua_pushcfunction(L, w_GetFrameCount);
-	lua_setfield(L, -2, "GetFrameCount");
-	lua_pushcfunction(L, w_Indent);
-	lua_setfield(L, -2, "Indent");
-	lua_pushcfunction(L, w_CalcListClipping);
-	lua_setfield(L, -2, "CalcListClipping");
-	lua_pushcfunction(L, w_DestroyContext);
-	lua_setfield(L, -2, "DestroyContext");
-	lua_pushcfunction(L, w_TextUnformatted);
-	lua_setfield(L, -2, "TextUnformatted");
-	lua_pushcfunction(L, w_EndMainMenuBar);
-	lua_setfield(L, -2, "EndMainMenuBar");
-	lua_pushcfunction(L, w_ListBox);
-	lua_setfield(L, -2, "ListBox");
-	lua_pushcfunction(L, w_ArrowButton);
-	lua_setfield(L, -2, "ArrowButton");
-	lua_pushcfunction(L, w_BeginPopupContextItem);
-	lua_setfield(L, -2, "BeginPopupContextItem");
-	lua_pushcfunction(L, w_GetCursorStartPos);
-	lua_setfield(L, -2, "GetCursorStartPos");
-	lua_pushcfunction(L, w_SetWindowFontScale);
-	lua_setfield(L, -2, "SetWindowFontScale");
-	lua_pushcfunction(L, w_GetBackgroundDrawList);
-	lua_setfield(L, -2, "GetBackgroundDrawList");
-	lua_pushcfunction(L, w_IsItemToggledOpen);
-	lua_setfield(L, -2, "IsItemToggledOpen");
-	lua_pushcfunction(L, w_SetCurrentContext);
-	lua_setfield(L, -2, "SetCurrentContext");
-	lua_pushcfunction(L, w_GetWindowContentRegionWidth);
-	lua_setfield(L, -2, "GetWindowContentRegionWidth");
-	lua_pushcfunction(L, w_TreeNode);
-	lua_setfield(L, -2, "TreeNode");
-	lua_pushcfunction(L, w_LogText);
-	lua_setfield(L, -2, "LogText");
-	lua_pushcfunction(L, w_BulletText);
-	lua_setfield(L, -2, "BulletText");
-	lua_pushcfunction(L, w_Selectable);
-	lua_setfield(L, -2, "Selectable");
-	lua_pushcfunction(L, w_DragInt4);
-	lua_setfield(L, -2, "DragInt4");
-	lua_pushcfunction(L, w_ShowStyleSelector);
-	lua_setfield(L, -2, "ShowStyleSelector");
-	lua_pushcfunction(L, w_GetCursorScreenPos);
-	lua_setfield(L, -2, "GetCursorScreenPos");
-	lua_pushcfunction(L, w_GetScrollMaxY);
-	lua_setfield(L, -2, "GetScrollMaxY");
-	lua_pushcfunction(L, w_PushID);
-	lua_setfield(L, -2, "PushID");
-	lua_pushcfunction(L, w_PopStyleColor);
-	lua_setfield(L, -2, "PopStyleColor");
-	lua_pushcfunction(L, w_BeginPopupContextVoid);
-	lua_setfield(L, -2, "BeginPopupContextVoid");
-	lua_pushcfunction(L, w_SetScrollFromPosY);
-	lua_setfield(L, -2, "SetScrollFromPosY");
-	lua_pushcfunction(L, w_GetMousePosOnOpeningCurrentPopup);
-	lua_setfield(L, -2, "GetMousePosOnOpeningCurrentPopup");
-	lua_pushcfunction(L, w_SetCursorPos);
-	lua_setfield(L, -2, "SetCursorPos");
-	lua_pushcfunction(L, w_DragInt);
-	lua_setfield(L, -2, "DragInt");
-	lua_pushcfunction(L, w_NewFrame);
-	lua_setfield(L, -2, "NewFrame");
-	lua_pushcfunction(L, w_IsAnyItemHovered);
-	lua_setfield(L, -2, "IsAnyItemHovered");
-	lua_pushcfunction(L, w_EndChild);
-	lua_setfield(L, -2, "EndChild");
-	lua_pushcfunction(L, w_TreePush);
-	lua_setfield(L, -2, "TreePush");
-	lua_pushcfunction(L, w_DragFloat4);
-	lua_setfield(L, -2, "DragFloat4");
-	lua_pushcfunction(L, w_EndMenu);
-	lua_setfield(L, -2, "EndMenu");
-	lua_pushcfunction(L, w_SliderInt);
-	lua_setfield(L, -2, "SliderInt");
-	lua_pushcfunction(L, w_EndTabItem);
-	lua_setfield(L, -2, "EndTabItem");
-	lua_pushcfunction(L, w_InputInt3);
-	lua_setfield(L, -2, "InputInt3");
-	lua_pushcfunction(L, w_GetTextLineHeight);
-	lua_setfield(L, -2, "GetTextLineHeight");
-	lua_pushcfunction(L, w_SetTooltip);
-	lua_setfield(L, -2, "SetTooltip");
-	lua_pushcfunction(L, w_TextDisabled);
-	lua_setfield(L, -2, "TextDisabled");
-	lua_pushcfunction(L, w_GetCursorPosY);
-	lua_setfield(L, -2, "GetCursorPosY");
-	lua_pushcfunction(L, w_SetNextWindowSize);
-	lua_setfield(L, -2, "SetNextWindowSize");
-	lua_pushcfunction(L, w_GetColumnIndex);
-	lua_setfield(L, -2, "GetColumnIndex");
-	lua_pushcfunction(L, w_PushTextWrapPos);
-	lua_setfield(L, -2, "PushTextWrapPos");
-	lua_pushcfunction(L, w_GetWindowContentRegionMax);
-	lua_setfield(L, -2, "GetWindowContentRegionMax");
-	lua_pushcfunction(L, w_CalcTextSize);
-	lua_setfield(L, -2, "CalcTextSize");
-	lua_pushcfunction(L, w_GetScrollX);
-	lua_setfield(L, -2, "GetScrollX");
-	lua_pushcfunction(L, w_LogFinish);
-	lua_setfield(L, -2, "LogFinish");
-	lua_pushcfunction(L, w_EndGroup);
-	lua_setfield(L, -2, "EndGroup");
-	lua_pushcfunction(L, w_PopClipRect);
-	lua_setfield(L, -2, "PopClipRect");
-	lua_pushcfunction(L, w_SetKeyboardFocusHere);
-	lua_setfield(L, -2, "SetKeyboardFocusHere");
-	lua_pushcfunction(L, w_Image);
-	lua_setfield(L, -2, "Image");
-	lua_pushcfunction(L, w_ColorPicker4);
-	lua_setfield(L, -2, "ColorPicker4");
-	lua_pushcfunction(L, w_IsItemDeactivated);
-	lua_setfield(L, -2, "IsItemDeactivated");
-	lua_pushcfunction(L, w_IsAnyItemFocused);
-	lua_setfield(L, -2, "IsAnyItemFocused");
-	lua_pushcfunction(L, w_GetItemRectMax);
-	lua_setfield(L, -2, "GetItemRectMax");
-	lua_pushcfunction(L, w_Text);
-	lua_setfield(L, -2, "Text");
-
-	luaL_newmetatable(L, "ImDrawList");
-	lua_pushcfunction(L, w_ImDrawList_PathArcTo);
-	lua_setfield(L, -2, "PathArcTo");
-	lua_pushcfunction(L, w_ImDrawList_PopTextureID);
-	lua_setfield(L, -2, "PopTextureID");
-	lua_pushcfunction(L, w_ImDrawList_AddTriangle);
-	lua_setfield(L, -2, "AddTriangle");
-	lua_pushcfunction(L, w_ImDrawList_CloneOutput);
-	lua_setfield(L, -2, "CloneOutput");
-	lua_pushcfunction(L, w_ImDrawList_AddNgonFilled);
-	lua_setfield(L, -2, "AddNgonFilled");
-	lua_pushcfunction(L, w_ImDrawList_PushClipRectFullScreen);
-	lua_setfield(L, -2, "PushClipRectFullScreen");
-	lua_pushcfunction(L, w_ImDrawList_PathArcToFast);
-	lua_setfield(L, -2, "PathArcToFast");
-	lua_pushcfunction(L, w_ImDrawList_PrimReserve);
-	lua_setfield(L, -2, "PrimReserve");
-	lua_pushcfunction(L, w_ImDrawList_PathBezierCurveTo);
-	lua_setfield(L, -2, "PathBezierCurveTo");
-	lua_pushcfunction(L, w_ImDrawList_AddQuadFilled);
-	lua_setfield(L, -2, "AddQuadFilled");
-	lua_pushcfunction(L, w_ImDrawList_PathRect);
-	lua_setfield(L, -2, "PathRect");
-	lua_pushcfunction(L, w_ImDrawList_Clear);
-	lua_setfield(L, -2, "Clear");
-	lua_pushcfunction(L, w_ImDrawList_ClearFreeMemory);
-	lua_setfield(L, -2, "ClearFreeMemory");
-	lua_pushcfunction(L, w_ImDrawList_UpdateTextureID);
-	lua_setfield(L, -2, "UpdateTextureID");
-	lua_pushcfunction(L, w_ImDrawList_AddDrawCmd);
-	lua_setfield(L, -2, "AddDrawCmd");
-	lua_pushcfunction(L, w_ImDrawList_AddTriangleFilled);
-	lua_setfield(L, -2, "AddTriangleFilled");
-	lua_pushcfunction(L, w_ImDrawList_AddQuad);
-	lua_setfield(L, -2, "AddQuad");
-	lua_pushcfunction(L, w_ImDrawList_AddText);
-	lua_setfield(L, -2, "AddText");
-	lua_pushcfunction(L, w_ImDrawList_AddLine);
-	lua_setfield(L, -2, "AddLine");
-	lua_pushcfunction(L, w_ImDrawList_AddRectFilledMultiColor);
-	lua_setfield(L, -2, "AddRectFilledMultiColor");
-	lua_pushcfunction(L, w_ImDrawList_PushTextureID);
-	lua_setfield(L, -2, "PushTextureID");
-	lua_pushcfunction(L, w_ImDrawList_AddRect);
-	lua_setfield(L, -2, "AddRect");
-	lua_pushcfunction(L, w_ImDrawList_PrimUnreserve);
-	lua_setfield(L, -2, "PrimUnreserve");
-	lua_pushcfunction(L, w_ImDrawList_AddNgon);
-	lua_setfield(L, -2, "AddNgon");
-	lua_pushcfunction(L, w_ImDrawList_PushClipRect);
-	lua_setfield(L, -2, "PushClipRect");
-	lua_pushcfunction(L, w_ImDrawList_PrimRect);
-	lua_setfield(L, -2, "PrimRect");
-	lua_pushcfunction(L, w_ImDrawList_AddCircle);
-	lua_setfield(L, -2, "AddCircle");
-	lua_pushcfunction(L, w_ImDrawList_PopClipRect);
-	lua_setfield(L, -2, "PopClipRect");
-	lua_pushcfunction(L, w_ImDrawList_AddCircleFilled);
-	lua_setfield(L, -2, "AddCircleFilled");
-	lua_pushcfunction(L, w_ImDrawList_AddBezierCurve);
-	lua_setfield(L, -2, "AddBezierCurve");
-	lua_pushcfunction(L, w_ImDrawList_AddImageRounded);
-	lua_setfield(L, -2, "AddImageRounded");
-	lua_pushcfunction(L, w_ImDrawList_AddImageQuad);
-	lua_setfield(L, -2, "AddImageQuad");
-	lua_pushcfunction(L, w_ImDrawList_AddImage);
-	lua_setfield(L, -2, "AddImage");
-	lua_pushcfunction(L, w_ImDrawList_AddRectFilled);
-	lua_setfield(L, -2, "AddRectFilled");
-	lua_pushcfunction(L, w_ImDrawList_UpdateClipRect);
-	lua_setfield(L, -2, "UpdateClipRect");
-}
-
-void wrap_imgui::createImguiTable(lua_State* L)
-{
-	lua_createtable(L, 0, 286); 
-	addImguiWrappers(L);
-}
-
-// End API entry points }}}
