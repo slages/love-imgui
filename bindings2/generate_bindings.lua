@@ -144,7 +144,11 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 			else
 				table.insert(realargs, arg.name)
 			end
-			table.insert(docargs, arg.name)
+			if arg.name == "in" then
+				table.insert(docargs, "input") -- `in` is a keyword in wren
+			else
+				table.insert(docargs, arg.name)
+			end
 			arity = arity + 1
 			if not arg.default then
 				requiredArity = requiredArity + 1

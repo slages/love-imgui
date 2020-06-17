@@ -82,6 +82,8 @@ do
 		["float"] = simple_arg("wrenExGetSlotFloat", "wrenExGetSlotFloatDefault"),
 		["ImU32"] = static_cast_arg("ImU32", "wrenExGetSlotUInt", "wrenExGetSlotUIntDefault"),
 		["ImGuiID"] = static_cast_arg("ImGuiID", "wrenExGetSlotInt", "wrenExGetSlotIntDefault"),
+		["const ImVec2&"] = simple_arg("WrapImVec2::getSlot", "WrapImVec2::getSlotDefault"),
+		["const ImVec4&"] = simple_arg("WrapImVec4::getSlot", "WrapImVec4::getSlotDefault"),
 		--[[
 		["const ImVec2*"] = function(buf, arg, i, _)
 			local name = arg.name
@@ -97,36 +99,6 @@ do
 				return i, "stop"
 			end
 		end,
-		["const ImVec2&"] = function(buf, arg, i, _)
-			local name = arg.name
-			if arg.default then
-				buf:addf("auto %s = %s;", name, arg.default)
-				buf:addf("%s.x = luax_optfloat(vm, %d, %s.x);", name, i, name)
-				buf:addf("%s.y = luax_optfloat(vm, %d, %s.y);", name, i+1, name)
-			else
-				buf:addf("ImVec2 %s;", name)
-				buf:addf("%s.x = luax_checkfloat(vm, %d);", name, i)
-				buf:addf("%s.y = luax_checkfloat(vm, %d);", name, i+1)
-			end
-			return i+2
-		end,
-		["const ImVec4&"] = function(buf, arg, i, _)
-			local name = arg.name
-			if arg.default then
-				buf:addf("ImVec4 %s = %s;", name, arg.default)
-				buf:addf("%s.x = luax_optfloat(vm, %d, %s.x);", name, i, name)
-				buf:addf("%s.y = luax_optfloat(vm, %d, %s.y);", name, i+1, name)
-				buf:addf("%s.z = luax_optfloat(vm, %d, %s.z);", name, i+2, name)
-				buf:addf("%s.w = luax_optfloat(vm, %d, %s.w);", name, i+3, name)
-			else
-				buf:addf("ImVec4 %s;", name)
-				buf:addf("%s.x = luax_checkfloat(vm, %d);", name, i)
-				buf:addf("%s.y = luax_checkfloat(vm, %d);", name, i+1)
-				buf:addf("%s.z = luax_checkfloat(vm, %d);", name, i+2)
-				buf:addf("%s.w = luax_checkfloat(vm, %d);", name, i+3)
-			end
-			return i + 4
-		end,
 		["const std::vector<const char*>&"] = function(buf, arg, i, _)
 			buf:addf("auto %s = luax_checkstringvector(vm, %d);", arg.name, i)
 			return i + 1
@@ -135,13 +107,15 @@ do
 			buf:addf("std::vector<float> %s = luax_checkfloatvector(vm, %d);", arg.name, i)
 			return i+1
 		end,
+		--]]
 		["ImGuiInputTextCallback"] = function(buf, arg, i, _)
 			local name = arg.name
-			buf:addf("ImGuiInputTextCallback %s = callLuaInputTextCallback;", name)
-			buf:addf("void* user_data = luax_getImguiInputTextCallback(vm, %d);", i)
-			buf:addf("if (!user_data) { %s = nullptr; }", name)
+			buf:addf("ImGuiInputTextCallback %s = nullptr; // TODO", name);
+			buf:add("void* user_data = nullptr;")
+			--buf:addf("ImGuiInputTextCallback %s = callLuaInputTextCallback;", name)
+			--buf:addf("void* user_data = luax_getImguiInputTextCallback(vm, %d);", i)
+			--buf:addf("if (!user_data) { %s = nullptr; }", name)
 		end,
-		--]]
 
 		["ImGuiDir"] = enum_arg("ImGuiDir", "getImGuiDirFromString"),
 		["ImGuiCol"] = enum_arg("ImGuiCol", "getImGuiColFromString"),
@@ -179,11 +153,7 @@ do
 		["unsigned int*"] = box_arg("unsigned int", "double"),
 		["float*"] = box_arg("float", "double"),
 		["double*"] = box_arg("double", "double"),
-		--["int*"] = simple_out_arg("int", "wrenExGetSlotInt", "wrenExGetSlotIntDefault"),
-		--["double*"] = simple_out_arg("double", "wrenGetSlotDouble", "wrenExGetSlotDoubleDefault"),
-		--["unsigned int*"] = static_cast_out_arg("unsigned int", "wrenExGetSlotUInt", "wrenExGetSlotUIntDefault"),
-		--["float*"] = static_cast_out_arg("float", "wrenExGetSlotFloat", "wrenExGetSlotFloatDefault"),
-		--["std::string*"] = simple_out_arg("std::string", "wrenGetSlotString", "wrenExGetSlotStringDefault"),
+		["std::string*"] = box_arg("std::string", "std::string"),
 		--["int[2]"] = array_out_arg(2, "int", "wrenExGetSlotInt"),
 		--["int[3]"] = array_out_arg(3, "int", "wrenExGetSlotInt"),
 		--["int[4]"] = array_out_arg(4, "int", "wrenExGetSlotInt"),
@@ -245,27 +215,9 @@ do
 			buf:addf("wrenSetSlotBytes(vm, %s.c_str(), %s.size());", name, name)
 			return i + 1
 		end,
-		--[[
-		["ImVec2"] = function(buf, name, i)
-			buf:addf("lua_pushnumber(vm, %s.x);", name)
-			buf:addf("lua_pushnumber(vm, %s.y);", name)
-			return i + 2
-		end,
-		["ImVec4"] = function(buf, name, i)
-			buf:addf("lua_pushnumber(vm, %s.x);", name)
-			buf:addf("lua_pushnumber(vm, %s.y);", name)
-			buf:addf("lua_pushnumber(vm, %s.z);", name)
-			buf:addf("lua_pushnumber(vm, %s.w);", name)
-			return i + 2
-		end,
-		["const ImVec4&"] = function(buf, name, i)
-			buf:addf("lua_pushnumber(vm, %s.x);", name)
-			buf:addf("lua_pushnumber(vm, %s.y);", name)
-			buf:addf("lua_pushnumber(vm, %s.z);", name)
-			buf:addf("lua_pushnumber(vm, %s.w);", name)
-			return i + 2
-		end,
-		--]]
+		["ImVec2"] = simple_return("WrapImVec2::setSlot"),
+		["ImVec4"] = simple_return("WrapImVec4::setSlot"),
+		["const ImVec4&"] = simple_return("WrapImVec4::setSlot"),
 	}
 	local unrecognizedReturnType = {}
 	function Types.push(buf, name, ctype, i)

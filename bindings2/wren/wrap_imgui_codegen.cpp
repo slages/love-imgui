@@ -23,72 +23,72 @@ namespace {
 // End Enums }}}
 
 // Helpers {{{
-const char* wrenExGetSlotStringDefault(WrenVM* vm, int narg, const char* d)
+const char* wrenExGetSlotStringDefault(WrenVM* vm, int slotIdx, const char* d)
 {
-	if(wrenGetSlotCount(vm) > narg) {
-		return wrenGetSlotString(vm, narg);
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenGetSlotString(vm, slotIdx);
 	} else {
 		return d;
 	}
 }
 
-bool wrenExGetSlotBoolDefault(WrenVM* vm, int narg, bool d)
+bool wrenExGetSlotBoolDefault(WrenVM* vm, int slotIdx, bool d)
 {
-	if(wrenGetSlotCount(vm) > narg) {
-		return wrenGetSlotBool(vm, narg);
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenGetSlotBool(vm, slotIdx);
 	} else {
 		return d;
 	}
 }
 
-int wrenExGetSlotInt(WrenVM* vm, int narg)
+int wrenExGetSlotInt(WrenVM* vm, int slotIdx)
 {
 	// TODO: check integralness
-	return static_cast<int>(wrenGetSlotDouble(vm, narg));
+	return static_cast<int>(wrenGetSlotDouble(vm, slotIdx));
 }
 
-int wrenExGetSlotIntDefault(WrenVM* vm, int narg, int d)
+int wrenExGetSlotIntDefault(WrenVM* vm, int slotIdx, int d)
 {
-	if(wrenGetSlotCount(vm) > narg) {
-		return wrenExGetSlotInt(vm, narg);
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenExGetSlotInt(vm, slotIdx);
 	} else {
 		return d;
 	}
 }
 
-double wrenExGetSlotDoubleDefault(WrenVM* vm, int narg, double d)
+double wrenExGetSlotDoubleDefault(WrenVM* vm, int slotIdx, double d)
 {
-	if(wrenGetSlotCount(vm) > narg) {
-		return wrenGetSlotDouble(vm, narg);
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenGetSlotDouble(vm, slotIdx);
 	} else {
 		return d;
 	}
 }
 
-float wrenExGetSlotFloat(WrenVM* vm, int narg)
+float wrenExGetSlotFloat(WrenVM* vm, int slotIdx)
 {
-	return static_cast<float>(wrenGetSlotDouble(vm, narg));
+	return static_cast<float>(wrenGetSlotDouble(vm, slotIdx));
 }
 
-float wrenExGetSlotFloatDefault(WrenVM* vm, int narg, float d)
+float wrenExGetSlotFloatDefault(WrenVM* vm, int slotIdx, float d)
 {
-	if(wrenGetSlotCount(vm) > narg) {
-		return wrenExGetSlotFloat(vm, narg);
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenExGetSlotFloat(vm, slotIdx);
 	} else {
 		return d;
 	}
 }
 
-unsigned int wrenExGetSlotUInt(WrenVM* vm, int narg)
+unsigned int wrenExGetSlotUInt(WrenVM* vm, int slotIdx)
 {
 	// TODO: check integralness
-	return static_cast<unsigned int>(wrenGetSlotDouble(vm, narg));
+	return static_cast<unsigned int>(wrenGetSlotDouble(vm, slotIdx));
 }
 
-unsigned int wrenExGetSlotUIntDefault(WrenVM* vm, int narg, unsigned int d)
+unsigned int wrenExGetSlotUIntDefault(WrenVM* vm, int slotIdx, unsigned int d)
 {
-	if(wrenGetSlotCount(vm) > narg) {
-		return wrenExGetSlotUInt(vm, narg);
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenExGetSlotUInt(vm, slotIdx);
 	} else {
 		return d;
 	}
@@ -110,66 +110,74 @@ void wrenExAbortf(WrenVM* vm, const char* fmt, ...)
 }
 
 template<typename T, typename U>
-T wrenExGetSlotEnum(U fromString, WrenVM* vm, int narg)
+T wrenExGetSlotEnum(U fromString, WrenVM* vm, int slotIdx)
 {
-	const char* s = wrenGetSlotString(vm, narg);
+	const char* s = wrenGetSlotString(vm, slotIdx);
 	std::optional<T> opt = fromString(s);
 	if(!opt) {
-		wrenExAbortf(vm, "Invalid enum as argument %d, received \"%s\"", narg, s);
+		wrenExAbortf(vm, "Invalid enum as argument %d, received \"%s\"", slotIdx, s);
 	}
 	return *opt;
 }
 
 template<typename T, typename U>
-T wrenExGetSlotEnumsDefault(U fromString, WrenVM* vm, int narg, T d)
+T wrenExGetSlotEnumsDefault(U fromString, WrenVM* vm, int slotIdx, T d)
 {
-	if(wrenGetSlotType(vm, narg) == WREN_TYPE_NULL) {
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenExGetSlotEnum<T, U>(fromString, vm, slotIdx);
+	} else {
 		return d;
 	}
-	return wrenExGetSlotEnum<T, U>(fromString, vm, narg);
 }
 
 template<typename T, typename U>
-T wrenExGetSlotFlags(U fromString, WrenVM* vm, int narg)
+T wrenExGetSlotFlags(U fromString, WrenVM* vm, int slotIdx)
 {
 	T out{};
-	WrenType type = wrenGetSlotType(vm, narg);
+	WrenType type = wrenGetSlotType(vm, slotIdx);
 	if (type == WREN_TYPE_NUM) {
 		// variant A: raw number
-		out = static_cast<T>(wrenExGetSlotInt(vm, narg));
+		out = static_cast<T>(wrenExGetSlotInt(vm, slotIdx));
 	} else if (type == WREN_TYPE_STRING) {
 		// variant B: string, split by '|'
-		const char* s = wrenGetSlotString(vm, narg);
+		const char* s = wrenGetSlotString(vm, slotIdx);
 		std::vector<std::string> tokens;
 		std::string token;
 		std::istringstream tokenStream(s);
 		while (std::getline(tokenStream, token, '|')) {
 			std::optional<T> opt = fromString(token.c_str());
 			if (!opt) {
-				wrenExAbortf(vm, "Unrecognized value in flags parameter %d: %s", narg, token.c_str());
+				wrenExAbortf(vm, "Unrecognized value in flags parameter %d: %s", slotIdx, token.c_str());
 			}
 			out = out | *opt;
 		}
 	} else {
-		wrenExAbortf(vm, "Unrecognized flag parameter %d: must be int, string, or table", narg);
+		wrenExAbortf(vm, "Unrecognized flag parameter %d: must be int, string, or table", slotIdx);
 	}
 
 	return out;
 }
 
 template<typename T, typename U>
-T wrenExGetSlotFlagsDefault(U fromString, WrenVM* vm, int narg, T d)
+T wrenExGetSlotFlagsDefault(U fromString, WrenVM* vm, int slotIdx, T d)
 {
-	if(wrenGetSlotType(vm, narg) == WREN_TYPE_NULL) {
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return wrenExGetSlotFlags<T, U>(fromString, vm, slotIdx);
+	} else {
 		return d;
 	}
-	return wrenExGetSlotFlags<T, U>(fromString, vm, narg);
 }
 
 // End Helpers }}}
 
 // Helper classes {{{
 using WrenNull = std::monostate;
+void setSlotGeneric(WrenVM* vm, int slotIdx, WrenNull v)
+{
+	(void)v;
+	wrenSetSlotNull(vm, slotIdx);
+}
+
 void setSlotGeneric(WrenVM* vm, int slotIdx, bool v)
 {
 	wrenSetSlotBool(vm, slotIdx, v);
@@ -180,10 +188,9 @@ void setSlotGeneric(WrenVM* vm, int slotIdx, double v)
 	wrenSetSlotDouble(vm, slotIdx, v);
 }
 
-void setSlotGeneric(WrenVM* vm, int slotIdx, WrenNull v)
+void setSlotGeneric(WrenVM* vm, int slotIdx, const std::string& v)
 {
-	(void)v;
-	wrenSetSlotNull(vm, slotIdx);
+	wrenSetSlotString(vm, slotIdx, v.c_str());
 }
 
 template<typename T>
@@ -201,8 +208,14 @@ double getSlotGeneric<double>(WrenVM* vm, int slotIdx)
 	return wrenGetSlotDouble(vm, slotIdx);
 }
 
+template<>
+std::string getSlotGeneric<std::string>(WrenVM* vm, int slotIdx)
+{
+	return std::string(wrenGetSlotString(vm, slotIdx));
+}
+
 class Box {
-	using Field = std::variant<WrenNull, bool, double>;
+	using Field = std::variant<WrenNull, bool, double, std::string>;
 	public:
 	static void alloc(WrenVM* vm)
 	{
@@ -244,6 +257,11 @@ class Box {
 				*field = getSlotGeneric<double>(vm, 1);
 			}
 			break;
+		case WREN_TYPE_STRING:
+			{
+				*field = getSlotGeneric<std::string>(vm, 1);
+			}
+			break;
 		default:
 			{
 				wrenExAbortf(vm, "Invalid box type");
@@ -258,6 +276,188 @@ class Box {
 		*field = v;
 	}
 };
+
+class WrapImVec2 {
+	public:
+	static void alloc(WrenVM* vm)
+	{
+		void* memory = wrenSetSlotNewForeign(vm, 0, 0, sizeof(ImVec2));
+		ImVec2* field = new (memory) ImVec2(0.0f, 0.0f);
+	}
+	static void finalize(void* memory)
+	{
+		ImVec2* field = (ImVec2*)memory;
+		field->~ImVec2();
+	}
+	static void init(WrenVM* vm)
+	{
+		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to X is not a number");
+		}
+		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+
+		if(!wrenGetSlotType(vm, 2) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to Y is not a number");
+		}
+		field->y = static_cast<float>(getSlotGeneric<double>(vm, 2));
+	}
+	static void getX(WrenVM* vm)
+	{
+		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
+		setSlotGeneric(vm, 0, field->x);
+	}
+	static void setX(WrenVM* vm)
+	{
+		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to X is not a number");
+		}
+		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+	}
+	static void getY(WrenVM* vm)
+	{
+		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
+		setSlotGeneric(vm, 0, field->y);
+	}
+	static void setY(WrenVM* vm)
+	{
+		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to Y is not a number");
+		}
+		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+	}
+
+	static ImVec2 getSlot(WrenVM* vm, int slotIdx)
+	{
+		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, slotIdx);
+		return *field;
+	}
+
+	static ImVec2 getSlotDefault(WrenVM* vm, int slotIdx, const ImVec2 d)
+	{
+		if(wrenGetSlotCount(vm) > slotIdx) {
+			ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
+			return *field;
+		} else {
+			return d;
+		}
+	}
+
+	static ImVec2* setSlot(WrenVM* vm, int slotIdx, const ImVec2 d = ImVec2(0, 0))
+	{
+		wrenGetVariable(vm, "ImGui", "ImVec2", slotIdx);
+		void* memory = wrenSetSlotNewForeign(vm, slotIdx, slotIdx, sizeof(ImVec2));
+		ImVec2* field = (ImVec2*) memory;
+		*field = d;
+		return field;
+	}
+};
+
+class WrapImVec4 {
+	public:
+	static void alloc(WrenVM* vm)
+	{
+		void* memory = wrenSetSlotNewForeign(vm, 0, 0, sizeof(ImVec4));
+		ImVec4* field = new (memory) ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+	static void finalize(void* memory)
+	{
+		ImVec4* field = (ImVec4*)memory;
+		field->~ImVec4();
+	}
+	static void init(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to X is not a number");
+		}
+		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+
+		if(!wrenGetSlotType(vm, 2) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to Y is not a number");
+		}
+		field->y = static_cast<float>(getSlotGeneric<double>(vm, 2));
+	}
+	static void getX(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		setSlotGeneric(vm, 0, field->x);
+	}
+	static void setX(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to X is not a number");
+		}
+		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+	}
+	static void getY(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		setSlotGeneric(vm, 0, field->y);
+	}
+	static void setY(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to Y is not a number");
+		}
+		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+	}
+	static void getZ(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		setSlotGeneric(vm, 0, field->y);
+	}
+	static void setZ(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to Z is not a number");
+		}
+		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+	}
+	static void getW(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		setSlotGeneric(vm, 0, field->y);
+	}
+	static void setW(WrenVM* vm)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
+			wrenExAbortf(vm, "value passed to W is not a number");
+		}
+		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+	}
+
+	static ImVec4 getSlot(WrenVM* vm, int slotIdx)
+	{
+		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, slotIdx);
+		return *field;
+	}
+
+	static ImVec4 getSlotDefault(WrenVM* vm, int slotIdx, const ImVec4 d)
+	{
+		if(wrenGetSlotCount(vm) > slotIdx) {
+			ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
+			return *field;
+		} else {
+			return d;
+		}
+	}
+
+	static ImVec4* setSlot(WrenVM* vm, int slotIdx, const ImVec4 d = ImVec4(0, 0, 0, 0))
+	{
+		wrenGetVariable(vm, "ImGui", "ImVec4", slotIdx);
+		void* memory = wrenSetSlotNewForeign(vm, slotIdx, slotIdx, sizeof(ImVec4));
+		ImVec4* field = (ImVec4*) memory;
+		*field = d;
+		return field;
+	}
+};
 // }}}
 
 // Functions {{{
@@ -269,13 +469,48 @@ class Box {
 <% end -%>
 // End Functions }}}
 
+// {{{ Function overrides
+// }}}
+
 const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"Box::init new(_)", Box::init},
 {"Box::value", Box::get},
 {"Box::value=(_)", Box::set},
+
+{"ImVec2::init new(_,_)", WrapImVec2::init},
+{"ImVec2::x", WrapImVec2::getX},
+{"ImVec2::x=(_)", WrapImVec2::setX},
+{"ImVec2::y", WrapImVec2::getY},
+{"ImVec2::y=(_)", WrapImVec2::setY},
+
+{"ImVec4::init new(_,_,_,_)", WrapImVec4::init},
+{"ImVec4::x", WrapImVec4::getX},
+{"ImVec4::x=(_)", WrapImVec4::setX},
+{"ImVec4::y", WrapImVec4::getY},
+{"ImVec4::y=(_)", WrapImVec4::setY},
+{"ImVec4::z", WrapImVec4::getZ},
+{"ImVec4::z=(_)", WrapImVec4::setZ},
+{"ImVec4::w", WrapImVec4::getW},
+{"ImVec4::w=(_)", WrapImVec4::setW},
+
 <% for name, data in pairs(imgui.functions.toplevel.validNames) do -%>
 <%- helpers.generateCppSignatures(data) %>
 <% end -%>
+
+{"ImGui::IsRectVisible(_)", w_IsRectVisible_Override1},
+{"ImGui::IsRectVisible(_,_)", w_IsRectVisible_Override2},
+
+{"ImGui::InputText(_,_,_,_)", w_InputText_Override2},
+{"ImGui::InputText(_,_,_)", w_InputText_Override2},
+{"ImGui::InputText(_,_)", w_InputText_Override2},
+
+{"ImGui::InputTextMultiline(_,_,_,_)", w_InputTextMultiline_Override2},
+{"ImGui::InputTextMultiline(_,_,_)", w_InputTextMultiline_Override2},
+{"ImGui::InputTextMultiline(_,_)", w_InputTextMultiline_Override2},
+
+{"ImGui::InputTextWithHint(_,_,_,_,_)", w_InputTextWithHint_Override2},
+{"ImGui::InputTextWithHint(_,_,_,_)", w_InputTextWithHint_Override2},
+{"ImGui::InputTextWithHint(_,_,_)", w_InputTextWithHint_Override2},
 };
 
 const char* foreignModuleString = R"MODULE(

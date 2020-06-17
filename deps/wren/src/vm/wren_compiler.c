@@ -164,6 +164,9 @@ typedef struct
 
   // The beginning of the currently-being-lexed token in [source].
   const char* tokenStart;
+  
+  // The beginning of the currently-being-lexed token in [source].
+  const char* lineStart;
 
   // The current character being lexed in [source].
   const char* currentChar;
@@ -458,6 +461,10 @@ static void error(Compiler* compiler, const char* format, ...)
     {
       sprintf(label, "Error at '%.*s...'", MAX_VARIABLE_NAME, token->start);
     }
+    char line[2000];
+	strncpy(line, compiler->parser->lineStart, compiler->parser->currentChar - compiler->parser->lineStart);
+	printf("%s\n", line);
+
     printError(compiler->parser, token->line, label, format, args);
   }
   va_end(args);
@@ -619,7 +626,10 @@ static char nextChar(Parser* parser)
 {
   char c = peekChar(parser);
   parser->currentChar++;
-  if (c == '\n') parser->currentLine++;
+  if (c == '\n') {
+	  parser->currentLine++;
+	  parser->lineStart = parser->currentChar;
+  }
   return c;
 }
 
@@ -3445,6 +3455,7 @@ ObjFn* wrenCompile(WrenVM* vm, ObjModule* module, const char* source,
 
   parser.tokenStart = source;
   parser.currentChar = source;
+  parser.lineStart = source;
   parser.currentLine = 1;
   parser.numParens = 0;
 

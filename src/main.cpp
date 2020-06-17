@@ -40,18 +40,18 @@ class TestInstance {
 	_numBox = Box.new(10)
   }
   update() {
-	//ImGui.Checkbox("demo", _showDemoBox)
-	//ImGui.Checkbox("about", _tempBox.set(_showAbout))
+	ImGui.Checkbox("demo", _showDemoBox)
+	ImGui.Checkbox("about", _tempBox.set(_showAbout))
 	ImGui.DragInt("number!", _numBox)
-	//_showAbout = _tempBox.get()
+	_showAbout = _tempBox.get()
 
-	//if (_showDemoBox.value) {
-	//	ImGui.ShowDemoWindow(_showDemoBox)
-	//}
-	//if (_showAbout) {
-	//	ImGui.ShowAboutWindow(_tempBox.set(_showAbout))
-	//	_showAbout = _tempBox.get()
-	//}
+	if (_showDemoBox.value) {
+		ImGui.ShowDemoWindow(_showDemoBox)
+	}
+	if (_showAbout) {
+		ImGui.ShowAboutWindow(_tempBox.set(_showAbout))
+		_showAbout = _tempBox.get()
+	}
   }
 }
 
