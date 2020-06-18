@@ -18,7 +18,7 @@
 * 3. This notice may not be removed or altered from any source distribution.
 **/
 
-#include "libimgui/imgui.h"
+#include "imgui.h"
 #include "imgui_impl.h"
 #include "wrap_imgui_codegen.h"
 

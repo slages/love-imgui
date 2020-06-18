@@ -1,6 +1,6 @@
 // IMGUI
 #include "imgui_impl.h"
-#include "libimgui/imgui.h"
+#include "imgui.h"
 
 // STD
 #include <string>

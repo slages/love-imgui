@@ -496,26 +496,7 @@ int w_Selectable(lua_State* L)
 
 int w_Combo(lua_State* L)
 {
-	if (lua_istable(L, 3)) {
-		return w_Combo_Override4(L); // label, current_item, items, popup_max_height_in_items
-	} else {
-		return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
-	}
-}
-
-int w_ListBox(lua_State* L)
-{
-	return w_ListBox_Override3(L); // label, current_item, items, height_in_items
-}
-
-int w_PlotLines(lua_State* L)
-{
-	return w_PlotLines_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
-}
-
-int w_PlotHistogram(lua_State* L)
-{
-	return w_PlotHistogram_Override3(L); // label, values, offset, overlay_text, scale_min, scale_max, graph_size_x, graph_size_y
+	return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
 }
 
 <% helpers.removeValidFunction(imgui.functions.toplevel, "ListBoxHeader") -%>
@@ -569,7 +550,7 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 
 void wrap_imgui::createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, <%- helpers.count(imgui.functions.toplevel.validNames) %>); 
+	lua_createtable(L, 0, <%- util.count(imgui.functions.toplevel.validNames) %>); 
 	addImguiWrappers(L);
 }
 

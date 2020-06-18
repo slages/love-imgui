@@ -19,6 +19,11 @@ IF(EnableCodeGen)
 		bindings2/wren/wrap_imgui_codegen.h
 		bindings2/wren/imgui.wren
 
+		bindings2/lua/types.lua
+		bindings2/lua/generate.lua
+		bindings2/lua/wrap_imgui_codegen.cpp
+		bindings2/lua/wrap_imgui_codegen.h
+
 		deps/libimgui/imgui.h
 		deps/libimgui/misc/cpp/imgui_stdlib.h
 	)
@@ -63,7 +68,34 @@ SET_PROPERTY(TARGET imgui PROPERTY POSITION_INDEPENDENT_CODE ON)
 ##############################################
 # love-imgui: prebuilt integration with love2d
 ##############################################
-find_package(LuaJIT REQUIRED)
+ADD_LIBRARY(love-imgui
+	MODULE
+	src/love-imgui/imgui_impl.cpp
+	src/love-imgui/imgui_impl.h
+	src/love-imgui/wrap_imgui_impl.cpp
+	src/love-imgui/wrap_imgui_impl.h
+
+	src/lua-bindings/wrap_imgui_codegen.cpp
+	src/lua-bindings/wrap_imgui_codegen.h
+)
+
+TARGET_INCLUDE_DIRECTORIES(love-imgui
+	PUBLIC
+	${LUAJIT_INCLUDE_DIR}
+	src/lua-bindings
+)
+
+TARGET_LINK_LIBRARIES(love-imgui ${LUAJIT_LIBRARY} imgui)
+
+SET_PROPERTY(TARGET love-imgui PROPERTY CXX_STANDARD 17)
+SET_TARGET_PROPERTIES(love-imgui PROPERTIES PREFIX "")
+if(MSVC)
+else()
+  TARGET_COMPILE_OPTIONS(love-imgui PRIVATE -Wconversion)
+  SET_SOURCE_FILES_PROPERTIES(src/lua-bindings/wrap_imgui_codegen.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-function -Wno-unused-parameter")
+endif()
+
+INSTALL(TARGETS love-imgui LIBRARY DESTINATION lib)
 
 ##############################################
 # Wren example: this uses the SDL/Vulkan integration demoed in the imgui repo
