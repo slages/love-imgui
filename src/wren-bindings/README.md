@@ -4,7 +4,7 @@ to use, copy [wrap_imgui_codegen.cpp](wrap_imgui_codegen.cpp) and
 [wrap_imgui_codegen.h](wrap_imgui_codegen.h), and imgui itself, into your
 project. I would strongly recommend using the version of imgui checked into
 this repo to avoid version differences: if you would like to use a different
-ersion I would update that submodule and re-run the bindings script instead of
+version I would update that submodule and re-run the bindings script instead of
 using these bindings as-is.
 
 Then once you've got it building, you can expose it to wren's import system:
