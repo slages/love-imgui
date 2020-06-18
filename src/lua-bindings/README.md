@@ -3,18 +3,18 @@ Here be the lua bindings.
 to use, copy [wrap_imgui_codegen.cpp](wrap_imgui_codegen.cpp) and [wrap_imgui_codegen.h](wrap_imgui_codegen.h), and [imgui](../../deps/libimgui) itself, into your project.
 
 you can then access a table with every wrapper using 
-```
+```cpp
 // creates a new table with imgui functions, and pushes it to top of the stack.
 wrap_imgui::createImguiTable(L);
 ```
 
 or add it to your own table:
-```
+```cpp
 wrap_imgui::addImguiWrappers(L); // adds to table on top of stack
 ```
 
 You should also provide a definition for:
-```
+```cpp
 ImTextureID luax_checkTextureID(lua_State* L, int narg);
 ```
 which should peek at a lua value at the given location on the stack and return
