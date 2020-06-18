@@ -26,14 +26,22 @@ local function generateFile(fname, templateFname, imgui, helpers)
 end
 
 local function main()
-
 	do
 		-- TODO: we should stop directly manipulating the imgui table, so we can share it
-		local imgui = Parse.parseHeaders{"deps/libimgui/imgui.h", "deps/libimgui/misc/cpp/imgui_stdlib.h"}
+		local imgui = Parse.parseHeaders {
+			"deps/libimgui/imgui.h",
+			"deps/libimgui/misc/cpp/imgui_stdlib.h"
+		}
 		local wrenHelpers = require 'bindings2.wren.generate'
 		imgui.output = "wren"
-		generateFile("src/wren-bindings/wrap_imgui_codegen.cpp", "bindings2/wren/wrap_imgui_codegen.cpp", imgui, wrenHelpers)
-		generateFile("src/wren-bindings/wrap_imgui_codegen.h",  "bindings2/wren/wrap_imgui_codegen.h", imgui, wrenHelpers)
+		generateFile(
+			"src/wren-bindings/wrap_imgui_codegen.cpp",
+			"bindings2/wren/wrap_imgui_codegen.cpp",
+			imgui, wrenHelpers)
+		generateFile(
+			"src/wren-bindings/wrap_imgui_codegen.h",
+			"bindings2/wren/wrap_imgui_codegen.h",
+			imgui, wrenHelpers)
 		for elementName, fnElement in pairs(imgui.functions) do
 			for name in pairs(fnElement.invalidNames) do
 				util.logf("unimplemented function: %s", name)
@@ -47,11 +55,20 @@ local function main()
 
 	do
 		-- TODO: we should stop directly manipulating the imgui table, so we can share it
-		local imgui = Parse.parseHeaders{"deps/libimgui/imgui.h", "deps/libimgui/misc/cpp/imgui_stdlib.h"}
+		local imgui = Parse.parseHeaders {
+			"deps/libimgui/imgui.h",
+			"deps/libimgui/misc/cpp/imgui_stdlib.h"
+		}
 		local luaHelpers = require 'bindings2.lua.generate'
 		imgui.output = "lua"
-		generateFile("src/lua-bindings/wrap_imgui_codegen.cpp", "bindings2/lua/wrap_imgui_codegen.cpp", imgui, luaHelpers)
-		generateFile("src/lua-bindings/wrap_imgui_codegen.h",  "bindings2/lua/wrap_imgui_codegen.h", imgui, luaHelpers)
+		generateFile(
+			"src/lua-bindings/wrap_imgui_codegen.cpp",
+			"bindings2/lua/wrap_imgui_codegen.cpp",
+			imgui, luaHelpers)
+		generateFile(
+			"src/lua-bindings/wrap_imgui_codegen.h",
+			"bindings2/lua/wrap_imgui_codegen.h",
+			imgui, luaHelpers)
 		for elementName, fnElement in pairs(imgui.functions) do
 			for name in pairs(fnElement.invalidNames) do
 				util.logf("unimplemented function: %s", name)

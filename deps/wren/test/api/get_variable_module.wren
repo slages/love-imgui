@@ -1,3 +1,0 @@
-// nontest
-
-var Variable = "value"
