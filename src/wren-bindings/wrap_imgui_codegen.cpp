@@ -514,6 +514,27 @@ const char* getStringFromImGuiKey(ImGuiKey in)
 	return "";
 }
 
+std::optional<ImGuiKeyModFlags_> getImGuiKeyModFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiKeyModFlags_None; }
+	if (strcmp(in, "Shift") == 0) { return ImGuiKeyModFlags_Shift; }
+	if (strcmp(in, "Super") == 0) { return ImGuiKeyModFlags_Super; }
+	if (strcmp(in, "Ctrl") == 0) { return ImGuiKeyModFlags_Ctrl; }
+	if (strcmp(in, "Alt") == 0) { return ImGuiKeyModFlags_Alt; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiKeyModFlags(ImGuiKeyModFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 1: return "Shift";
+		case 1 << 3: return "Super";
+		case 1 << 0: return "Ctrl";
+		case 1 << 2: return "Alt";
+	}
+	return "";
+}
+
 std::optional<ImGuiNavInput_> getImGuiNavInputFromString(const char* in)
 {
 	if (strcmp(in, "Menu") == 0) { return ImGuiNavInput_Menu; }
@@ -808,26 +829,27 @@ std::optional<ImGuiColorEditFlags_> getImGuiColorEditFlagsFromString(const char*
 	if (strcmp(in, "_OptionsDefault") == 0) { return ImGuiColorEditFlags__OptionsDefault; }
 	if (strcmp(in, "NoDragDrop") == 0) { return ImGuiColorEditFlags_NoDragDrop; }
 	if (strcmp(in, "_DataTypeMask") == 0) { return ImGuiColorEditFlags__DataTypeMask; }
-	if (strcmp(in, "NoLabel") == 0) { return ImGuiColorEditFlags_NoLabel; }
 	if (strcmp(in, "_InputMask") == 0) { return ImGuiColorEditFlags__InputMask; }
+	if (strcmp(in, "NoLabel") == 0) { return ImGuiColorEditFlags_NoLabel; }
 	if (strcmp(in, "_PickerMask") == 0) { return ImGuiColorEditFlags__PickerMask; }
-	if (strcmp(in, "AlphaPreviewHalf") == 0) { return ImGuiColorEditFlags_AlphaPreviewHalf; }
 	if (strcmp(in, "_DisplayMask") == 0) { return ImGuiColorEditFlags__DisplayMask; }
-	if (strcmp(in, "Uint8") == 0) { return ImGuiColorEditFlags_Uint8; }
+	if (strcmp(in, "AlphaPreviewHalf") == 0) { return ImGuiColorEditFlags_AlphaPreviewHalf; }
+	if (strcmp(in, "NoOptions") == 0) { return ImGuiColorEditFlags_NoOptions; }
+	if (strcmp(in, "NoAlpha") == 0) { return ImGuiColorEditFlags_NoAlpha; }
 	if (strcmp(in, "NoPicker") == 0) { return ImGuiColorEditFlags_NoPicker; }
 	if (strcmp(in, "DisplayHSV") == 0) { return ImGuiColorEditFlags_DisplayHSV; }
 	if (strcmp(in, "HDR") == 0) { return ImGuiColorEditFlags_HDR; }
-	if (strcmp(in, "NoAlpha") == 0) { return ImGuiColorEditFlags_NoAlpha; }
+	if (strcmp(in, "Float") == 0) { return ImGuiColorEditFlags_Float; }
 	if (strcmp(in, "NoSidePreview") == 0) { return ImGuiColorEditFlags_NoSidePreview; }
 	if (strcmp(in, "AlphaPreview") == 0) { return ImGuiColorEditFlags_AlphaPreview; }
 	if (strcmp(in, "PickerHueWheel") == 0) { return ImGuiColorEditFlags_PickerHueWheel; }
 	if (strcmp(in, "AlphaBar") == 0) { return ImGuiColorEditFlags_AlphaBar; }
 	if (strcmp(in, "NoInputs") == 0) { return ImGuiColorEditFlags_NoInputs; }
-	if (strcmp(in, "Float") == 0) { return ImGuiColorEditFlags_Float; }
+	if (strcmp(in, "Uint8") == 0) { return ImGuiColorEditFlags_Uint8; }
 	if (strcmp(in, "InputHSV") == 0) { return ImGuiColorEditFlags_InputHSV; }
 	if (strcmp(in, "NoSmallPreview") == 0) { return ImGuiColorEditFlags_NoSmallPreview; }
 	if (strcmp(in, "PickerHueBar") == 0) { return ImGuiColorEditFlags_PickerHueBar; }
-	if (strcmp(in, "NoOptions") == 0) { return ImGuiColorEditFlags_NoOptions; }
+	if (strcmp(in, "NoBorder") == 0) { return ImGuiColorEditFlags_NoBorder; }
 	if (strcmp(in, "DisplayHex") == 0) { return ImGuiColorEditFlags_DisplayHex; }
 	if (strcmp(in, "DisplayRGB") == 0) { return ImGuiColorEditFlags_DisplayRGB; }
 	if (strcmp(in, "InputRGB") == 0) { return ImGuiColorEditFlags_InputRGB; }
@@ -841,26 +863,27 @@ const char* getStringFromImGuiColorEditFlags(ImGuiColorEditFlags in)
 		// skipping // case ImGuiColorEditFlags_Uint8|ImGuiColorEditFlags_DisplayRGB|ImGuiColorEditFlags_InputRGB|ImGuiColorEditFlags_PickerHueBar: return "_OptionsDefault";
 		case 1 << 9: return "NoDragDrop";
 		// skipping // case ImGuiColorEditFlags_Uint8|ImGuiColorEditFlags_Float: return "_DataTypeMask";
-		case 1 << 7: return "NoLabel";
 		// skipping // case ImGuiColorEditFlags_InputRGB|ImGuiColorEditFlags_InputHSV: return "_InputMask";
+		case 1 << 7: return "NoLabel";
 		// skipping // case ImGuiColorEditFlags_PickerHueWheel|ImGuiColorEditFlags_PickerHueBar: return "_PickerMask";
-		case 1 << 18: return "AlphaPreviewHalf";
 		// skipping // case ImGuiColorEditFlags_DisplayRGB|ImGuiColorEditFlags_DisplayHSV|ImGuiColorEditFlags_DisplayHex: return "_DisplayMask";
-		case 1 << 23: return "Uint8";
+		case 1 << 18: return "AlphaPreviewHalf";
+		case 1 << 3: return "NoOptions";
+		case 1 << 1: return "NoAlpha";
 		case 1 << 2: return "NoPicker";
 		case 1 << 21: return "DisplayHSV";
 		case 1 << 19: return "HDR";
-		case 1 << 1: return "NoAlpha";
+		case 1 << 24: return "Float";
 		case 1 << 8: return "NoSidePreview";
 		case 1 << 17: return "AlphaPreview";
 		case 1 << 26: return "PickerHueWheel";
 		case 1 << 16: return "AlphaBar";
 		case 1 << 5: return "NoInputs";
-		case 1 << 24: return "Float";
+		case 1 << 23: return "Uint8";
 		case 1 << 28: return "InputHSV";
 		case 1 << 4: return "NoSmallPreview";
 		case 1 << 25: return "PickerHueBar";
-		case 1 << 3: return "NoOptions";
+		case 1 << 10: return "NoBorder";
 		case 1 << 22: return "DisplayHex";
 		case 1 << 20: return "DisplayRGB";
 		case 1 << 27: return "InputRGB";
@@ -1495,14 +1518,14 @@ void w_NewFrame(WrenVM *vm)
 	
 }
 
-/*  ends the Dear ImGui frame. automatically called by Render(), you likely don't need to call that yourself directly. If you don't need to render data (skipping rendering) you may call EndFrame() but you'll have wasted CPU already! If you don't need to render, better to not create any imgui windows and not call NewFrame() at all! */
+/*  ends the Dear ImGui frame. automatically called by Render(). If you don't need to render data (skipping rendering) you may call EndFrame() without Render()... but you'll have wasted CPU already! If you don't need to render, better to not create any windows and not call NewFrame() at all! */
 void w_EndFrame(WrenVM *vm)
 {
 	ImGui::EndFrame();
 	
 }
 
-/*  ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function. (Obsolete: this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.) */
+/*  ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function (up to v1.60, this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.) */
 void w_Render(WrenVM *vm)
 {
 	ImGui::Render();
@@ -1531,7 +1554,7 @@ void w_ShowAboutWindow(WrenVM *vm)
 	Box::setCPP<bool>(vm, 1, p_open);
 }
 
-/*  create Metrics/Debug window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
+/*  create Debug/Metrics window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
 void w_ShowMetricsWindow(WrenVM *vm)
 {
 	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 1));
@@ -1604,7 +1627,7 @@ void w_End(WrenVM *vm)
 void w_BeginChild_Override1(WrenVM *vm)
 {
 	auto str_id = wrenGetSlotString(vm, 1);
-	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0,0));
+	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0, 0));
 	auto border = wrenExGetSlotBoolDefault(vm, 3, false);
 	auto flags = wrenExGetSlotFlagsDefault<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 4, 0);
 	
@@ -1616,7 +1639,7 @@ void w_BeginChild_Override1(WrenVM *vm)
 void w_BeginChild_Override2(WrenVM *vm)
 {
 	auto id = static_cast<ImGuiID>(wrenExGetSlotInt(vm, 1));
-	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0,0));
+	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0, 0));
 	auto border = wrenExGetSlotBoolDefault(vm, 3, false);
 	auto flags = wrenExGetSlotFlagsDefault<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 4, 0);
 	
@@ -1714,7 +1737,7 @@ void w_SetNextWindowPos(WrenVM *vm)
 {
 	auto pos = WrapImVec2::getSlot(vm, 1);
 	auto cond = wrenExGetSlotEnumsDefault<ImGuiCond>(getImGuiCondFromString, vm, 2, 0);
-	auto pivot = WrapImVec2::getSlotDefault(vm, 3, ImVec2(0,0));
+	auto pivot = WrapImVec2::getSlotDefault(vm, 3, ImVec2(0, 0));
 	
 	ImGui::SetNextWindowPos(pos, cond, pivot);
 	
@@ -1786,7 +1809,7 @@ void w_SetWindowPos_Override1(WrenVM *vm)
 	
 }
 
-/*  (not recommended) set current window size - call within Begin()/End(). set to ImVec2(0,0) to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects. */
+/*  (not recommended) set current window size - call within Begin()/End(). set to ImVec2(0, 0) to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects. */
 void w_SetWindowSize_Override1(WrenVM *vm)
 {
 	auto size = WrapImVec2::getSlot(vm, 1);
@@ -2079,7 +2102,7 @@ void w_GetFontTexUvWhitePixel(WrenVM *vm)
 	
 }
 
-/*  set width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
+/*  push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
 void w_PushItemWidth(WrenVM *vm)
 {
 	auto item_width = wrenExGetSlotFloat(vm, 1);
@@ -2111,7 +2134,7 @@ void w_CalcItemWidth(WrenVM *vm)
 	
 }
 
-/*  word-wrapping for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
+/*  push word-wrapping position for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
 void w_PushTextWrapPos(WrenVM *vm)
 {
 	auto wrap_local_pos_x = wrenExGetSlotFloatDefault(vm, 1, 0.0f);
@@ -2471,7 +2494,7 @@ void w_BulletText(WrenVM *vm)
 void w_Button(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0,0));
+	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0, 0));
 	
 	bool out = ImGui::Button(label, size);
 	wrenSetSlotBool(vm, 0, out);
@@ -2564,7 +2587,7 @@ void w_RadioButton_Override2(WrenVM *vm)
 void w_ProgressBar(WrenVM *vm)
 {
 	auto fraction = wrenExGetSlotFloat(vm, 1);
-	auto size_arg = WrapImVec2::getSlotDefault(vm, 2, ImVec2(-1,0));
+	auto size_arg = WrapImVec2::getSlotDefault(vm, 2, ImVec2(-1, 0));
 	auto overlay = wrenExGetSlotStringDefault(vm, 3, NULL);
 	
 	ImGui::ProgressBar(fraction, size_arg, overlay);
@@ -2859,7 +2882,7 @@ void w_ColorButton(WrenVM *vm)
 	auto desc_id = wrenGetSlotString(vm, 1);
 	auto col = WrapImVec4::getSlot(vm, 2);
 	auto flags = wrenExGetSlotFlagsDefault<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, vm, 3, 0);
-	auto size = WrapImVec2::getSlotDefault(vm, 4, ImVec2(0,0));
+	auto size = WrapImVec2::getSlotDefault(vm, 4, ImVec2(0, 0));
 	
 	bool out = ImGui::ColorButton(desc_id, col, flags, size);
 	wrenSetSlotBool(vm, 0, out);
@@ -2986,7 +3009,7 @@ void w_Selectable_Override1(WrenVM *vm)
 	auto label = wrenGetSlotString(vm, 1);
 	auto selected = wrenExGetSlotBoolDefault(vm, 2, false);
 	auto flags = wrenExGetSlotFlagsDefault<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, vm, 3, 0);
-	auto size = WrapImVec2::getSlotDefault(vm, 4, ImVec2(0,0));
+	auto size = WrapImVec2::getSlotDefault(vm, 4, ImVec2(0, 0));
 	
 	bool out = ImGui::Selectable(label, selected, flags, size);
 	wrenSetSlotBool(vm, 0, out);
@@ -2999,7 +3022,7 @@ void w_Selectable_Override2(WrenVM *vm)
 	auto label = wrenGetSlotString(vm, 1);
 	auto p_selected = static_cast<bool>(Box::getCPP<bool>(vm, 2));
 	auto flags = wrenExGetSlotFlagsDefault<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, vm, 3, 0);
-	auto size = WrapImVec2::getSlotDefault(vm, 4, ImVec2(0,0));
+	auto size = WrapImVec2::getSlotDefault(vm, 4, ImVec2(0, 0));
 	
 	bool out = ImGui::Selectable(label, &p_selected, flags, size);
 	wrenSetSlotBool(vm, 0, out);
@@ -3015,7 +3038,7 @@ void w_Selectable_Override2(WrenVM *vm)
 void w_ListBoxHeader_Override1(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0,0));
+	auto size = WrapImVec2::getSlotDefault(vm, 2, ImVec2(0, 0));
 	
 	bool out = ImGui::ListBoxHeader(label, size);
 	wrenSetSlotBool(vm, 0, out);
@@ -3774,18 +3797,6 @@ void w_GetStyleColorName(WrenVM *vm)
 
 // skipping w_GetStateStorage due to unimplemented return type: "ImGuiStorage*"
 
-void w_CalcTextSize(WrenVM *vm)
-{
-	auto text = wrenGetSlotString(vm, 1);
-	auto text_end = wrenExGetSlotStringDefault(vm, 2, NULL);
-	auto hide_text_after_double_hash = wrenExGetSlotBoolDefault(vm, 3, false);
-	auto wrap_width = wrenExGetSlotFloatDefault(vm, 4, -1.0f);
-	
-	ImVec2 out = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
-	WrapImVec2::setSlot(vm, 0, out);
-	
-}
-
 /*  calculate coarse clipping for large list of evenly sized items. Prefer using the ImGuiListClipper higher-level helper if you can. */
 void w_CalcListClipping(WrenVM *vm)
 {
@@ -3816,6 +3827,18 @@ void w_BeginChildFrame(WrenVM *vm)
 void w_EndChildFrame(WrenVM *vm)
 {
 	ImGui::EndChildFrame();
+	
+}
+
+void w_CalcTextSize(WrenVM *vm)
+{
+	auto text = wrenGetSlotString(vm, 1);
+	auto text_end = wrenExGetSlotStringDefault(vm, 2, NULL);
+	auto hide_text_after_double_hash = wrenExGetSlotBoolDefault(vm, 3, false);
+	auto wrap_width = wrenExGetSlotFloatDefault(vm, 4, -1.0f);
+	
+	ImVec2 out = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
+	WrapImVec2::setSlot(vm, 0, out);
 	
 }
 
@@ -4194,19 +4217,23 @@ void w_InputTextWithHint_Override2(WrenVM *vm)
 
 // skipping w_ImDrawList_CloneOutput due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_Clear due to unimplemented foreign class type: "ImDrawList"
-
-// skipping w_ImDrawList_ClearFreeMemory due to unimplemented foreign class type: "ImDrawList"
-
 // skipping w_ImDrawList_PrimReserve due to unimplemented foreign class type: "ImDrawList"
 
 // skipping w_ImDrawList_PrimUnreserve due to unimplemented foreign class type: "ImDrawList"
 
 // skipping w_ImDrawList_PrimRect due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_UpdateClipRect due to unimplemented foreign class type: "ImDrawList"
+// skipping w_ImDrawList__ResetForNewFrame due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_UpdateTextureID due to unimplemented foreign class type: "ImDrawList"
+// skipping w_ImDrawList__ClearFreeMemory due to unimplemented foreign class type: "ImDrawList"
+
+// skipping w_ImDrawList__PopUnusedDrawCmd due to unimplemented foreign class type: "ImDrawList"
+
+// skipping w_ImDrawList__OnChangedClipRect due to unimplemented foreign class type: "ImDrawList"
+
+// skipping w_ImDrawList__OnChangedTextureID due to unimplemented foreign class type: "ImDrawList"
+
+// skipping w_ImDrawList__OnChangedVtxOffset due to unimplemented foreign class type: "ImDrawList"
 
 // End Functions }}}
 
@@ -4369,7 +4396,7 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::ColorConvertU32ToFloat4(_)", w_ColorConvertU32ToFloat4},
 {"ImGui::ShowAboutWindow()", w_ShowAboutWindow},
 {"ImGui::ShowAboutWindow(_)", w_ShowAboutWindow},
-{"ImGui::EndChildFrame()", w_EndChildFrame},
+{"ImGui::CheckboxFlags(_,_,_)", w_CheckboxFlags},
 {"ImGui::GetFrameHeight()", w_GetFrameHeight},
 {"ImGui::SetNextWindowFocus()", w_SetNextWindowFocus},
 {"ImGui::GetWindowPos()", w_GetWindowPos},
@@ -4379,11 +4406,11 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::DragIntRange2(_,_,_,_,_,_)", w_DragIntRange2},
 {"ImGui::DragIntRange2(_,_,_,_,_,_,_)", w_DragIntRange2},
 {"ImGui::DragIntRange2(_,_,_,_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::EndChildFrame()", w_EndChildFrame},
+{"ImGui::GetScrollY()", w_GetScrollY},
 {"ImGui::SetNextWindowPos(_)", w_SetNextWindowPos},
 {"ImGui::SetNextWindowPos(_,_)", w_SetNextWindowPos},
 {"ImGui::SetNextWindowPos(_,_,_)", w_SetNextWindowPos},
-{"ImGui::GetScrollY()", w_GetScrollY},
-{"ImGui::CheckboxFlags(_,_,_)", w_CheckboxFlags},
 {"ImGui::BeginPopupModal(_)", w_BeginPopupModal},
 {"ImGui::BeginPopupModal(_,_)", w_BeginPopupModal},
 {"ImGui::BeginPopupModal(_,_,_)", w_BeginPopupModal},
@@ -4780,7 +4807,7 @@ class ImGui {
 	foreign static ColorConvertU32ToFloat4(input)
 	foreign static ShowAboutWindow()
 	foreign static ShowAboutWindow(p_open)
-	foreign static EndChildFrame()
+	foreign static CheckboxFlags(label, flags, flags_value)
 	foreign static GetFrameHeight()
 	foreign static SetNextWindowFocus()
 	foreign static GetWindowPos()
@@ -4790,11 +4817,11 @@ class ImGui {
 	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max)
 	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
 	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
+	foreign static EndChildFrame()
+	foreign static GetScrollY()
 	foreign static SetNextWindowPos(pos)
 	foreign static SetNextWindowPos(pos, cond)
 	foreign static SetNextWindowPos(pos, cond, pivot)
-	foreign static GetScrollY()
-	foreign static CheckboxFlags(label, flags, flags_value)
 	foreign static BeginPopupModal(name)
 	foreign static BeginPopupModal(name, p_open)
 	foreign static BeginPopupModal(name, p_open, flags)

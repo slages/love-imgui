@@ -705,6 +705,27 @@ const char* getStringFromImGuiKey(ImGuiKey in)
 	return "";
 }
 
+std::optional<ImGuiKeyModFlags_> getImGuiKeyModFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiKeyModFlags_None; }
+	if (strcmp(in, "Shift") == 0) { return ImGuiKeyModFlags_Shift; }
+	if (strcmp(in, "Super") == 0) { return ImGuiKeyModFlags_Super; }
+	if (strcmp(in, "Ctrl") == 0) { return ImGuiKeyModFlags_Ctrl; }
+	if (strcmp(in, "Alt") == 0) { return ImGuiKeyModFlags_Alt; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiKeyModFlags(ImGuiKeyModFlags in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 1 << 1: return "Shift";
+		case 1 << 3: return "Super";
+		case 1 << 0: return "Ctrl";
+		case 1 << 2: return "Alt";
+	}
+	return "";
+}
+
 std::optional<ImGuiNavInput_> getImGuiNavInputFromString(const char* in)
 {
 	if (strcmp(in, "Menu") == 0) { return ImGuiNavInput_Menu; }
@@ -999,26 +1020,27 @@ std::optional<ImGuiColorEditFlags_> getImGuiColorEditFlagsFromString(const char*
 	if (strcmp(in, "_OptionsDefault") == 0) { return ImGuiColorEditFlags__OptionsDefault; }
 	if (strcmp(in, "NoDragDrop") == 0) { return ImGuiColorEditFlags_NoDragDrop; }
 	if (strcmp(in, "_DataTypeMask") == 0) { return ImGuiColorEditFlags__DataTypeMask; }
-	if (strcmp(in, "NoLabel") == 0) { return ImGuiColorEditFlags_NoLabel; }
 	if (strcmp(in, "_InputMask") == 0) { return ImGuiColorEditFlags__InputMask; }
+	if (strcmp(in, "NoLabel") == 0) { return ImGuiColorEditFlags_NoLabel; }
 	if (strcmp(in, "_PickerMask") == 0) { return ImGuiColorEditFlags__PickerMask; }
-	if (strcmp(in, "AlphaPreviewHalf") == 0) { return ImGuiColorEditFlags_AlphaPreviewHalf; }
 	if (strcmp(in, "_DisplayMask") == 0) { return ImGuiColorEditFlags__DisplayMask; }
-	if (strcmp(in, "Uint8") == 0) { return ImGuiColorEditFlags_Uint8; }
+	if (strcmp(in, "AlphaPreviewHalf") == 0) { return ImGuiColorEditFlags_AlphaPreviewHalf; }
+	if (strcmp(in, "NoOptions") == 0) { return ImGuiColorEditFlags_NoOptions; }
+	if (strcmp(in, "NoAlpha") == 0) { return ImGuiColorEditFlags_NoAlpha; }
 	if (strcmp(in, "NoPicker") == 0) { return ImGuiColorEditFlags_NoPicker; }
 	if (strcmp(in, "DisplayHSV") == 0) { return ImGuiColorEditFlags_DisplayHSV; }
 	if (strcmp(in, "HDR") == 0) { return ImGuiColorEditFlags_HDR; }
-	if (strcmp(in, "NoAlpha") == 0) { return ImGuiColorEditFlags_NoAlpha; }
+	if (strcmp(in, "Float") == 0) { return ImGuiColorEditFlags_Float; }
 	if (strcmp(in, "NoSidePreview") == 0) { return ImGuiColorEditFlags_NoSidePreview; }
 	if (strcmp(in, "AlphaPreview") == 0) { return ImGuiColorEditFlags_AlphaPreview; }
 	if (strcmp(in, "PickerHueWheel") == 0) { return ImGuiColorEditFlags_PickerHueWheel; }
 	if (strcmp(in, "AlphaBar") == 0) { return ImGuiColorEditFlags_AlphaBar; }
 	if (strcmp(in, "NoInputs") == 0) { return ImGuiColorEditFlags_NoInputs; }
-	if (strcmp(in, "Float") == 0) { return ImGuiColorEditFlags_Float; }
+	if (strcmp(in, "Uint8") == 0) { return ImGuiColorEditFlags_Uint8; }
 	if (strcmp(in, "InputHSV") == 0) { return ImGuiColorEditFlags_InputHSV; }
 	if (strcmp(in, "NoSmallPreview") == 0) { return ImGuiColorEditFlags_NoSmallPreview; }
 	if (strcmp(in, "PickerHueBar") == 0) { return ImGuiColorEditFlags_PickerHueBar; }
-	if (strcmp(in, "NoOptions") == 0) { return ImGuiColorEditFlags_NoOptions; }
+	if (strcmp(in, "NoBorder") == 0) { return ImGuiColorEditFlags_NoBorder; }
 	if (strcmp(in, "DisplayHex") == 0) { return ImGuiColorEditFlags_DisplayHex; }
 	if (strcmp(in, "DisplayRGB") == 0) { return ImGuiColorEditFlags_DisplayRGB; }
 	if (strcmp(in, "InputRGB") == 0) { return ImGuiColorEditFlags_InputRGB; }
@@ -1032,26 +1054,27 @@ const char* getStringFromImGuiColorEditFlags(ImGuiColorEditFlags in)
 		// skipping // case ImGuiColorEditFlags_Uint8|ImGuiColorEditFlags_DisplayRGB|ImGuiColorEditFlags_InputRGB|ImGuiColorEditFlags_PickerHueBar: return "_OptionsDefault";
 		case 1 << 9: return "NoDragDrop";
 		// skipping // case ImGuiColorEditFlags_Uint8|ImGuiColorEditFlags_Float: return "_DataTypeMask";
-		case 1 << 7: return "NoLabel";
 		// skipping // case ImGuiColorEditFlags_InputRGB|ImGuiColorEditFlags_InputHSV: return "_InputMask";
+		case 1 << 7: return "NoLabel";
 		// skipping // case ImGuiColorEditFlags_PickerHueWheel|ImGuiColorEditFlags_PickerHueBar: return "_PickerMask";
-		case 1 << 18: return "AlphaPreviewHalf";
 		// skipping // case ImGuiColorEditFlags_DisplayRGB|ImGuiColorEditFlags_DisplayHSV|ImGuiColorEditFlags_DisplayHex: return "_DisplayMask";
-		case 1 << 23: return "Uint8";
+		case 1 << 18: return "AlphaPreviewHalf";
+		case 1 << 3: return "NoOptions";
+		case 1 << 1: return "NoAlpha";
 		case 1 << 2: return "NoPicker";
 		case 1 << 21: return "DisplayHSV";
 		case 1 << 19: return "HDR";
-		case 1 << 1: return "NoAlpha";
+		case 1 << 24: return "Float";
 		case 1 << 8: return "NoSidePreview";
 		case 1 << 17: return "AlphaPreview";
 		case 1 << 26: return "PickerHueWheel";
 		case 1 << 16: return "AlphaBar";
 		case 1 << 5: return "NoInputs";
-		case 1 << 24: return "Float";
+		case 1 << 23: return "Uint8";
 		case 1 << 28: return "InputHSV";
 		case 1 << 4: return "NoSmallPreview";
 		case 1 << 25: return "PickerHueBar";
-		case 1 << 3: return "NoOptions";
+		case 1 << 10: return "NoBorder";
 		case 1 << 22: return "DisplayHex";
 		case 1 << 20: return "DisplayRGB";
 		case 1 << 27: return "InputRGB";
@@ -1391,7 +1414,7 @@ int w_SetCurrentContext(lua_State *L)
 
 // skipping w_GetIO due to unimplemented return type: "ImGuiIO&"
 
-/*  access the Style structure (colors, sizes). Always use PushStyleCol(), PushStyleVar() to modify style mid-frame. */
+/*  access the Style structure (colors, sizes). Always use PushStyleCol(), PushStyleVar() to modify style mid-frame! */
 int w_GetStyle(lua_State *L)
 {
 	ImGuiStyle& out = ImGui::GetStyle();
@@ -1402,7 +1425,7 @@ int w_GetStyle(lua_State *L)
 
 // skipping w_NewFrame: already implemented
 
-/*  ends the Dear ImGui frame. automatically called by Render(), you likely don't need to call that yourself directly. If you don't need to render data (skipping rendering) you may call EndFrame() but you'll have wasted CPU already! If you don't need to render, better to not create any imgui windows and not call NewFrame() at all! */
+/*  ends the Dear ImGui frame. automatically called by Render(). If you don't need to render data (skipping rendering) you may call EndFrame() without Render()... but you'll have wasted CPU already! If you don't need to render, better to not create any windows and not call NewFrame() at all! */
 int w_EndFrame(lua_State *L)
 {
 	ImGui::EndFrame();
@@ -1410,7 +1433,7 @@ int w_EndFrame(lua_State *L)
 	return 0;
 }
 
-/*  ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function. (Obsolete: this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.) */
+/*  ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function (up to v1.60, this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.) */
 int w_Render(lua_State *L)
 {
 	ImGui::Render();
@@ -1442,7 +1465,7 @@ int w_ShowAboutWindow(lua_State *L)
 	return 1;
 }
 
-/*  create Metrics/Debug window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
+/*  create Debug/Metrics window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
 int w_ShowMetricsWindow(lua_State *L)
 {
 	bool p_open = luax_optboolean(L, 1, NULL);
@@ -1554,7 +1577,7 @@ int w_End(lua_State *L)
 int w_BeginChild_Override1(lua_State *L)
 {
 	auto str_id = luaL_checkstring(L, 1);
-	auto size = ImVec2(0,0);
+	auto size = ImVec2(0, 0);
 	size.x = luax_optfloat(L, 2, size.x);
 	size.y = luax_optfloat(L, 3, size.y);
 	auto border = luax_optboolean(L, 4, false);
@@ -1569,7 +1592,7 @@ int w_BeginChild_Override1(lua_State *L)
 int w_BeginChild_Override2(lua_State *L)
 {
 	auto id = static_cast<ImGuiID>(luaL_checkint(L, 1));
-	auto size = ImVec2(0,0);
+	auto size = ImVec2(0, 0);
 	size.x = luax_optfloat(L, 2, size.x);
 	size.y = luax_optfloat(L, 3, size.y);
 	auto border = luax_optboolean(L, 4, false);
@@ -1695,7 +1718,7 @@ int w_SetNextWindowPos(lua_State *L)
 	pos.x = luax_checkfloat(L, 1);
 	pos.y = luax_checkfloat(L, 2);
 	auto cond = luax_optenum<ImGuiCond>(getImGuiCondFromString, L, 3, 0);
-	auto pivot = ImVec2(0,0);
+	auto pivot = ImVec2(0, 0);
 	pivot.x = luax_optfloat(L, 4, pivot.x);
 	pivot.y = luax_optfloat(L, 5, pivot.y);
 	
@@ -1783,7 +1806,7 @@ int w_SetWindowPos_Override1(lua_State *L)
 	return 0;
 }
 
-/*  (not recommended) set current window size - call within Begin()/End(). set to ImVec2(0,0) to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects. */
+/*  (not recommended) set current window size - call within Begin()/End(). set to ImVec2(0, 0) to force an auto-fit. prefer using SetNextWindowSize(), as this may incur tearing and minor side-effects. */
 int w_SetWindowSize_Override1(lua_State *L)
 {
 	ImVec2 size;
@@ -2129,7 +2152,7 @@ int w_GetFontTexUvWhitePixel(lua_State *L)
 	return 2;
 }
 
-/*  set width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
+/*  push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
 int w_PushItemWidth(lua_State *L)
 {
 	auto item_width = luax_checkfloat(L, 1);
@@ -2165,7 +2188,7 @@ int w_CalcItemWidth(lua_State *L)
 	return 1;
 }
 
-/*  word-wrapping for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
+/*  push word-wrapping position for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
 int w_PushTextWrapPos(lua_State *L)
 {
 	auto wrap_local_pos_x = luax_optfloat(L, 1, 0.0f);
@@ -2580,7 +2603,7 @@ int w_BulletText(lua_State *L)
 int w_Button(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto size = ImVec2(0,0);
+	auto size = ImVec2(0, 0);
 	size.x = luax_optfloat(L, 2, size.x);
 	size.y = luax_optfloat(L, 3, size.y);
 	
@@ -2633,7 +2656,7 @@ int w_Image(lua_State *L)
 	ImVec2 size;
 	size.x = luax_checkfloat(L, 2);
 	size.y = luax_checkfloat(L, 3);
-	auto uv0 = ImVec2(0,0);
+	auto uv0 = ImVec2(0, 0);
 	uv0.x = luax_optfloat(L, 4, uv0.x);
 	uv0.y = luax_optfloat(L, 5, uv0.y);
 	auto uv1 = ImVec2(1,1);
@@ -2662,7 +2685,7 @@ int w_ImageButton(lua_State *L)
 	ImVec2 size;
 	size.x = luax_checkfloat(L, 2);
 	size.y = luax_checkfloat(L, 3);
-	auto uv0 = ImVec2(0,0);
+	auto uv0 = ImVec2(0, 0);
 	uv0.x = luax_optfloat(L, 4, uv0.x);
 	uv0.y = luax_optfloat(L, 5, uv0.y);
 	auto uv1 = ImVec2(1,1);
@@ -2740,7 +2763,7 @@ int w_RadioButton_Override2(lua_State *L)
 int w_ProgressBar(lua_State *L)
 {
 	auto fraction = luax_checkfloat(L, 1);
-	auto size_arg = ImVec2(-1,0);
+	auto size_arg = ImVec2(-1, 0);
 	size_arg.x = luax_optfloat(L, 2, size_arg.x);
 	size_arg.y = luax_optfloat(L, 3, size_arg.y);
 	auto overlay = luaL_optstring(L, 4, NULL);
@@ -3439,7 +3462,7 @@ int w_ColorButton(lua_State *L)
 	col.z = luax_checkfloat(L, 4);
 	col.w = luax_checkfloat(L, 5);
 	auto flags = luax_optflags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, L, 6, 0);
-	auto size = ImVec2(0,0);
+	auto size = ImVec2(0, 0);
 	size.x = luax_optfloat(L, 7, size.x);
 	size.y = luax_optfloat(L, 8, size.y);
 	
@@ -3580,7 +3603,7 @@ int w_Selectable_Override1(lua_State *L)
 	auto label = luaL_checkstring(L, 1);
 	auto selected = luax_optboolean(L, 2, false);
 	auto flags = luax_optflags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, L, 3, 0);
-	auto size = ImVec2(0,0);
+	auto size = ImVec2(0, 0);
 	size.x = luax_optfloat(L, 4, size.x);
 	size.y = luax_optfloat(L, 5, size.y);
 	
@@ -3596,7 +3619,7 @@ int w_Selectable_Override2(lua_State *L)
 	auto label = luaL_checkstring(L, 1);
 	bool p_selected = luax_checkboolean(L, 2);
 	auto flags = luax_optflags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, L, 3, 0);
-	auto size = ImVec2(0,0);
+	auto size = ImVec2(0, 0);
 	size.x = luax_optfloat(L, 4, size.x);
 	size.y = luax_optfloat(L, 5, size.y);
 	
@@ -3615,7 +3638,7 @@ int w_Selectable_Override2(lua_State *L)
 int w_ListBoxHeader_Override1(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	auto size = ImVec2(0,0);
+	auto size = ImVec2(0, 0);
 	size.x = luax_optfloat(L, 2, size.x);
 	size.y = luax_optfloat(L, 3, size.y);
 	
@@ -4495,20 +4518,6 @@ int w_GetStyleColorName(lua_State *L)
 
 // skipping w_GetStateStorage due to unimplemented return type: "ImGuiStorage*"
 
-int w_CalcTextSize(lua_State *L)
-{
-	auto text = luaL_checkstring(L, 1);
-	auto text_end = luaL_optstring(L, 2, NULL);
-	auto hide_text_after_double_hash = luax_optboolean(L, 3, false);
-	auto wrap_width = luax_optfloat(L, 4, -1.0f);
-	
-	ImVec2 out = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
-
 /*  calculate coarse clipping for large list of evenly sized items. Prefer using the ImGuiListClipper higher-level helper if you can. */
 int w_CalcListClipping(lua_State *L)
 {
@@ -4545,6 +4554,20 @@ int w_EndChildFrame(lua_State *L)
 	ImGui::EndChildFrame();
 	
 	return 0;
+}
+
+int w_CalcTextSize(lua_State *L)
+{
+	auto text = luaL_checkstring(L, 1);
+	auto text_end = luaL_optstring(L, 2, NULL);
+	auto hide_text_after_double_hash = luax_optboolean(L, 3, false);
+	auto wrap_width = luax_optfloat(L, 4, -1.0f);
+	
+	ImVec2 out = ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
+	
+	lua_pushnumber(L, out.x);
+	lua_pushnumber(L, out.y);
+	return 2;
 }
 
 int w_ColorConvertU32ToFloat4(lua_State *L)
@@ -5466,26 +5489,6 @@ int w_ImDrawList_CloneOutput(lua_State *L)
 	return 1;
 }
 
-int w_ImDrawList_Clear(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->Clear();
-	
-	return 0;
-}
-
-int w_ImDrawList_ClearFreeMemory(lua_State *L)
-{
-	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
-	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
-	auto* self = self_udata->value;
-	self->ClearFreeMemory();
-	
-	return 0;
-}
-
 int w_ImDrawList_PrimReserve(lua_State *L)
 {
 	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
@@ -5531,22 +5534,62 @@ int w_ImDrawList_PrimRect(lua_State *L)
 	return 0;
 }
 
-int w_ImDrawList_UpdateClipRect(lua_State *L)
+int w_ImDrawList__ResetForNewFrame(lua_State *L)
 {
 	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
 	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
 	auto* self = self_udata->value;
-	self->UpdateClipRect();
+	self->_ResetForNewFrame();
 	
 	return 0;
 }
 
-int w_ImDrawList_UpdateTextureID(lua_State *L)
+int w_ImDrawList__ClearFreeMemory(lua_State *L)
 {
 	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
 	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
 	auto* self = self_udata->value;
-	self->UpdateTextureID();
+	self->_ClearFreeMemory();
+	
+	return 0;
+}
+
+int w_ImDrawList__PopUnusedDrawCmd(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->_PopUnusedDrawCmd();
+	
+	return 0;
+}
+
+int w_ImDrawList__OnChangedClipRect(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->_OnChangedClipRect();
+	
+	return 0;
+}
+
+int w_ImDrawList__OnChangedTextureID(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->_OnChangedTextureID();
+	
+	return 0;
+}
+
+int w_ImDrawList__OnChangedVtxOffset(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	self->_OnChangedVtxOffset();
 	
 	return 0;
 }
@@ -6343,26 +6386,28 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "AddNgonFilled");
 	lua_pushcfunction(L, w_ImDrawList_PushClipRectFullScreen);
 	lua_setfield(L, -2, "PushClipRectFullScreen");
+	lua_pushcfunction(L, w_ImDrawList__ResetForNewFrame);
+	lua_setfield(L, -2, "_ResetForNewFrame");
 	lua_pushcfunction(L, w_ImDrawList_PathArcToFast);
 	lua_setfield(L, -2, "PathArcToFast");
 	lua_pushcfunction(L, w_ImDrawList_PrimReserve);
 	lua_setfield(L, -2, "PrimReserve");
+	lua_pushcfunction(L, w_ImDrawList__PopUnusedDrawCmd);
+	lua_setfield(L, -2, "_PopUnusedDrawCmd");
 	lua_pushcfunction(L, w_ImDrawList_PathBezierCurveTo);
 	lua_setfield(L, -2, "PathBezierCurveTo");
+	lua_pushcfunction(L, w_ImDrawList__OnChangedClipRect);
+	lua_setfield(L, -2, "_OnChangedClipRect");
 	lua_pushcfunction(L, w_ImDrawList_AddQuadFilled);
 	lua_setfield(L, -2, "AddQuadFilled");
 	lua_pushcfunction(L, w_ImDrawList_PathRect);
 	lua_setfield(L, -2, "PathRect");
-	lua_pushcfunction(L, w_ImDrawList_Clear);
-	lua_setfield(L, -2, "Clear");
-	lua_pushcfunction(L, w_ImDrawList_ClearFreeMemory);
-	lua_setfield(L, -2, "ClearFreeMemory");
-	lua_pushcfunction(L, w_ImDrawList_UpdateTextureID);
-	lua_setfield(L, -2, "UpdateTextureID");
+	lua_pushcfunction(L, w_ImDrawList__OnChangedTextureID);
+	lua_setfield(L, -2, "_OnChangedTextureID");
 	lua_pushcfunction(L, w_ImDrawList_AddDrawCmd);
 	lua_setfield(L, -2, "AddDrawCmd");
-	lua_pushcfunction(L, w_ImDrawList_AddTriangleFilled);
-	lua_setfield(L, -2, "AddTriangleFilled");
+	lua_pushcfunction(L, w_ImDrawList_AddNgon);
+	lua_setfield(L, -2, "AddNgon");
 	lua_pushcfunction(L, w_ImDrawList_AddQuad);
 	lua_setfield(L, -2, "AddQuad");
 	lua_pushcfunction(L, w_ImDrawList_AddText);
@@ -6375,32 +6420,34 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "PushTextureID");
 	lua_pushcfunction(L, w_ImDrawList_AddRect);
 	lua_setfield(L, -2, "AddRect");
+	lua_pushcfunction(L, w_ImDrawList__OnChangedVtxOffset);
+	lua_setfield(L, -2, "_OnChangedVtxOffset");
 	lua_pushcfunction(L, w_ImDrawList_PrimUnreserve);
 	lua_setfield(L, -2, "PrimUnreserve");
-	lua_pushcfunction(L, w_ImDrawList_AddNgon);
-	lua_setfield(L, -2, "AddNgon");
-	lua_pushcfunction(L, w_ImDrawList_PushClipRect);
-	lua_setfield(L, -2, "PushClipRect");
+	lua_pushcfunction(L, w_ImDrawList__ClearFreeMemory);
+	lua_setfield(L, -2, "_ClearFreeMemory");
+	lua_pushcfunction(L, w_ImDrawList_AddTriangleFilled);
+	lua_setfield(L, -2, "AddTriangleFilled");
 	lua_pushcfunction(L, w_ImDrawList_PrimRect);
 	lua_setfield(L, -2, "PrimRect");
 	lua_pushcfunction(L, w_ImDrawList_AddCircle);
 	lua_setfield(L, -2, "AddCircle");
 	lua_pushcfunction(L, w_ImDrawList_PopClipRect);
 	lua_setfield(L, -2, "PopClipRect");
-	lua_pushcfunction(L, w_ImDrawList_AddCircleFilled);
-	lua_setfield(L, -2, "AddCircleFilled");
+	lua_pushcfunction(L, w_ImDrawList_AddImage);
+	lua_setfield(L, -2, "AddImage");
 	lua_pushcfunction(L, w_ImDrawList_AddBezierCurve);
 	lua_setfield(L, -2, "AddBezierCurve");
 	lua_pushcfunction(L, w_ImDrawList_AddImageRounded);
 	lua_setfield(L, -2, "AddImageRounded");
+	lua_pushcfunction(L, w_ImDrawList_AddCircleFilled);
+	lua_setfield(L, -2, "AddCircleFilled");
 	lua_pushcfunction(L, w_ImDrawList_AddImageQuad);
 	lua_setfield(L, -2, "AddImageQuad");
-	lua_pushcfunction(L, w_ImDrawList_AddImage);
-	lua_setfield(L, -2, "AddImage");
 	lua_pushcfunction(L, w_ImDrawList_AddRectFilled);
 	lua_setfield(L, -2, "AddRectFilled");
-	lua_pushcfunction(L, w_ImDrawList_UpdateClipRect);
-	lua_setfield(L, -2, "UpdateClipRect");
+	lua_pushcfunction(L, w_ImDrawList_PushClipRect);
+	lua_setfield(L, -2, "PushClipRect");
 }
 
 void wrap_imgui::createImguiTable(lua_State* L)

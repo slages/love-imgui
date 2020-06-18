@@ -18,6 +18,7 @@ IF(EnableCodeGen)
 		bindings2/wren/wrap_imgui_codegen.cpp
 		bindings2/wren/wrap_imgui_codegen.h
 		bindings2/wren/imgui.wren
+		bindings2/wren/api_details.md
 
 		bindings2/lua/types.lua
 		bindings2/lua/generate.lua
@@ -30,6 +31,7 @@ IF(EnableCodeGen)
 	SET(BindOutput
 		${CMAKE_SOURCE_DIR}/src/wren-bindings/wrap_imgui_codegen.h
 		${CMAKE_SOURCE_DIR}/src/wren-bindings/wrap_imgui_codegen.cpp
+		${CMAKE_SOURCE_DIR}/src/wren-bindings/api_details.md
 		${CMAKE_SOURCE_DIR}/src/lua-bindings/wrap_imgui_codegen.h
 		${CMAKE_SOURCE_DIR}/src/lua-bindings/wrap_imgui_codegen.cpp
 	)

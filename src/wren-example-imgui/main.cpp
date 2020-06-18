@@ -1,30 +1,8 @@
-// dear imgui: standalone example application for SDL2 + Vulkan
-// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
-
-// Important note to the reader who wish to integrate imgui_impl_vulkan.cpp/.h in their own engine/app.
-// - Common ImGui_ImplVulkan_XXX functions and structures are used to interface with imgui_impl_vulkan.cpp/.h.
-//   You will use those if you want to use this rendering back-end in your engine/app.
-// - Helper ImGui_ImplVulkanH_XXX functions and structures are only used by this example (main.cpp) and by
-//   the back-end itself (imgui_impl_vulkan.cpp), but should PROBABLY NOT be used by your own engine/app code.
-// Read comments in imgui_impl_vulkan.h.
-
-#include "imgui.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_vulkan.h"
-#include <stdio.h>          // printf, fprintf
-#include <stdlib.h>         // abort
-#include <SDL.h>
-#include <SDL_vulkan.h>
-#include <vulkan/vulkan.h>
-
-//#define IMGUI_UNLIMITED_FRAME_RATE
-#ifdef _DEBUG
-#define IMGUI_VULKAN_DEBUG_REPORT
-#endif
-
+// {{{ Wren
 #include "wren.hpp"
 #include "wrap_imgui_codegen.h"
 #include <string>
+#include <cstring>
 WrenVM* vm;
 WrenHandle* w_ImGuiTest;
 WrenHandle* w_update;
@@ -159,6 +137,31 @@ void OnAppComplete()
 	wrenReleaseHandle(vm, w_update);
 	wrenFreeVM(vm);
 }
+// Wren }}}
+
+// dear imgui: standalone example application for SDL2 + Vulkan
+// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
+
+// Important note to the reader who wish to integrate imgui_impl_vulkan.cpp/.h in their own engine/app.
+// - Common ImGui_ImplVulkan_XXX functions and structures are used to interface with imgui_impl_vulkan.cpp/.h.
+//   You will use those if you want to use this rendering back-end in your engine/app.
+// - Helper ImGui_ImplVulkanH_XXX functions and structures are only used by this example (main.cpp) and by
+//   the back-end itself (imgui_impl_vulkan.cpp), but should PROBABLY NOT be used by your own engine/app code.
+// Read comments in imgui_impl_vulkan.h.
+
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_vulkan.h"
+#include <stdio.h>          // printf, fprintf
+#include <stdlib.h>         // abort
+#include <SDL.h>
+#include <SDL_vulkan.h>
+#include <vulkan/vulkan.h>
+
+//#define IMGUI_UNLIMITED_FRAME_RATE
+#ifdef _DEBUG
+#define IMGUI_VULKAN_DEBUG_REPORT
+#endif
 
 static VkAllocationCallbacks*   g_Allocator = NULL;
 static VkInstance               g_Instance = VK_NULL_HANDLE;
@@ -178,8 +181,9 @@ static int                      g_SwapChainResizeHeight = 0;
 
 static void check_vk_result(VkResult err)
 {
-    if (err == 0) return;
-    printf("VkResult %d\n", err);
+    if (err == 0)
+        return;
+    fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
     if (err < 0)
         abort();
 }
@@ -188,7 +192,7 @@ static void check_vk_result(VkResult err)
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_report(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 {
     (void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
-    fprintf(stderr, "[vulkan] ObjectType: %i\nMessage: %s\n\n", objectType, pMessage);
+    fprintf(stderr, "[vulkan] Debug report from ObjectType: %i\nMessage: %s\n\n", objectType, pMessage);
     return VK_FALSE;
 }
 #endif // IMGUI_VULKAN_DEBUG_REPORT
@@ -355,7 +359,7 @@ static void SetupVulkanWindow(ImGui_ImplVulkanH_Window* wd, VkSurfaceKHR surface
 
     // Create SwapChain, RenderPass, Framebuffer, etc.
     IM_ASSERT(g_MinImageCount >= 2);
-    ImGui_ImplVulkanH_CreateWindow(g_Instance, g_PhysicalDevice, g_Device, wd, g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
+    ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, wd, g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
 }
 
 static void CleanupVulkan()
@@ -377,7 +381,7 @@ static void CleanupVulkanWindow()
     ImGui_ImplVulkanH_DestroyWindow(g_Instance, g_Device, &g_MainWindowData, g_Allocator);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window* wd)
+static void FrameRender(ImGui_ImplVulkanH_Window* wd, ImDrawData* draw_data)
 {
     VkResult err;
 
@@ -415,8 +419,8 @@ static void FrameRender(ImGui_ImplVulkanH_Window* wd)
         vkCmdBeginRenderPass(fd->CommandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    // Record Imgui Draw Data and draw funcs into command buffer
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), fd->CommandBuffer);
+    // Record dear imgui primitives into command buffer
+    ImGui_ImplVulkan_RenderDrawData(draw_data, fd->CommandBuffer);
 
     // Submit command buffer
     vkCmdEndRenderPass(fd->CommandBuffer);
@@ -534,7 +538,7 @@ int main(int, char**)
     // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
     // - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
     // - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-    // - Read 'docs/FONTS.txt' for more instructions and details.
+    // - Read 'docs/FONTS.md' for more instructions and details.
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
@@ -575,10 +579,11 @@ int main(int, char**)
     }
 
     // Our state
+    bool show_demo_window = true;
+    bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	OnAppStart();
-
     // Main loop
     bool done = false;
     while (!done)
@@ -596,17 +601,21 @@ int main(int, char**)
                 done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED && event.window.windowID == SDL_GetWindowID(window))
             {
+                // Note: your own application may rely on SDL_WINDOWEVENT_MINIMIZED/SDL_WINDOWEVENT_RESTORED to skip updating all-together.
+                // Here ImGui_ImplSDL2_NewFrame() will set io.DisplaySize to zero which will disable rendering but let application run.
+                // Please note that you can't Present into a minimized window.
                 g_SwapChainResizeWidth = (int)event.window.data1;
                 g_SwapChainResizeHeight = (int)event.window.data2;
                 g_SwapChainRebuild = true;
             }
         }
 
-        if (g_SwapChainRebuild)
+        // Resize swap chain?
+        if (g_SwapChainRebuild && g_SwapChainResizeWidth > 0 && g_SwapChainResizeHeight > 0)
         {
             g_SwapChainRebuild = false;
             ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-            ImGui_ImplVulkanH_CreateWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, g_SwapChainResizeWidth, g_SwapChainResizeHeight, g_MinImageCount);
+            ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, g_SwapChainResizeWidth, g_SwapChainResizeHeight, g_MinImageCount);
             g_MainWindowData.FrameIndex = 0;
         }
 
@@ -619,8 +628,11 @@ int main(int, char**)
 
         // Rendering
         ImGui::Render();
+        ImDrawData* main_draw_data = ImGui::GetDrawData();
+        const bool main_is_minimized = (main_draw_data->DisplaySize.x <= 0.0f || main_draw_data->DisplaySize.y <= 0.0f);
         memcpy(&wd->ClearValue.color.float32[0], &clear_color, 4 * sizeof(float));
-        FrameRender(wd);
+        if (!main_is_minimized)
+            FrameRender(wd, main_draw_data);
 
         // Update and Render additional Platform Windows
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -629,7 +641,9 @@ int main(int, char**)
             ImGui::RenderPlatformWindowsDefault();
         }
 
-        FramePresent(wd);
+        // Present Main Platform Window
+        if (!main_is_minimized)
+            FramePresent(wd);
     }
 
     // Cleanup
@@ -644,8 +658,6 @@ int main(int, char**)
 
     SDL_DestroyWindow(window);
     SDL_Quit();
-
-	OnAppComplete();
 
     return 0;
 }

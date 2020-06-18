@@ -42,15 +42,10 @@ local function main()
 			"src/wren-bindings/wrap_imgui_codegen.h",
 			"bindings2/wren/wrap_imgui_codegen.h",
 			imgui, wrenHelpers)
-		for elementName, fnElement in pairs(imgui.functions) do
-			for name in pairs(fnElement.invalidNames) do
-				util.logf("unimplemented function: %s", name)
-			end
-			util.logf("%s: %d functions implemented, %d functions unimplemented",
-				elementName,
-				util.count(fnElement.validNames),
-				util.count(fnElement.invalidNames))
-		end
+		generateFile(
+			"src/wren-bindings/api_details.md",
+			"bindings2/wren/api_details.md",
+			imgui, wrenHelpers)
 	end
 
 	do

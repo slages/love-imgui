@@ -205,7 +205,7 @@ end
 local function parseImguiFunction(line, regions)
 	local _, apiStop = line:find("IMGUI_API")
 	local returnType, _, returnStop = matchCType(line, apiStop + 1)
-	local name = line:match("%w+", returnStop + 1)
+	local name = line:match("[%w_]+", returnStop + 1)
 	local _, nameStop = line:find("%w+", returnStop + 1)
 	local args, isVarargs = matchCArgs(line, nameStop+1)
 	local comment = line:match("//(.+)")
