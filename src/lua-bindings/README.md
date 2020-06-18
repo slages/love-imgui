@@ -1,6 +1,6 @@
 Here be the lua bindings.
 
-to use, copy [wrap_imgui_codegen.cpp](wrap_imgui_codegen.cpp) and [wrap_imgui_codegen.h](wrap_imgui_codegen.h), and [imgui](../../deps/libimgui) itself, into your project.
+to use, copy [wrap_imgui_codegen.cpp](wrap_imgui_codegen.cpp) and [wrap_imgui_codegen.h](wrap_imgui_codegen.h), and imgui itself, into your project.
 
 you can then access a table with every wrapper using 
 ```cpp

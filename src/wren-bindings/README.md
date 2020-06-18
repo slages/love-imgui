@@ -1,6 +1,6 @@
 Here be the wren bindings.
 
-to use, copy [wrap_imgui_codegen.cpp](wrap_imgui_codegen.cpp) and [wrap_imgui_codegen.h](wrap_imgui_codegen.h), and [imgui](../../deps/libimgui) itself, into your project.
+to use, copy [wrap_imgui_codegen.cpp](wrap_imgui_codegen.cpp) and [wrap_imgui_codegen.h](wrap_imgui_codegen.h), and imgui itself, into your project.
 
 Then, yout can expose it to wren's import system:
 ```cpp
