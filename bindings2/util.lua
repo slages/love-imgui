@@ -10,4 +10,12 @@ function util.getOrCreateTable(t, k)
 	end
 end
 
+function util.count(tbl)
+	local count = 0
+	for _ in pairs(tbl) do
+		count = count + 1
+	end
+	return count
+end
+
 return util

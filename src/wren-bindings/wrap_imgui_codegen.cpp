@@ -4130,14 +4130,6 @@ void w_InputTextWithHint_Override2(WrenVM *vm)
 	Box::setCPP<std::string>(vm, 3, str);
 }
 
-// skipping w_Combo_Override4 due to unimplemented argument type: "const std::vector<const char*>&"
-
-// skipping w_ListBox_Override3 due to unimplemented argument type: "const std::vector<const char*>&"
-
-// skipping w_PlotLines_Override3 due to unimplemented argument type: "const std::vector<float>&"
-
-// skipping w_PlotHistogram_Override3 due to unimplemented argument type: "const std::vector<float>&"
-
 // skipping w_ImDrawList_PushClipRect due to unimplemented foreign class type: "ImDrawList"
 
 // skipping w_ImDrawList_PushClipRectFullScreen due to unimplemented foreign class type: "ImDrawList"
@@ -4217,6 +4209,9 @@ void w_InputTextWithHint_Override2(WrenVM *vm)
 // skipping w_ImDrawList_UpdateTextureID due to unimplemented foreign class type: "ImDrawList"
 
 // End Functions }}}
+
+// {{{ Function overrides
+// }}}
 
 const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"Box::init new(_)", Box::init},
@@ -4580,6 +4575,21 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::InvisibleButton(_,_)", w_InvisibleButton},
 {"ImGui::EndDragDropTarget()", w_EndDragDropTarget},
 {"ImGui::Text(_)", w_Text},
+
+{"ImGui::IsRectVisible(_)", w_IsRectVisible_Override1},
+{"ImGui::IsRectVisible(_,_)", w_IsRectVisible_Override2},
+
+{"ImGui::InputText(_,_,_,_)", w_InputText_Override2},
+{"ImGui::InputText(_,_,_)", w_InputText_Override2},
+{"ImGui::InputText(_,_)", w_InputText_Override2},
+
+{"ImGui::InputTextMultiline(_,_,_,_)", w_InputTextMultiline_Override2},
+{"ImGui::InputTextMultiline(_,_,_)", w_InputTextMultiline_Override2},
+{"ImGui::InputTextMultiline(_,_)", w_InputTextMultiline_Override2},
+
+{"ImGui::InputTextWithHint(_,_,_,_,_)", w_InputTextWithHint_Override2},
+{"ImGui::InputTextWithHint(_,_,_,_)", w_InputTextWithHint_Override2},
+{"ImGui::InputTextWithHint(_,_,_)", w_InputTextWithHint_Override2},
 };
 
 const char* foreignModuleString = R"MODULE(
