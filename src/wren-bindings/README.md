@@ -7,7 +7,7 @@ this repo to avoid version differences: if you would like to use a different
 ersion I would update that submodule and re-run the bindings script instead of
 using these bindings as-is.
 
-Then once you'de got it building, you can expose it to wren's import system:
+Then once you've got it building, you can expose it to wren's import system:
 ```cpp
 #include "wrap_imgui_codegen.h"
 char* loadModule(WrenVM* vm, const char* name)
