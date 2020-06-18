@@ -296,7 +296,7 @@ struct WrapImDrawList
 	bool isValid() { return g_currentFrameNumber == frameNumber; }
 };
 
-<% helpers.addValidFunctions(imgui.functions.toplevel, "ColorPicker4") -%>
+<% helpers.addValidFunctions(imgui.functions.ImGui, "ColorPicker4") -%>
 int w_ColorPicker4(lua_State* L)
 {
 	// manually implemented to handle ref_col, which is a little goofy
@@ -327,7 +327,7 @@ int w_ColorPicker4(lua_State* L)
 	return 5;
 }
 
-<% helpers.addValidFunctions(imgui.functions.toplevel, "NewFrame") -%>
+<% helpers.addValidFunctions(imgui.functions.ImGui, "NewFrame") -%>
 int w_NewFrame(lua_State* L)
 {
 	// manually implemented to track new frames
@@ -339,7 +339,7 @@ int w_NewFrame(lua_State* L)
 // End Manually Implemented Wrappers }}}
 
 // Functions {{{
-<% for _, fnElement in pairs(imgui.functions) do -%>
+<% for _, fnElement in util.sortedPairs(imgui.functions) do -%>
 <% for _, fnData in ipairs(fnElement.fnData) do -%>
 <%- helpers.genFunctionWrapper(fnElement, fnData) %>
 
@@ -499,17 +499,17 @@ int w_Combo(lua_State* L)
 	return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
 }
 
-<% helpers.removeValidFunction(imgui.functions.toplevel, "ListBoxHeader") -%>
+<% helpers.removeValidFunction(imgui.functions.ImGui, "ListBoxHeader") -%>
 int w_ListBoxHeaderXY(lua_State* L)
 {
-	<% helpers.addValidFunctions(imgui.functions.toplevel, "ListBoxHeaderXY") -%>
+	<% helpers.addValidFunctions(imgui.functions.ImGui, "ListBoxHeaderXY") -%>
 	// There's no way to distinguish these two
 	return w_ListBoxHeader_Override1(L); // label, size
 }
 
 int w_ListBoxHeaderItems(lua_State* L)
 {
-	<% helpers.addValidFunctions(imgui.functions.toplevel, "ListBoxHeaderItems") -%>
+	<% helpers.addValidFunctions(imgui.functions.ImGui, "ListBoxHeaderItems") -%>
 	// There's no way to distinguish these two
 	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
 }
@@ -536,13 +536,13 @@ int w_ImDrawList_AddText(lua_State* L)
 
 void wrap_imgui::addImguiWrappers(lua_State* L)
 {
-<% for name in pairs(imgui.functions.toplevel.validNames) do -%>
+<% for name in util.sortedPairs(imgui.functions.ImGui.validNames) do -%>
 	lua_pushcfunction(L, w_<%- name %>);
 	lua_setfield(L, -2, "<%- name %>");
 <% end -%>
 
 	luaL_newmetatable(L, "ImDrawList");
-<% for name in pairs(imgui.functions.ImDrawList.validNames) do -%>
+<% for name in util.sortedPairs(imgui.functions.ImDrawList.validNames) do -%>
 	lua_pushcfunction(L, w_ImDrawList_<%- name %>);
 	lua_setfield(L, -2, "<%- name %>");
 <% end -%>
@@ -550,7 +550,7 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 
 void wrap_imgui::createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, <%- util.count(imgui.functions.toplevel.validNames) %>); 
+	lua_createtable(L, 0, <%- util.count(imgui.functions.ImGui.validNames) %>); 
 	addImguiWrappers(L);
 }
 

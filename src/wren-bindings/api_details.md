@@ -1,573 +1,301 @@
-# toplevel
-
-### Supported methods (69)
-* 	foreign static SetColumnOffset(column_index, offset_x)
-* 	foreign static IsItemDeactivatedAfterEdit()
-* 	foreign static IsMouseDoubleClicked(button)
-* 	foreign static GetTreeNodeToLabelSpacing()
-* 	foreign static SetNextItemOpen(is_open)
-	foreign static SetNextItemOpen(is_open, cond)
-* 	foreign static PopTextWrapPos()
-* 	foreign static EndDragDropSource()
-* 	foreign static GetWindowWidth()
-* 	foreign static SetNextWindowCollapsed(collapsed)
-	foreign static SetNextWindowCollapsed(collapsed, cond)
-* 	foreign static TextWrapped(fmt)
-* 	foreign static GetStyleColorName(idx)
-* 	foreign static ColorButton(desc_id, col)
-	foreign static ColorButton(desc_id, col, flags)
-	foreign static ColorButton(desc_id, col, flags, size)
-* 	foreign static SmallButton(label)
-* 	foreign static IsMouseClicked(button)
-	foreign static IsMouseClicked(button, repeat)
-* 	foreign static BeginPopupContextWindow()
-	foreign static BeginPopupContextWindow(str_id)
-	foreign static BeginPopupContextWindow(str_id, mouse_button)
-	foreign static BeginPopupContextWindow(str_id, mouse_button, also_over_items)
-* 	foreign static Checkbox(label, v)
-* 	foreign static InputFloat(label, v)
-	foreign static InputFloat(label, v, step)
-	foreign static InputFloat(label, v, step, step_fast)
-	foreign static InputFloat(label, v, step, step_fast, format)
-	foreign static InputFloat(label, v, step, step_fast, format, flags)
-* 	foreign static IsMouseDown(button)
-* 	foreign static VSliderInt(label, size, v, v_min, v_max)
-	foreign static VSliderInt(label, size, v, v_min, v_max, format)
-* 	foreign static LogFinish()
-* 	foreign static ShowFontSelector(label)
-* 	foreign static SetScrollHereX()
-	foreign static SetScrollHereX(center_x_ratio)
-* 	foreign static PushAllowKeyboardFocus(allow_keyboard_focus)
-* 	foreign static PopStyleVar()
-	foreign static PopStyleVar(count)
-* 	foreign static SetScrollHereY()
-	foreign static SetScrollHereY(center_y_ratio)
-* 	foreign static GetContentRegionMax()
-* 	foreign static IsMouseDragging(button)
-	foreign static IsMouseDragging(button, lock_threshold)
-* 	foreign static IsKeyDown(user_key_index)
-* 	foreign static GetColumnIndex()
-* 	foreign static GetColumnOffset()
-	foreign static GetColumnOffset(column_index)
-* 	foreign static VSliderFloat(label, size, v, v_min, v_max)
-	foreign static VSliderFloat(label, size, v, v_min, v_max, format)
-	foreign static VSliderFloat(label, size, v, v_min, v_max, format, power)
-* 	foreign static DockSpace(id)
-	foreign static DockSpace(id, size)
-	foreign static DockSpace(id, size, flags)
-	foreign static DockSpace(id, size, flags, window_class)
-* 	foreign static IsKeyPressed(user_key_index)
-	foreign static IsKeyPressed(user_key_index, repeat)
-* 	foreign static GetFontSize()
-* 	foreign static SameLine()
-	foreign static SameLine(offset_from_start_x)
-	foreign static SameLine(offset_from_start_x, spacing)
-* 	foreign static Begin(name)
-	foreign static Begin(name, p_open)
-	foreign static Begin(name, p_open, flags)
-* 	foreign static BeginTooltip()
-* 	foreign static BeginMenu(label)
-	foreign static BeginMenu(label, enabled)
-* 	foreign static ShowUserGuide()
-* 	foreign static DragFloat(label, v)
-	foreign static DragFloat(label, v, v_speed)
-	foreign static DragFloat(label, v, v_speed, v_min)
-	foreign static DragFloat(label, v, v_speed, v_min, v_max)
-	foreign static DragFloat(label, v, v_speed, v_min, v_max, format)
-	foreign static DragFloat(label, v, v_speed, v_min, v_max, format, power)
-* 	foreign static BeginChildFrame(id, size)
-	foreign static BeginChildFrame(id, size, flags)
-* 	foreign static InputDouble(label, v)
-	foreign static InputDouble(label, v, step)
-	foreign static InputDouble(label, v, step, step_fast)
-	foreign static InputDouble(label, v, step, step_fast, format)
-	foreign static InputDouble(label, v, step, step_fast, format, flags)
-* 	foreign static SetColumnWidth(column_index, width)
-* 	foreign static UpdatePlatformWindows()
-* 	foreign static IsWindowHovered()
-	foreign static IsWindowHovered(flags)
-* 	foreign static PopFont()
-* 	foreign static ProgressBar(fraction)
-	foreign static ProgressBar(fraction, size_arg)
-	foreign static ProgressBar(fraction, size_arg, overlay)
-* 	foreign static GetTextLineHeightWithSpacing()
-* 	foreign static BeginTabBar(str_id)
-	foreign static BeginTabBar(str_id, flags)
-* 	foreign static GetWindowContentRegionMin()
-* 	foreign static LoadIniSettingsFromDisk(ini_filename)
-* 	foreign static EndGroup()
-* 	foreign static SetClipboardText(text)
-* 	foreign static IsWindowFocused()
-	foreign static IsWindowFocused(flags)
-* 	foreign static EndTabBar()
-* 	foreign static Button(label)
-	foreign static Button(label, size)
-* 	foreign static BeginTabItem(label)
-	foreign static BeginTabItem(label, p_open)
-	foreign static BeginTabItem(label, p_open, flags)
-* 	foreign static IsItemEdited()
-* 	foreign static SetCursorPos(local_pos)
-* 	foreign static GetClipboardText()
-* 	foreign static GetMouseDragDelta()
-	foreign static GetMouseDragDelta(button)
-	foreign static GetMouseDragDelta(button, lock_threshold)
-* 	foreign static GetMousePosOnOpeningCurrentPopup()
-* 	foreign static GetMousePos()
-* 	foreign static IsAnyMouseDown()
-* 	foreign static ListBoxFooter()
-* 	foreign static IsMouseHoveringRect(r_min, r_max)
-	foreign static IsMouseHoveringRect(r_min, r_max, clip)
-* 	foreign static DragFloatRange2(label, v_current_min, v_current_max)
-	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed)
-	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min)
-	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max)
-	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
-	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
-	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, power)
-* 	foreign static GetVersion()
-* 	foreign static TextUnformatted(text)
-	foreign static TextUnformatted(text, text_end)
-* 	foreign static BeginMainMenuBar()
-* 	foreign static IsAnyItemActive()
-* 	foreign static GetKeyPressedAmount(key_index, repeat_delay, rate)
-* 	foreign static IsKeyReleased(user_key_index)
-* 	foreign static EndMenuBar()
-* 	foreign static GetKeyIndex(imgui_key)
-* 	foreign static ColorConvertU32ToFloat4(input)
-* 	foreign static ShowAboutWindow()
-	foreign static ShowAboutWindow(p_open)
-* 	foreign static CheckboxFlags(label, flags, flags_value)
-* 	foreign static GetFrameHeight()
-* 	foreign static SetNextWindowFocus()
-* 	foreign static GetWindowPos()
-* 	foreign static DragIntRange2(label, v_current_min, v_current_max)
-	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed)
-	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min)
-	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max)
-	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
-	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
-* 	foreign static EndChildFrame()
-* 	foreign static GetScrollY()
-* 	foreign static SetNextWindowPos(pos)
-	foreign static SetNextWindowPos(pos, cond)
-	foreign static SetNextWindowPos(pos, cond, pivot)
-* 	foreign static BeginPopupModal(name)
-	foreign static BeginPopupModal(name, p_open)
-	foreign static BeginPopupModal(name, p_open, flags)
-* 	foreign static GetTime()
-* 	foreign static BeginMenuBar()
-* 	foreign static IsWindowDocked()
-* 	foreign static GetFrameHeightWithSpacing()
-* 	foreign static LogToTTY()
-	foreign static LogToTTY(auto_open_depth)
-* 	foreign static NextColumn()
-* 	foreign static GetWindowSize()
-* 	foreign static SetItemAllowOverlap()
-* 	foreign static GetWindowHeight()
-* 	foreign static IsWindowAppearing()
-* 	foreign static EndCombo()
-* 	foreign static GetItemRectSize()
-* 	foreign static SetNextWindowSize(size)
-	foreign static SetNextWindowSize(size, cond)
-* 	foreign static GetItemRectMax()
-* 	foreign static AlignTextToFramePadding()
-* 	foreign static CloseCurrentPopup()
-* 	foreign static LogToFile()
-	foreign static LogToFile(auto_open_depth)
-	foreign static LogToFile(auto_open_depth, filename)
-* 	foreign static GetItemRectMin()
-* 	foreign static IsAnyItemFocused()
-* 	foreign static CaptureKeyboardFromApp()
-	foreign static CaptureKeyboardFromApp(want_capture_keyboard_value)
-* 	foreign static IsAnyItemHovered()
-* 	foreign static EndFrame()
-* 	foreign static BeginDragDropSource()
-	foreign static BeginDragDropSource(flags)
-* 	foreign static GetCursorPosY()
-* 	foreign static IsItemDeactivated()
-* 	foreign static SetCursorPosX(local_x)
-* 	foreign static EndMenu()
-* 	foreign static TextDisabled(fmt)
-* 	foreign static IsItemActivated()
-* 	foreign static Unindent()
-	foreign static Unindent(indent_w)
-* 	foreign static IsItemVisible()
-* 	foreign static SetScrollX(scroll_x)
-* 	foreign static IsItemFocused()
-* 	foreign static PopButtonRepeat()
-* 	foreign static IsItemClicked()
-	foreign static IsItemClicked(mouse_button)
-* 	foreign static PopAllowKeyboardFocus()
-* 	foreign static SetScrollFromPosX(local_x)
-	foreign static SetScrollFromPosX(local_x, center_x_ratio)
-* 	foreign static ResetMouseDragDelta()
-	foreign static ResetMouseDragDelta(button)
-* 	foreign static SetWindowFontScale(scale)
-* 	foreign static IsItemHovered()
-	foreign static IsItemHovered(flags)
-* 	foreign static SetNextWindowBgAlpha(alpha)
-* 	foreign static ShowStyleSelector(label)
-* 	foreign static SetKeyboardFocusHere()
-	foreign static SetKeyboardFocusHere(offset)
-* 	foreign static BeginDragDropTarget()
-* 	foreign static PopClipRect()
-* 	foreign static SetItemDefaultFocus()
-* 	foreign static PushItemWidth(item_width)
-* 	foreign static PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect)
-* 	foreign static LogToClipboard()
-	foreign static LogToClipboard(auto_open_depth)
-* 	foreign static IsWindowCollapsed()
-* 	foreign static IsMouseReleased(button)
-* 	foreign static LogButtons()
-* 	foreign static IsItemActive()
-* 	foreign static Spacing()
-* 	foreign static SetNextWindowDockID(dock_id)
-	foreign static SetNextWindowDockID(dock_id, cond)
-* 	foreign static NewLine()
-* 	foreign static DockSpaceOverViewport()
-	foreign static DockSpaceOverViewport(viewport)
-	foreign static DockSpaceOverViewport(viewport, flags)
-	foreign static DockSpaceOverViewport(viewport, flags, window_class)
-* 	foreign static SetTabItemClosed(tab_or_docked_window_label)
-* 	foreign static PushButtonRepeat(repeat)
-* 	foreign static GetStyleColorVec4(idx)
-* 	foreign static CalcItemWidth()
-* 	foreign static SetCursorScreenPos(pos)
-* 	foreign static EndChild()
-* 	foreign static CaptureMouseFromApp()
-	foreign static CaptureMouseFromApp(want_capture_mouse_value)
-* 	foreign static GetColumnsCount()
-* 	foreign static DestroyPlatformWindows()
-* 	foreign static EndPopup()
-* 	foreign static Columns()
-	foreign static Columns(count)
-	foreign static Columns(count, id)
-	foreign static Columns(count, id, border)
-* 	foreign static IsPopupOpen(str_id)
-* 	foreign static Bullet()
-* 	foreign static EndTooltip()
-* 	foreign static InputInt(label, v)
-	foreign static InputInt(label, v, step)
-	foreign static InputInt(label, v, step, step_fast)
-	foreign static InputInt(label, v, step, step_fast, flags)
-* 	foreign static SliderAngle(label, v_rad)
-	foreign static SliderAngle(label, v_rad, v_degrees_min)
-	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max)
-	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format)
-* 	foreign static OpenPopupOnItemClick()
-	foreign static OpenPopupOnItemClick(str_id)
-	foreign static OpenPopupOnItemClick(str_id, mouse_button)
-* 	foreign static SetScrollFromPosY(local_y)
-	foreign static SetScrollFromPosY(local_y, center_y_ratio)
-* 	foreign static GetColumnWidth()
-	foreign static GetColumnWidth(column_index)
-* 	foreign static PopStyleColor()
-	foreign static PopStyleColor(count)
-* 	foreign static GetFrameCount()
-* 	foreign static GetWindowDpiScale()
-* 	foreign static CalcListClipping(items_count, items_height, out_items_display_start, out_items_display_end)
-* 	foreign static GetScrollMaxY()
-* 	foreign static GetCursorScreenPos()
-* 	foreign static EndMainMenuBar()
-* 	foreign static SaveIniSettingsToDisk(ini_filename)
-* 	foreign static BeginPopup(str_id)
-	foreign static BeginPopup(str_id, flags)
-* 	foreign static BeginPopupContextItem()
-	foreign static BeginPopupContextItem(str_id)
-	foreign static BeginPopupContextItem(str_id, mouse_button)
-* 	foreign static GetCursorStartPos()
-* 	foreign static SetTooltip(fmt)
-* 	foreign static GetScrollMaxX()
-* 	foreign static IsItemToggledOpen()
-* 	foreign static GetCursorPosX()
-* 	foreign static PopItemWidth()
-* 	foreign static SetNextWindowContentSize(size)
-* 	foreign static LogText(fmt)
-* 	foreign static SetScrollY(scroll_y)
-* 	foreign static End()
-* 	foreign static SetNextItemWidth(item_width)
-* 	foreign static TreePop()
-* 	foreign static GetWindowContentRegionWidth()
-* 	foreign static GetFontTexUvWhitePixel()
-* 	foreign static PushTextWrapPos()
-	foreign static PushTextWrapPos(wrap_local_pos_x)
-* 	foreign static ArrowButton(str_id, dir)
-* 	foreign static BeginPopupContextVoid()
-	foreign static BeginPopupContextVoid(str_id)
-	foreign static BeginPopupContextVoid(str_id, mouse_button)
-* 	foreign static ShowMetricsWindow()
-	foreign static ShowMetricsWindow(p_open)
-* 	foreign static GetWindowDockID()
-* 	foreign static SetCursorPosY(local_y)
-* 	foreign static DragInt(label, v)
-	foreign static DragInt(label, v, v_speed)
-	foreign static DragInt(label, v, v_speed, v_min)
-	foreign static DragInt(label, v, v_speed, v_min, v_max)
-	foreign static DragInt(label, v, v_speed, v_min, v_max, format)
-* 	foreign static NewFrame()
-* 	foreign static SetColorEditOptions(flags)
-* 	foreign static GetMouseCursor()
-* 	foreign static PopID()
-* 	foreign static BeginGroup()
-* 	foreign static Indent()
-	foreign static Indent(indent_w)
-* 	foreign static SliderInt(label, v, v_min, v_max)
-	foreign static SliderInt(label, v, v_min, v_max, format)
-* 	foreign static EndTabItem()
-* 	foreign static Separator()
-* 	foreign static GetTextLineHeight()
-* 	foreign static GetScrollX()
-* 	foreign static OpenPopup(str_id)
-* 	foreign static LabelText(label, fmt)
-* 	foreign static BulletText(fmt)
-* 	foreign static SetMouseCursor(cursor_type)
-* 	foreign static Dummy(size)
-* 	foreign static GetWindowContentRegionMax()
-* 	foreign static CalcTextSize(text)
-	foreign static CalcTextSize(text, text_end)
-	foreign static CalcTextSize(text, text_end, hide_text_after_double_hash)
-	foreign static CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width)
-* 	foreign static SliderFloat(label, v, v_min, v_max)
-	foreign static SliderFloat(label, v, v_min, v_max, format)
-	foreign static SliderFloat(label, v, v_min, v_max, format, power)
-* 	foreign static GetContentRegionAvail()
-* 	foreign static BeginCombo(label, preview_value)
-	foreign static BeginCombo(label, preview_value, flags)
-* 	foreign static GetCursorPos()
-* 	foreign static SetNextWindowViewport(viewport_id)
-* 	foreign static Render()
-* 	foreign static TextColored(col, fmt)
-* 	foreign static ShowDemoWindow()
-	foreign static ShowDemoWindow(p_open)
-* 	foreign static InvisibleButton(str_id, size)
-* 	foreign static EndDragDropTarget()
-* 	foreign static Text(fmt)
-
-### Unsupported methods (69)
-* SetColumnOffset
-* IsItemDeactivatedAfterEdit
-* IsMouseDoubleClicked
-* GetTreeNodeToLabelSpacing
-* SetNextItemOpen
-* PopTextWrapPos
-* EndDragDropSource
-* GetWindowWidth
-* SetNextWindowCollapsed
-* TextWrapped
-* GetStyleColorName
-* ColorButton
-* SmallButton
-* IsMouseClicked
-* BeginPopupContextWindow
-* Checkbox
-* InputFloat
-* IsMouseDown
-* VSliderInt
-* LogFinish
-* ShowFontSelector
-* SetScrollHereX
-* PushAllowKeyboardFocus
-* PopStyleVar
-* SetScrollHereY
-* GetContentRegionMax
-* IsMouseDragging
-* IsKeyDown
-* GetColumnIndex
-* GetColumnOffset
-* VSliderFloat
-* DockSpace
-* IsKeyPressed
-* GetFontSize
-* SameLine
-* Begin
-* BeginTooltip
-* BeginMenu
-* ShowUserGuide
-* DragFloat
-* BeginChildFrame
-* InputDouble
-* SetColumnWidth
-* UpdatePlatformWindows
-* IsWindowHovered
-* PopFont
-* ProgressBar
-* GetTextLineHeightWithSpacing
-* BeginTabBar
-* GetWindowContentRegionMin
-* LoadIniSettingsFromDisk
-* EndGroup
-* SetClipboardText
-* IsWindowFocused
-* EndTabBar
-* Button
-* BeginTabItem
-* IsItemEdited
-* SetCursorPos
-* GetClipboardText
-* GetMouseDragDelta
-* GetMousePosOnOpeningCurrentPopup
-* GetMousePos
-* IsAnyMouseDown
-* ListBoxFooter
-* IsMouseHoveringRect
-* DragFloatRange2
-* GetVersion
-* TextUnformatted
-* BeginMainMenuBar
-* IsAnyItemActive
-* GetKeyPressedAmount
-* IsKeyReleased
-* EndMenuBar
-* GetKeyIndex
-* ColorConvertU32ToFloat4
-* ShowAboutWindow
-* CheckboxFlags
-* GetFrameHeight
-* SetNextWindowFocus
-* GetWindowPos
-* DragIntRange2
-* EndChildFrame
-* GetScrollY
-* SetNextWindowPos
-* BeginPopupModal
-* GetTime
-* BeginMenuBar
-* IsWindowDocked
-* GetFrameHeightWithSpacing
-* LogToTTY
-* NextColumn
-* GetWindowSize
-* SetItemAllowOverlap
-* GetWindowHeight
-* IsWindowAppearing
-* EndCombo
-* GetItemRectSize
-* SetNextWindowSize
-* GetItemRectMax
-* AlignTextToFramePadding
-* CloseCurrentPopup
-* LogToFile
-* GetItemRectMin
-* IsAnyItemFocused
-* CaptureKeyboardFromApp
-* IsAnyItemHovered
-* EndFrame
-* BeginDragDropSource
-* GetCursorPosY
-* IsItemDeactivated
-* SetCursorPosX
-* EndMenu
-* TextDisabled
-* IsItemActivated
-* Unindent
-* IsItemVisible
-* SetScrollX
-* IsItemFocused
-* PopButtonRepeat
-* IsItemClicked
-* PopAllowKeyboardFocus
-* SetScrollFromPosX
-* ResetMouseDragDelta
-* SetWindowFontScale
-* IsItemHovered
-* SetNextWindowBgAlpha
-* ShowStyleSelector
-* SetKeyboardFocusHere
-* BeginDragDropTarget
-* PopClipRect
-* SetItemDefaultFocus
-* PushItemWidth
-* PushClipRect
-* LogToClipboard
-* IsWindowCollapsed
-* IsMouseReleased
-* LogButtons
-* IsItemActive
-* Spacing
-* SetNextWindowDockID
-* NewLine
-* DockSpaceOverViewport
-* SetTabItemClosed
-* PushButtonRepeat
-* GetStyleColorVec4
-* CalcItemWidth
-* SetCursorScreenPos
-* EndChild
-* CaptureMouseFromApp
-* GetColumnsCount
-* DestroyPlatformWindows
-* EndPopup
-* Columns
-* IsPopupOpen
-* Bullet
-* EndTooltip
-* InputInt
-* SliderAngle
-* OpenPopupOnItemClick
-* SetScrollFromPosY
-* GetColumnWidth
-* PopStyleColor
-* GetFrameCount
-* GetWindowDpiScale
-* CalcListClipping
-* GetScrollMaxY
-* GetCursorScreenPos
-* EndMainMenuBar
-* SaveIniSettingsToDisk
-* BeginPopup
-* BeginPopupContextItem
-* GetCursorStartPos
-* SetTooltip
-* GetScrollMaxX
-* IsItemToggledOpen
-* GetCursorPosX
-* PopItemWidth
-* SetNextWindowContentSize
-* LogText
-* SetScrollY
-* End
-* SetNextItemWidth
-* TreePop
-* GetWindowContentRegionWidth
-* GetFontTexUvWhitePixel
-* PushTextWrapPos
-* ArrowButton
-* BeginPopupContextVoid
-* ShowMetricsWindow
-* GetWindowDockID
-* SetCursorPosY
-* DragInt
-* NewFrame
-* SetColorEditOptions
-* GetMouseCursor
-* PopID
-* BeginGroup
-* Indent
-* SliderInt
-* EndTabItem
-* Separator
-* GetTextLineHeight
-* GetScrollX
-* OpenPopup
-* LabelText
-* BulletText
-* SetMouseCursor
-* Dummy
-* GetWindowContentRegionMax
-* CalcTextSize
-* SliderFloat
-* GetContentRegionAvail
-* BeginCombo
-* GetCursorPos
-* SetNextWindowViewport
-* Render
-* TextColored
-* ShowDemoWindow
-* InvisibleButton
-* EndDragDropTarget
-* Text
 # ImDrawList
 
 ### Supported methods (0)
 
 ### Unsupported methods (0)
+# ImGui
+
+### Supported methods (222)
+* ImGui.AlignTextToFramePadding()
+* ImGui.ArrowButton(str_id, dir)
+* ImGui.Begin(name, p_open = NULL, flags = 0)
+* ImGui.BeginChildFrame(id, size, flags = 0)
+* ImGui.BeginCombo(label, preview_value, flags = 0)
+* ImGui.BeginDragDropSource(flags = 0)
+* ImGui.BeginDragDropTarget()
+* ImGui.BeginGroup()
+* ImGui.BeginMainMenuBar()
+* ImGui.BeginMenu(label, enabled = true)
+* ImGui.BeginMenuBar()
+* ImGui.BeginPopup(str_id, flags = 0)
+* ImGui.BeginPopupContextItem(str_id = NULL, mouse_button = 1)
+* ImGui.BeginPopupContextVoid(str_id = NULL, mouse_button = 1)
+* ImGui.BeginPopupContextWindow(str_id = NULL, mouse_button = 1, also_over_items = true)
+* ImGui.BeginPopupModal(name, p_open = NULL, flags = 0)
+* ImGui.BeginTabBar(str_id, flags = 0)
+* ImGui.BeginTabItem(label, p_open = NULL, flags = 0)
+* ImGui.BeginTooltip()
+* ImGui.Bullet()
+* ImGui.BulletText(fmt)
+* ImGui.Button(label, size = ImVec2(0, 0))
+* ImGui.CalcItemWidth()
+* ImGui.CalcListClipping(items_count, items_height, out_items_display_start, out_items_display_end)
+* ImGui.CalcTextSize(text, text_end = NULL, hide_text_after_double_hash = false, wrap_width = -1.0f)
+* ImGui.CaptureKeyboardFromApp(want_capture_keyboard_value = true)
+* ImGui.CaptureMouseFromApp(want_capture_mouse_value = true)
+* ImGui.Checkbox(label, v)
+* ImGui.CheckboxFlags(label, flags, flags_value)
+* ImGui.CloseCurrentPopup()
+* ImGui.ColorButton(desc_id, col, flags = 0, size = ImVec2(0, 0))
+* ImGui.ColorConvertU32ToFloat4(input)
+* ImGui.Columns(count = 1, id = NULL, border = true)
+* ImGui.DestroyPlatformWindows()
+* ImGui.DockSpace(id, size = ImVec2(0, 0), flags = 0, window_class = NULL)
+* ImGui.DockSpaceOverViewport(viewport = NULL, flags = 0, window_class = NULL)
+* ImGui.DragFloat(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", power = 1.0f)
+* ImGui.DragFloatRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", format_max = NULL, power = 1.0f)
+* ImGui.DragInt(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d")
+* ImGui.DragIntRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", format_max = NULL)
+* ImGui.Dummy(size)
+* ImGui.End()
+* ImGui.EndChild()
+* ImGui.EndChildFrame()
+* ImGui.EndCombo()
+* ImGui.EndDragDropSource()
+* ImGui.EndDragDropTarget()
+* ImGui.EndFrame()
+* ImGui.EndGroup()
+* ImGui.EndMainMenuBar()
+* ImGui.EndMenu()
+* ImGui.EndMenuBar()
+* ImGui.EndPopup()
+* ImGui.EndTabBar()
+* ImGui.EndTabItem()
+* ImGui.EndTooltip()
+* ImGui.GetClipboardText()
+* ImGui.GetColumnIndex()
+* ImGui.GetColumnOffset(column_index = -1)
+* ImGui.GetColumnWidth(column_index = -1)
+* ImGui.GetColumnsCount()
+* ImGui.GetContentRegionAvail()
+* ImGui.GetContentRegionMax()
+* ImGui.GetCursorPos()
+* ImGui.GetCursorPosX()
+* ImGui.GetCursorPosY()
+* ImGui.GetCursorScreenPos()
+* ImGui.GetCursorStartPos()
+* ImGui.GetFontSize()
+* ImGui.GetFontTexUvWhitePixel()
+* ImGui.GetFrameCount()
+* ImGui.GetFrameHeight()
+* ImGui.GetFrameHeightWithSpacing()
+* ImGui.GetItemRectMax()
+* ImGui.GetItemRectMin()
+* ImGui.GetItemRectSize()
+* ImGui.GetKeyIndex(imgui_key)
+* ImGui.GetKeyPressedAmount(key_index, repeat_delay, rate)
+* ImGui.GetMouseCursor()
+* ImGui.GetMouseDragDelta(button = 0, lock_threshold = -1.0f)
+* ImGui.GetMousePos()
+* ImGui.GetMousePosOnOpeningCurrentPopup()
+* ImGui.GetScrollMaxX()
+* ImGui.GetScrollMaxY()
+* ImGui.GetScrollX()
+* ImGui.GetScrollY()
+* ImGui.GetStyleColorName(idx)
+* ImGui.GetStyleColorVec4(idx)
+* ImGui.GetTextLineHeight()
+* ImGui.GetTextLineHeightWithSpacing()
+* ImGui.GetTime()
+* ImGui.GetTreeNodeToLabelSpacing()
+* ImGui.GetVersion()
+* ImGui.GetWindowContentRegionMax()
+* ImGui.GetWindowContentRegionMin()
+* ImGui.GetWindowContentRegionWidth()
+* ImGui.GetWindowDockID()
+* ImGui.GetWindowDpiScale()
+* ImGui.GetWindowHeight()
+* ImGui.GetWindowPos()
+* ImGui.GetWindowSize()
+* ImGui.GetWindowWidth()
+* ImGui.Indent(indent_w = 0.0f)
+* ImGui.InputDouble(label, v, step = 0.0, step_fast = 0.0, format = "%.6f", flags = 0)
+* ImGui.InputFloat(label, v, step = 0.0f, step_fast = 0.0f, format = "%.3f", flags = 0)
+* ImGui.InputInt(label, v, step = 1, step_fast = 100, flags = 0)
+* ImGui.InvisibleButton(str_id, size)
+* ImGui.IsAnyItemActive()
+* ImGui.IsAnyItemFocused()
+* ImGui.IsAnyItemHovered()
+* ImGui.IsAnyMouseDown()
+* ImGui.IsItemActivated()
+* ImGui.IsItemActive()
+* ImGui.IsItemClicked(mouse_button = 0)
+* ImGui.IsItemDeactivated()
+* ImGui.IsItemDeactivatedAfterEdit()
+* ImGui.IsItemEdited()
+* ImGui.IsItemFocused()
+* ImGui.IsItemHovered(flags = 0)
+* ImGui.IsItemToggledOpen()
+* ImGui.IsItemVisible()
+* ImGui.IsKeyDown(user_key_index)
+* ImGui.IsKeyPressed(user_key_index, repeat = true)
+* ImGui.IsKeyReleased(user_key_index)
+* ImGui.IsMouseClicked(button, repeat = false)
+* ImGui.IsMouseDoubleClicked(button)
+* ImGui.IsMouseDown(button)
+* ImGui.IsMouseDragging(button, lock_threshold = -1.0f)
+* ImGui.IsMouseHoveringRect(r_min, r_max, clip = true)
+* ImGui.IsMouseReleased(button)
+* ImGui.IsPopupOpen(str_id)
+* ImGui.IsWindowAppearing()
+* ImGui.IsWindowCollapsed()
+* ImGui.IsWindowDocked()
+* ImGui.IsWindowFocused(flags = 0)
+* ImGui.IsWindowHovered(flags = 0)
+* ImGui.LabelText(label, fmt)
+* ImGui.ListBoxFooter()
+* ImGui.LoadIniSettingsFromDisk(ini_filename)
+* ImGui.LogButtons()
+* ImGui.LogFinish()
+* ImGui.LogText(fmt)
+* ImGui.LogToClipboard(auto_open_depth = -1)
+* ImGui.LogToFile(auto_open_depth = -1, filename = NULL)
+* ImGui.LogToTTY(auto_open_depth = -1)
+* ImGui.NewFrame()
+* ImGui.NewLine()
+* ImGui.NextColumn()
+* ImGui.OpenPopup(str_id)
+* ImGui.OpenPopupOnItemClick(str_id = NULL, mouse_button = 1)
+* ImGui.PopAllowKeyboardFocus()
+* ImGui.PopButtonRepeat()
+* ImGui.PopClipRect()
+* ImGui.PopFont()
+* ImGui.PopID()
+* ImGui.PopItemWidth()
+* ImGui.PopStyleColor(count = 1)
+* ImGui.PopStyleVar(count = 1)
+* ImGui.PopTextWrapPos()
+* ImGui.ProgressBar(fraction, size_arg = ImVec2(-1, 0), overlay = NULL)
+* ImGui.PushAllowKeyboardFocus(allow_keyboard_focus)
+* ImGui.PushButtonRepeat(repeat)
+* ImGui.PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect)
+* ImGui.PushItemWidth(item_width)
+* ImGui.PushTextWrapPos(wrap_local_pos_x = 0.0f)
+* ImGui.Render()
+* ImGui.ResetMouseDragDelta(button = 0)
+* ImGui.SameLine(offset_from_start_x = 0.0f, spacing = -1.0f)
+* ImGui.SaveIniSettingsToDisk(ini_filename)
+* ImGui.Separator()
+* ImGui.SetClipboardText(text)
+* ImGui.SetColorEditOptions(flags)
+* ImGui.SetColumnOffset(column_index, offset_x)
+* ImGui.SetColumnWidth(column_index, width)
+* ImGui.SetCursorPos(local_pos)
+* ImGui.SetCursorPosX(local_x)
+* ImGui.SetCursorPosY(local_y)
+* ImGui.SetCursorScreenPos(pos)
+* ImGui.SetItemAllowOverlap()
+* ImGui.SetItemDefaultFocus()
+* ImGui.SetKeyboardFocusHere(offset = 0)
+* ImGui.SetMouseCursor(cursor_type)
+* ImGui.SetNextItemOpen(is_open, cond = 0)
+* ImGui.SetNextItemWidth(item_width)
+* ImGui.SetNextWindowBgAlpha(alpha)
+* ImGui.SetNextWindowCollapsed(collapsed, cond = 0)
+* ImGui.SetNextWindowContentSize(size)
+* ImGui.SetNextWindowDockID(dock_id, cond = 0)
+* ImGui.SetNextWindowFocus()
+* ImGui.SetNextWindowPos(pos, cond = 0, pivot = ImVec2(0, 0))
+* ImGui.SetNextWindowSize(size, cond = 0)
+* ImGui.SetNextWindowViewport(viewport_id)
+* ImGui.SetScrollFromPosX(local_x, center_x_ratio = 0.5f)
+* ImGui.SetScrollFromPosY(local_y, center_y_ratio = 0.5f)
+* ImGui.SetScrollHereX(center_x_ratio = 0.5f)
+* ImGui.SetScrollHereY(center_y_ratio = 0.5f)
+* ImGui.SetScrollX(scroll_x)
+* ImGui.SetScrollY(scroll_y)
+* ImGui.SetTabItemClosed(tab_or_docked_window_label)
+* ImGui.SetTooltip(fmt)
+* ImGui.SetWindowFontScale(scale)
+* ImGui.ShowAboutWindow(p_open = NULL)
+* ImGui.ShowDemoWindow(p_open = NULL)
+* ImGui.ShowFontSelector(label)
+* ImGui.ShowMetricsWindow(p_open = NULL)
+* ImGui.ShowStyleSelector(label)
+* ImGui.ShowUserGuide()
+* ImGui.SliderAngle(label, v_rad, v_degrees_min = -360.0f, v_degrees_max = +360.0f, format = "%.0f deg")
+* ImGui.SliderFloat(label, v, v_min, v_max, format = "%.3f", power = 1.0f)
+* ImGui.SliderInt(label, v, v_min, v_max, format = "%d")
+* ImGui.SmallButton(label)
+* ImGui.Spacing()
+* ImGui.Text(fmt)
+* ImGui.TextColored(col, fmt)
+* ImGui.TextDisabled(fmt)
+* ImGui.TextUnformatted(text, text_end = NULL)
+* ImGui.TextWrapped(fmt)
+* ImGui.TreePop()
+* ImGui.Unindent(indent_w = 0.0f)
+* ImGui.UpdatePlatformWindows()
+* ImGui.VSliderFloat(label, size, v, v_min, v_max, format = "%.3f", power = 1.0f)
+* ImGui.VSliderInt(label, size, v, v_min, v_max, format = "%d")
+
+### Unsupported methods (69)
+* ImGui.AcceptDragDropPayload
+* ImGui.ColorEdit3
+* ImGui.ColorEdit4
+* ImGui.ColorPicker3
+* ImGui.ColorPicker4
+* ImGui.Combo
+* ImGui.CreateContext
+* ImGui.DestroyContext
+* ImGui.DragFloat2
+* ImGui.DragFloat3
+* ImGui.DragFloat4
+* ImGui.DragInt2
+* ImGui.DragInt3
+* ImGui.DragInt4
+* ImGui.FindViewportByID
+* ImGui.FindViewportByPlatformHandle
+* ImGui.GetBackgroundDrawList
+* ImGui.GetCurrentContext
+* ImGui.GetDragDropPayload
+* ImGui.GetDrawData
+* ImGui.GetDrawListSharedData
+* ImGui.GetFont
+* ImGui.GetForegroundDrawList
+* ImGui.GetID
+* ImGui.GetIO
+* ImGui.GetMainViewport
+* ImGui.GetPlatformIO
+* ImGui.GetStateStorage
+* ImGui.GetStyle
+* ImGui.GetWindowDrawList
+* ImGui.GetWindowViewport
+* ImGui.Image
+* ImGui.ImageButton
+* ImGui.InputFloat2
+* ImGui.InputFloat3
+* ImGui.InputFloat4
+* ImGui.InputInt2
+* ImGui.InputInt3
+* ImGui.InputInt4
+* ImGui.InputText
+* ImGui.InputTextMultiline
+* ImGui.InputTextWithHint
+* ImGui.IsMousePosValid
+* ImGui.ListBox
+* ImGui.LoadIniSettingsFromMemory
+* ImGui.PlotHistogram
+* ImGui.PlotLines
+* ImGui.PushFont
+* ImGui.PushID
+* ImGui.RenderPlatformWindowsDefault
+* ImGui.SaveIniSettingsToMemory
+* ImGui.SetCurrentContext
+* ImGui.SetDragDropPayload
+* ImGui.SetNextWindowClass
+* ImGui.SetNextWindowSizeConstraints
+* ImGui.SetStateStorage
+* ImGui.ShowStyleEditor
+* ImGui.SliderFloat2
+* ImGui.SliderFloat3
+* ImGui.SliderFloat4
+* ImGui.SliderInt2
+* ImGui.SliderInt3
+* ImGui.SliderInt4
+* ImGui.StyleColorsClassic
+* ImGui.StyleColorsDark
+* ImGui.StyleColorsLight
+* ImGui.TreeNode
+* ImGui.TreeNodeEx
+* ImGui.TreePush

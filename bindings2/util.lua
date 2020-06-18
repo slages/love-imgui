@@ -18,4 +18,21 @@ function util.count(tbl)
 	return count
 end
 
+function util.sortedPairs(tbl)
+	-- warning: this generates a lot of garbage!
+	local sorted = {}
+	for k, v in pairs(tbl) do
+		table.insert(sorted, {key = k, value = v})
+	end
+	table.sort(sorted, function(left, right) return left.key < right.key end)
+	local i = 0
+	return function()
+		i = i + 1
+		if sorted[i] then
+			return sorted[i].key, sorted[i].value
+		end
+		return nil
+	end
+end
+
 return util

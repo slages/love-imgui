@@ -493,7 +493,7 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImVec4::w", WrapImVec4::getW},
 {"ImVec4::w=(_)", WrapImVec4::setW},
 
-<% for name, data in pairs(imgui.functions.toplevel.validNames) do -%>
+<% for name, data in util.sortedPairs(imgui.functions.ImGui.validNames) do -%>
 <%- helpers.generateCppSignatures(data) %>
 <% end -%>
 

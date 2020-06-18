@@ -152,7 +152,6 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 			end
 		end
 		buf:add("")
-		fnData.signature = ("%s(%s)"):format(fnData.name, docargs)
 		fnData.arity = arity
 		fnData.requiredArity = requiredArity
 
@@ -177,6 +176,19 @@ function helpers.generateWrenSignatures(fnData)
 		buf:addf([[foreign static %s(%s)]], fnData.name, args)
 	end
 	return buf:done()
+end
+
+function helpers.generateDocSignature(fnData)
+	local args = {}
+	for i = 1, fnData.arity do
+		if fnData.arguments[i].default then
+			table.insert(args, string.format("%s = %s", fnData.docArgs[i], fnData.arguments[i].default))
+		else
+			table.insert(args, fnData.docArgs[i])
+		end
+	end
+	args = table.concat(args,", ")
+	return string.format("ImGui.%s(%s)", fnData.name, args)
 end
 
 function helpers.generateCppSignatures(fnData)

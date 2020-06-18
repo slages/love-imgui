@@ -50,7 +50,7 @@ foreign class ImVec4 {
 }
 
 class ImGui {
-<% for name, data in pairs(imgui.functions.toplevel.validNames) do -%>
+<% for name, data in pairs(imgui.functions.ImGui.validNames) do -%>
 <%- helpers.generateWrenSignatures(data) %>
 <% end -%>
 }

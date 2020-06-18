@@ -291,7 +291,7 @@ function Parse.parseHeaders(filenames)
 	data.classes = findRegions(source, "class")
 	data.enums = findEnums(source)
 	data.functions = {}
-	data.functions.toplevel   = findFunctions(source, data)
+	data.functions.ImGui   = findFunctions(source, data)
 	data.functions.ImDrawList = findFunctions(source, data, "ImDrawList")
 
 	return data
