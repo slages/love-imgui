@@ -41,7 +41,7 @@ jobs:
         BUILD_ARCH: ${{ matrix.arch }}
       run: |
         set LUAJIT_DIR=%CD%\LuaJIT\src
-        cmake -Bbuild -T v141 -A %BUILD_ARCH% -DEnableWren=OFF -DCMAKE_INSTALL_PREFIX=%CD%\installdir
+        cmake -Bbuild -Hlove-imgui -T v141 -A %BUILD_ARCH% -DEnableWren=OFF -DCMAKE_INSTALL_PREFIX=%CD%\installdir
     - name: Build
       shell: cmd
       run: cmake --build build --config Release --target install
@@ -69,7 +69,7 @@ jobs:
         git submodule sync --recursive
         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
     - name: Configure
-      run: cmake -Bbuild -DCMAKE_INSTALL_PREFIX=$PWD/installdir -DCMAKE_BUILD_TYPE=Release
+      run: cmake -Bbuild -Hlove-imgui -DCMAKE_INSTALL_PREFIX=$PWD/installdir -DCMAKE_BUILD_TYPE=Release
     - name: Build
       run: cmake --build build --target install
     - name: Artifact
