@@ -1,7 +1,9 @@
-PROJECT(imgui-autobindings)
+PROJECT(imgui-bindings)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-OPTION(EnableCodeGen "automatically recompile the code-generated imgui header. requires lua." ON)
+OPTION(EnableCodeGen "automatically recompile the code-generated imgui header. requires luajit." ON)
+OPTION(EnableLove "build the love-imgui bindings" ON)
+OPTION(EnableWren "build the wren sdl+vulkan example bindings" ON)
 
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -70,67 +72,71 @@ SET_PROPERTY(TARGET imgui PROPERTY POSITION_INDEPENDENT_CODE ON)
 ##############################################
 # love-imgui: prebuilt integration with love2d
 ##############################################
-ADD_LIBRARY(love-imgui
-	MODULE
-	src/love-imgui/imgui_impl.cpp
-	src/love-imgui/imgui_impl.h
-	src/love-imgui/wrap_imgui_impl.cpp
-	src/love-imgui/wrap_imgui_impl.h
+if(EnableLove)
+	find_package(LuaJIT REQUIRED)
+	ADD_LIBRARY(love-imgui
+		MODULE
+		src/love-imgui/imgui_impl.cpp
+		src/love-imgui/imgui_impl.h
+		src/love-imgui/wrap_imgui_impl.cpp
+		src/love-imgui/wrap_imgui_impl.h
 
-	src/lua-bindings/wrap_imgui_codegen.cpp
-	src/lua-bindings/wrap_imgui_codegen.h
-)
+		src/lua-bindings/wrap_imgui_codegen.cpp
+		src/lua-bindings/wrap_imgui_codegen.h
+	)
 
-TARGET_INCLUDE_DIRECTORIES(love-imgui
-	PUBLIC
-	${LUAJIT_INCLUDE_DIR}
-	src/lua-bindings
-)
+	TARGET_INCLUDE_DIRECTORIES(love-imgui
+		PUBLIC
+		${LUAJIT_INCLUDE_DIR}
+		src/lua-bindings
+	)
 
-TARGET_LINK_LIBRARIES(love-imgui ${LUAJIT_LIBRARY} imgui)
+	TARGET_LINK_LIBRARIES(love-imgui ${LUAJIT_LIBRARY} imgui)
 
-SET_PROPERTY(TARGET love-imgui PROPERTY CXX_STANDARD 17)
-SET_TARGET_PROPERTIES(love-imgui PROPERTIES PREFIX "")
-if(MSVC)
-else()
-  TARGET_COMPILE_OPTIONS(love-imgui PRIVATE -Wconversion)
-  SET_SOURCE_FILES_PROPERTIES(src/lua-bindings/wrap_imgui_codegen.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-function -Wno-unused-parameter")
+	SET_PROPERTY(TARGET love-imgui PROPERTY CXX_STANDARD 17)
+	SET_TARGET_PROPERTIES(love-imgui PROPERTIES PREFIX "")
+	if(MSVC)
+	else()
+	  TARGET_COMPILE_OPTIONS(love-imgui PRIVATE -Wconversion)
+	  SET_SOURCE_FILES_PROPERTIES(src/lua-bindings/wrap_imgui_codegen.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-function -Wno-unused-parameter")
+	endif()
+
+	INSTALL(TARGETS love-imgui LIBRARY DESTINATION lib)
 endif()
-
-INSTALL(TARGETS love-imgui LIBRARY DESTINATION lib)
 
 ##############################################
 # Wren example: this uses the SDL/Vulkan integration demoed in the imgui repo
 ##############################################
+if(EnableWren)
+	find_package(SDL2 REQUIRED)
+	find_package(Vulkan REQUIRED)
+	include(wren)
+	set_property(TARGET wren PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-find_package(SDL2 REQUIRED)
-find_package(Vulkan REQUIRED)
-include(wren)
-set_property(TARGET wren PROPERTY POSITION_INDEPENDENT_CODE ON)
+	ADD_EXECUTABLE(wren-example-imgui
+		src/wren-bindings/wrap_imgui_codegen.cpp
+		src/wren-bindings/wrap_imgui_codegen.h
 
-ADD_EXECUTABLE(wren-example-imgui
-	src/wren-bindings/wrap_imgui_codegen.cpp
-	src/wren-bindings/wrap_imgui_codegen.h
+		deps/libimgui/examples/imgui_impl_sdl.cpp
+		deps/libimgui/examples/imgui_impl_vulkan.cpp
+		src/wren-example-imgui/main.cpp
+	)
 
-	deps/libimgui/examples/imgui_impl_sdl.cpp
-	deps/libimgui/examples/imgui_impl_vulkan.cpp
-	src/wren-example-imgui/main.cpp
-)
+	TARGET_INCLUDE_DIRECTORIES(wren-example-imgui
+		PUBLIC
+		src/wren-bindings
+		deps/libimgui/examples
+		"${SDL2_INCLUDE_DIR}"
+		"${SDL2_INCLUDE_DIR}/SDL2"
+		"${Vulkan_INCLUDE_DIR}"
+	)
 
-TARGET_INCLUDE_DIRECTORIES(wren-example-imgui
-	PUBLIC
-	src/wren-bindings
-	deps/libimgui/examples
-	"${SDL2_INCLUDE_DIR}"
-	"${SDL2_INCLUDE_DIR}/SDL2"
-	"${Vulkan_INCLUDE_DIR}"
-)
+	TARGET_LINK_LIBRARIES(wren-example-imgui wren imgui ${SDL2_LIBRARY} ${Vulkan_LIBRARIES})
 
-TARGET_LINK_LIBRARIES(wren-example-imgui wren imgui ${SDL2_LIBRARY} ${Vulkan_LIBRARIES})
-
-SET_PROPERTY(TARGET wren-example-imgui PROPERTY CXX_STANDARD 17)
-SET_TARGET_PROPERTIES(wren-example-imgui PROPERTIES PREFIX "")
-if(MSVC)
-else()
-  TARGET_COMPILE_OPTIONS(wren-example-imgui PRIVATE -Wconversion)
+	SET_PROPERTY(TARGET wren-example-imgui PROPERTY CXX_STANDARD 17)
+	SET_TARGET_PROPERTIES(wren-example-imgui PROPERTIES PREFIX "")
+	if(MSVC)
+	else()
+	  TARGET_COMPILE_OPTIONS(wren-example-imgui PRIVATE -Wconversion)
+	endif()
 endif()

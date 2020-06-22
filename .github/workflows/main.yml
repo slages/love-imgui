@@ -41,7 +41,7 @@ jobs:
         BUILD_ARCH: ${{ matrix.arch }}
       run: |
         set LUAJIT_DIR=%CD%\LuaJIT\src
-        cmake -Bbuild -Hlove-imgui -T v141 -A %BUILD_ARCH% -DCMAKE_INSTALL_PREFIX=%CD%\installdir
+        cmake -Bbuild -Himgui-bindings -T v141 -A %BUILD_ARCH% -DEnableWren=OFF -DCMAKE_INSTALL_PREFIX=%CD%\installdir
     - name: Build
       shell: cmd
       run: cmake --build build --config Release --target install
@@ -56,7 +56,7 @@ jobs:
     - name: Get Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libluajit-5.1-dev luajit libsdl2-dev --assume-yes
+        sudo apt-get install libluajit-5.1-dev luajit libsdl2-dev libvulkan-dev --assume-yes
     - name: Checkout
       uses: actions/checkout@v2
       with:
