@@ -56,7 +56,7 @@ jobs:
     - name: Get Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libluajit-5.1-dev luajit --assume-yes
+        sudo apt-get install libluajit-5.1-dev luajit libsdl2-dev --assume-yes
     - name: Checkout
       uses: actions/checkout@v2
       with:
