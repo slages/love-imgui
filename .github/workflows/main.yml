@@ -77,4 +77,31 @@ jobs:
       with:
         name: love-imgui-linux
         path: installdir/lib
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Get Dependencies
+      run: |
+        brew update
+        brew install luajit vulkan-headers sdl2
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: love-imgui
+    - name: Checkout submodules
+      shell: bash
+      run: |
+        cd love-imgui
+        auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+        git submodule sync --recursive
+        git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+    - name: Configure
+      run: cmake -Bbuild -Hlove-imgui -DEnableWren=OFF -DCMAKE_INSTALL_PREFIX=$PWD/installdir -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: cmake --build build --target install
+    - name: Artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: love-imgui-macos
+        path: installdir/lib
 
