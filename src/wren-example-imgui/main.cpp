@@ -8,28 +8,29 @@ WrenHandle* w_ImGuiTest;
 WrenHandle* w_update;
 bool error = false;
 std::string code = R"MODULE(
-import "imgui" for ImGui, Box
+import "imgui" for ImGui, Box, ImVec2
 
 class TestInstance {
   construct new() {
 	_showDemoBox = Box.new(true)
-	_showAbout = true
-	_tempBox = Box.new(false)
-	_numBox = Box.new(10)
+	_showCPPDemoBox = Box.new(true)
+	_tempBox = Box.new(10)
   }
   update() {
-	ImGui.Checkbox("demo", _showDemoBox)
-	ImGui.Checkbox("about", _tempBox.set(_showAbout))
-	ImGui.DragInt("number!", _numBox)
-	_showAbout = _tempBox.get()
+    ImGui.SetNextWindowPos(ImVec2.new(300, 300))
+	if (ImGui.Begin("ImGui Wren Example", _showDemoBox, "AlwaysAutoResize|NoMove")) {
+		ImGui.Checkbox("Show C++ Demo", _showCPPDemoBox)
+		if (_showCPPDemoBox.value) {
+			ImGui.ShowDemoWindow(_showDemoBox)
+		}
 
-	if (_showDemoBox.value) {
-		ImGui.ShowDemoWindow(_showDemoBox)
+		ImGui.Separator()
+		ImGui.Text("Example Widgets")
+		ImGui.Checkbox("Checkbox", _tempBox.set(true))
+		ImGui.DragFloat("DragFloat", _tempBox.set(3.14), 1, 0, 0, "~\%0.4f~", 1)
+		ImGui.LabelText("Label", "%(_tempBox.value)")
 	}
-	if (_showAbout) {
-		ImGui.ShowAboutWindow(_tempBox.set(_showAbout))
-		_showAbout = _tempBox.get()
-	}
+	ImGui.End()
   }
 }
 

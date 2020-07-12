@@ -4240,6 +4240,12 @@ void w_InputTextWithHint_Override2(WrenVM *vm)
 // {{{ Function overrides
 // }}}
 
+const std::unordered_map<std::string, WrenForeignClassMethods> foreignAllocators = {
+{"Box", {Box::alloc, Box::finalize}},
+{"ImVec2", {WrapImVec2::alloc, WrapImVec2::finalize}},
+{"ImVec4", {WrapImVec4::alloc, WrapImVec4::finalize}},
+};
+
 const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"Box::init new(_)", Box::init},
 {"Box::value", Box::get},
@@ -5028,9 +5034,12 @@ char* wrap_imgui::loadModule(WrenVM* vm)
 
 bool wrap_imgui::bindForeignClass(WrenVM* vm, const char* className, WrenForeignClassMethods& methods)
 {
-	if(strcmp("Box", className) == 0) {
-		methods.allocate = Box::alloc;
-		methods.finalize = Box::finalize;
+	auto pair = foreignAllocators.find(className);
+
+	if(pair != foreignAllocators.end()) {
+		const WrenForeignClassMethods& methods2 = pair->second;
+		methods.allocate = methods2.allocate;
+		methods.finalize = methods2.finalize;
 		return true;
 	}
 	return false;
