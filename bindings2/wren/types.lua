@@ -94,7 +94,7 @@ do
 
 	local typeCheckers = {
 		-- static input
-		["const char*"] = simple_arg("wrenGetSlotString"),
+		["const char*"] = simple_arg("wrenExGetSlot<const char*>"),
 		["bool"] = simple_arg("wrenExGetSlot<bool>"),
 		["int"] = simple_arg("wrenExGetSlot<int>"),
 		["double"] = simple_arg("wrenExGetSlot<double>"),

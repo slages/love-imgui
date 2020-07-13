@@ -1553,7 +1553,7 @@ void w_ShowMetricsWindow(WrenVM *vm)
 /*  add style selector block (not a window), essentially a combo listing the default styles. */
 void w_ShowStyleSelector(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	
 	bool out = ImGui::ShowStyleSelector(label);
 	wrenSetSlotBool(vm, 0, out);
@@ -1563,7 +1563,7 @@ void w_ShowStyleSelector(WrenVM *vm)
 /*  add font selector block (not a window), essentially a combo listing the loaded fonts. */
 void w_ShowFontSelector(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::ShowFontSelector(label);
 	
@@ -1592,7 +1592,7 @@ void w_GetVersion(WrenVM *vm)
 
 void w_Begin(WrenVM *vm)
 {
-	auto name = wrenGetSlotString(vm, 1);
+	auto name = wrenExGetSlot<const char*>(vm, 1);
 	bool* p_open = NULL;
 	bool p_open_box;
 	if(!wrenExIsSlotDefault(vm, 2)) {
@@ -1615,7 +1615,7 @@ void w_End(WrenVM *vm)
 
 void w_BeginChild_Override1(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	auto size = wrenExIsSlotDefault(vm, 2) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 2);
 	auto border = wrenExIsSlotDefault(vm, 3) ? false : wrenExGetSlot<bool>(vm, 3);
 	auto flags = wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlotFlags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 4);
@@ -1837,7 +1837,7 @@ void w_SetWindowFontScale(WrenVM *vm)
 /*  set named window position. */
 void w_SetWindowPos_Override2(WrenVM *vm)
 {
-	auto name = wrenGetSlotString(vm, 1);
+	auto name = wrenExGetSlot<const char*>(vm, 1);
 	auto pos = WrapImVec2::getSlot(vm, 2);
 	auto cond = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotEnum<ImGuiCond>(getImGuiCondFromString, vm, 3);
 	
@@ -1848,7 +1848,7 @@ void w_SetWindowPos_Override2(WrenVM *vm)
 /*  set named window size. set axis to 0.0f to force an auto-fit on this axis. */
 void w_SetWindowSize_Override2(WrenVM *vm)
 {
-	auto name = wrenGetSlotString(vm, 1);
+	auto name = wrenExGetSlot<const char*>(vm, 1);
 	auto size = WrapImVec2::getSlot(vm, 2);
 	auto cond = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotEnum<ImGuiCond>(getImGuiCondFromString, vm, 3);
 	
@@ -1859,7 +1859,7 @@ void w_SetWindowSize_Override2(WrenVM *vm)
 /*  set named window collapsed state */
 void w_SetWindowCollapsed_Override2(WrenVM *vm)
 {
-	auto name = wrenGetSlotString(vm, 1);
+	auto name = wrenExGetSlot<const char*>(vm, 1);
 	auto collapsed = wrenExGetSlot<bool>(vm, 2);
 	auto cond = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotEnum<ImGuiCond>(getImGuiCondFromString, vm, 3);
 	
@@ -1870,7 +1870,7 @@ void w_SetWindowCollapsed_Override2(WrenVM *vm)
 /*  set named window to be focused / top-most. use NULL to remove focus. */
 void w_SetWindowFocus_Override2(WrenVM *vm)
 {
-	auto name = wrenGetSlotString(vm, 1);
+	auto name = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::SetWindowFocus(name);
 	
@@ -2357,7 +2357,7 @@ void w_GetFrameHeightWithSpacing(WrenVM *vm)
 /*  push string into the ID stack (will hash string). */
 void w_PushID_Override1(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::PushID(str_id);
 	
@@ -2366,8 +2366,8 @@ void w_PushID_Override1(WrenVM *vm)
 /*  push string into the ID stack (will hash string). */
 void w_PushID_Override2(WrenVM *vm)
 {
-	auto str_id_begin = wrenGetSlotString(vm, 1);
-	auto str_id_end = wrenGetSlotString(vm, 2);
+	auto str_id_begin = wrenExGetSlot<const char*>(vm, 1);
+	auto str_id_end = wrenExGetSlot<const char*>(vm, 2);
 	
 	ImGui::PushID(str_id_begin, str_id_end);
 	
@@ -2394,7 +2394,7 @@ void w_PopID(WrenVM *vm)
 /*  calculate unique ID (hash of whole ID stack + given parameter). e.g. if you want to query into ImGuiStorage yourself */
 void w_GetID_Override1(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGuiID out = ImGui::GetID(str_id);
 	wrenSetSlotDouble(vm, 0, out);
@@ -2403,8 +2403,8 @@ void w_GetID_Override1(WrenVM *vm)
 
 void w_GetID_Override2(WrenVM *vm)
 {
-	auto str_id_begin = wrenGetSlotString(vm, 1);
-	auto str_id_end = wrenGetSlotString(vm, 2);
+	auto str_id_begin = wrenExGetSlot<const char*>(vm, 1);
+	auto str_id_end = wrenExGetSlot<const char*>(vm, 2);
 	
 	ImGuiID out = ImGui::GetID(str_id_begin, str_id_end);
 	wrenSetSlotDouble(vm, 0, out);
@@ -2416,8 +2416,8 @@ void w_GetID_Override2(WrenVM *vm)
 /*  raw text without formatting. Roughly equivalent to Text("%s", text) but: A) doesn't require null terminated string if 'text_end' is specified, B) it's faster, no memory copy is done, no buffer size limits, recommended for long chunks of text. */
 void w_TextUnformatted(WrenVM *vm)
 {
-	auto text = wrenGetSlotString(vm, 1);
-	auto text_end = wrenExIsSlotDefault(vm, 2) ? NULL : wrenGetSlotString(vm, 2);
+	auto text = wrenExGetSlot<const char*>(vm, 1);
+	auto text_end = wrenExIsSlotDefault(vm, 2) ? NULL : wrenExGetSlot<const char*>(vm, 2);
 	
 	ImGui::TextUnformatted(text, text_end);
 	
@@ -2426,7 +2426,7 @@ void w_TextUnformatted(WrenVM *vm)
 /*  formatted text */
 void w_Text(WrenVM *vm)
 {
-	auto fmt = wrenGetSlotString(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::Text(fmt);
 	
@@ -2436,7 +2436,7 @@ void w_Text(WrenVM *vm)
 void w_TextColored(WrenVM *vm)
 {
 	auto col = WrapImVec4::getSlot(vm, 1);
-	auto fmt = wrenGetSlotString(vm, 2);
+	auto fmt = wrenExGetSlot<const char*>(vm, 2);
 	
 	ImGui::TextColored(col, fmt);
 	
@@ -2445,7 +2445,7 @@ void w_TextColored(WrenVM *vm)
 /*  shortcut for PushStyleColor(ImGuiCol_Text, style.Colors[ImGuiCol_TextDisabled]); Text(fmt, ...); PopStyleColor(); */
 void w_TextDisabled(WrenVM *vm)
 {
-	auto fmt = wrenGetSlotString(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::TextDisabled(fmt);
 	
@@ -2454,7 +2454,7 @@ void w_TextDisabled(WrenVM *vm)
 /*  shortcut for PushTextWrapPos(0.0f); Text(fmt, ...); PopTextWrapPos();. Note that this won't work on an auto-resizing window if there's no other widgets to extend the window width, yoy may need to set a size using SetNextWindowSize(). */
 void w_TextWrapped(WrenVM *vm)
 {
-	auto fmt = wrenGetSlotString(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::TextWrapped(fmt);
 	
@@ -2463,8 +2463,8 @@ void w_TextWrapped(WrenVM *vm)
 /*  display text+label aligned the same way as value+label widgets */
 void w_LabelText(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
-	auto fmt = wrenGetSlotString(vm, 2);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 2);
 	
 	ImGui::LabelText(label, fmt);
 	
@@ -2473,7 +2473,7 @@ void w_LabelText(WrenVM *vm)
 /*  shortcut for Bullet()+Text() */
 void w_BulletText(WrenVM *vm)
 {
-	auto fmt = wrenGetSlotString(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::BulletText(fmt);
 	
@@ -2482,7 +2482,7 @@ void w_BulletText(WrenVM *vm)
 /*  button */
 void w_Button(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto size = wrenExIsSlotDefault(vm, 2) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 2);
 	
 	bool out = ImGui::Button(label, size);
@@ -2493,7 +2493,7 @@ void w_Button(WrenVM *vm)
 /*  button with FramePadding=(0,0) to easily embed within text */
 void w_SmallButton(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	
 	bool out = ImGui::SmallButton(label);
 	wrenSetSlotBool(vm, 0, out);
@@ -2503,7 +2503,7 @@ void w_SmallButton(WrenVM *vm)
 /*  button behavior without the visuals, frequently useful to build custom behaviors using the public api (along with IsItemActive, IsItemHovered, etc.) */
 void w_InvisibleButton(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	auto size = WrapImVec2::getSlot(vm, 2);
 	
 	bool out = ImGui::InvisibleButton(str_id, size);
@@ -2514,7 +2514,7 @@ void w_InvisibleButton(WrenVM *vm)
 /*  square button with an arrow shape */
 void w_ArrowButton(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	auto dir = wrenExGetSlotEnum<ImGuiDir>(getImGuiDirFromString, vm, 2);
 	
 	bool out = ImGui::ArrowButton(str_id, dir);
@@ -2528,7 +2528,7 @@ void w_ArrowButton(WrenVM *vm)
 
 void w_Checkbox(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = Box::getCPP<bool>(vm, 2);
 	bool* v = &v_box;
 	
@@ -2540,7 +2540,7 @@ void w_Checkbox(WrenVM *vm)
 
 void w_CheckboxFlags(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto flags_box = static_cast<unsigned int>(Box::getCPP<double>(vm, 2));
 	unsigned int* flags = &flags_box;
 	auto flags_value = wrenExGetSlot<unsigned int>(vm, 3);
@@ -2554,7 +2554,7 @@ void w_CheckboxFlags(WrenVM *vm)
 /*  use with e.g. if (RadioButton("one", my_value==1)) { my_value = 1; } */
 void w_RadioButton_Override1(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto active = wrenExGetSlot<bool>(vm, 2);
 	
 	bool out = ImGui::RadioButton(label, active);
@@ -2565,7 +2565,7 @@ void w_RadioButton_Override1(WrenVM *vm)
 /*  shortcut to handle the above pattern when value is an integer */
 void w_RadioButton_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
 	int* v = &v_box;
 	auto v_button = wrenExGetSlot<int>(vm, 3);
@@ -2580,7 +2580,7 @@ void w_ProgressBar(WrenVM *vm)
 {
 	auto fraction = wrenExGetSlot<float>(vm, 1);
 	auto size_arg = wrenExIsSlotDefault(vm, 2) ? ImVec2(-1, 0) : WrapImVec2::getSlot(vm, 2);
-	auto overlay = wrenExIsSlotDefault(vm, 3) ? NULL : wrenGetSlotString(vm, 3);
+	auto overlay = wrenExIsSlotDefault(vm, 3) ? NULL : wrenExGetSlot<const char*>(vm, 3);
 	
 	ImGui::ProgressBar(fraction, size_arg, overlay);
 	
@@ -2595,8 +2595,8 @@ void w_Bullet(WrenVM *vm)
 
 void w_BeginCombo(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
-	auto preview_value = wrenGetSlotString(vm, 2);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto preview_value = wrenExGetSlot<const char*>(vm, 2);
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiComboFlags>(getImGuiComboFlagsFromString, vm, 3);
 	
 	bool out = ImGui::BeginCombo(label, preview_value, flags);
@@ -2616,10 +2616,10 @@ void w_EndCombo(WrenVM *vm)
 /*  Separate items with \0 within a string, end item-list with \0\0. e.g. "One\0Two\0Three\0" */
 void w_Combo_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto current_item_box = static_cast<int>(Box::getCPP<double>(vm, 2));
 	int* current_item = &current_item_box;
-	auto items_separated_by_zeros = wrenGetSlotString(vm, 3);
+	auto items_separated_by_zeros = wrenExGetSlot<const char*>(vm, 3);
 	auto popup_max_height_in_items = wrenExIsSlotDefault(vm, 4) ? -1 : wrenExGetSlot<int>(vm, 4);
 	
 	bool out = ImGui::Combo(label, current_item, items_separated_by_zeros, popup_max_height_in_items);
@@ -2633,13 +2633,13 @@ void w_Combo_Override2(WrenVM *vm)
 /*  If v_min >= v_max we have no bound */
 void w_DragFloat(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
 	float* v = &v_box;
 	auto v_speed = wrenExIsSlotDefault(vm, 3) ? 1.0f : wrenExGetSlot<float>(vm, 3);
 	auto v_min = wrenExIsSlotDefault(vm, 4) ? 0.0f : wrenExGetSlot<float>(vm, 4);
 	auto v_max = wrenExIsSlotDefault(vm, 5) ? 0.0f : wrenExGetSlot<float>(vm, 5);
-	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenGetSlotString(vm, 6);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenExGetSlot<const char*>(vm, 6);
 	auto power = wrenExIsSlotDefault(vm, 7) ? 1.0f : wrenExGetSlot<float>(vm, 7);
 	
 	bool out = ImGui::DragFloat(label, v, v_speed, v_min, v_max, format, power);
@@ -2656,7 +2656,7 @@ void w_DragFloat(WrenVM *vm)
 
 void w_DragFloatRange2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_current_min_box = static_cast<float>(Box::getCPP<double>(vm, 2));
 	float* v_current_min = &v_current_min_box;
 	auto v_current_max_box = static_cast<float>(Box::getCPP<double>(vm, 3));
@@ -2664,8 +2664,8 @@ void w_DragFloatRange2(WrenVM *vm)
 	auto v_speed = wrenExIsSlotDefault(vm, 4) ? 1.0f : wrenExGetSlot<float>(vm, 4);
 	auto v_min = wrenExIsSlotDefault(vm, 5) ? 0.0f : wrenExGetSlot<float>(vm, 5);
 	auto v_max = wrenExIsSlotDefault(vm, 6) ? 0.0f : wrenExGetSlot<float>(vm, 6);
-	auto format = wrenExIsSlotDefault(vm, 7) ? "%.3f" : wrenGetSlotString(vm, 7);
-	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenGetSlotString(vm, 8);
+	auto format = wrenExIsSlotDefault(vm, 7) ? "%.3f" : wrenExGetSlot<const char*>(vm, 7);
+	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenExGetSlot<const char*>(vm, 8);
 	auto power = wrenExIsSlotDefault(vm, 9) ? 1.0f : wrenExGetSlot<float>(vm, 9);
 	
 	bool out = ImGui::DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, power);
@@ -2678,13 +2678,13 @@ void w_DragFloatRange2(WrenVM *vm)
 /*  If v_min >= v_max we have no bound */
 void w_DragInt(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
 	int* v = &v_box;
 	auto v_speed = wrenExIsSlotDefault(vm, 3) ? 1.0f : wrenExGetSlot<float>(vm, 3);
 	auto v_min = wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlot<int>(vm, 4);
 	auto v_max = wrenExIsSlotDefault(vm, 5) ? 0 : wrenExGetSlot<int>(vm, 5);
-	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenGetSlotString(vm, 6);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenExGetSlot<const char*>(vm, 6);
 	
 	bool out = ImGui::DragInt(label, v, v_speed, v_min, v_max, format);
 	wrenSetSlotBool(vm, 0, out);
@@ -2700,7 +2700,7 @@ void w_DragInt(WrenVM *vm)
 
 void w_DragIntRange2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_current_min_box = static_cast<int>(Box::getCPP<double>(vm, 2));
 	int* v_current_min = &v_current_min_box;
 	auto v_current_max_box = static_cast<int>(Box::getCPP<double>(vm, 3));
@@ -2708,8 +2708,8 @@ void w_DragIntRange2(WrenVM *vm)
 	auto v_speed = wrenExIsSlotDefault(vm, 4) ? 1.0f : wrenExGetSlot<float>(vm, 4);
 	auto v_min = wrenExIsSlotDefault(vm, 5) ? 0 : wrenExGetSlot<int>(vm, 5);
 	auto v_max = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlot<int>(vm, 6);
-	auto format = wrenExIsSlotDefault(vm, 7) ? "%d" : wrenGetSlotString(vm, 7);
-	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenGetSlotString(vm, 8);
+	auto format = wrenExIsSlotDefault(vm, 7) ? "%d" : wrenExGetSlot<const char*>(vm, 7);
+	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenExGetSlot<const char*>(vm, 8);
 	
 	bool out = ImGui::DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max);
 	wrenSetSlotBool(vm, 0, out);
@@ -2721,12 +2721,12 @@ void w_DragIntRange2(WrenVM *vm)
 /*  adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. Use power!=1.0 for power curve sliders */
 void w_SliderFloat(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
 	float* v = &v_box;
 	auto v_min = wrenExGetSlot<float>(vm, 3);
 	auto v_max = wrenExGetSlot<float>(vm, 4);
-	auto format = wrenExIsSlotDefault(vm, 5) ? "%.3f" : wrenGetSlotString(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%.3f" : wrenExGetSlot<const char*>(vm, 5);
 	auto power = wrenExIsSlotDefault(vm, 6) ? 1.0f : wrenExGetSlot<float>(vm, 6);
 	
 	bool out = ImGui::SliderFloat(label, v, v_min, v_max, format, power);
@@ -2743,12 +2743,12 @@ void w_SliderFloat(WrenVM *vm)
 
 void w_SliderAngle(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_rad_box = static_cast<float>(Box::getCPP<double>(vm, 2));
 	float* v_rad = &v_rad_box;
 	auto v_degrees_min = wrenExIsSlotDefault(vm, 3) ? -360.0f : wrenExGetSlot<float>(vm, 3);
 	auto v_degrees_max = wrenExIsSlotDefault(vm, 4) ? +360.0f : wrenExGetSlot<float>(vm, 4);
-	auto format = wrenExIsSlotDefault(vm, 5) ? "%.0f deg" : wrenGetSlotString(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%.0f deg" : wrenExGetSlot<const char*>(vm, 5);
 	
 	bool out = ImGui::SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format);
 	wrenSetSlotBool(vm, 0, out);
@@ -2758,12 +2758,12 @@ void w_SliderAngle(WrenVM *vm)
 
 void w_SliderInt(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
 	int* v = &v_box;
 	auto v_min = wrenExGetSlot<int>(vm, 3);
 	auto v_max = wrenExGetSlot<int>(vm, 4);
-	auto format = wrenExIsSlotDefault(vm, 5) ? "%d" : wrenGetSlotString(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%d" : wrenExGetSlot<const char*>(vm, 5);
 	
 	bool out = ImGui::SliderInt(label, v, v_min, v_max, format);
 	wrenSetSlotBool(vm, 0, out);
@@ -2779,13 +2779,13 @@ void w_SliderInt(WrenVM *vm)
 
 void w_VSliderFloat(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto size = WrapImVec2::getSlot(vm, 2);
 	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 3));
 	float* v = &v_box;
 	auto v_min = wrenExGetSlot<float>(vm, 4);
 	auto v_max = wrenExGetSlot<float>(vm, 5);
-	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenGetSlotString(vm, 6);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenExGetSlot<const char*>(vm, 6);
 	auto power = wrenExIsSlotDefault(vm, 7) ? 1.0f : wrenExGetSlot<float>(vm, 7);
 	
 	bool out = ImGui::VSliderFloat(label, size, v, v_min, v_max, format, power);
@@ -2796,13 +2796,13 @@ void w_VSliderFloat(WrenVM *vm)
 
 void w_VSliderInt(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto size = WrapImVec2::getSlot(vm, 2);
 	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 3));
 	int* v = &v_box;
 	auto v_min = wrenExGetSlot<int>(vm, 4);
 	auto v_max = wrenExGetSlot<int>(vm, 5);
-	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenGetSlotString(vm, 6);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenExGetSlot<const char*>(vm, 6);
 	
 	bool out = ImGui::VSliderInt(label, size, v, v_min, v_max, format);
 	wrenSetSlotBool(vm, 0, out);
@@ -2818,12 +2818,12 @@ void w_VSliderInt(WrenVM *vm)
 
 void w_InputFloat(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
 	float* v = &v_box;
 	auto step = wrenExIsSlotDefault(vm, 3) ? 0.0f : wrenExGetSlot<float>(vm, 3);
 	auto step_fast = wrenExIsSlotDefault(vm, 4) ? 0.0f : wrenExGetSlot<float>(vm, 4);
-	auto format = wrenExIsSlotDefault(vm, 5) ? "%.3f" : wrenGetSlotString(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%.3f" : wrenExGetSlot<const char*>(vm, 5);
 	auto flags = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 6);
 	
 	bool out = ImGui::InputFloat(label, v, step, step_fast, format, flags);
@@ -2840,7 +2840,7 @@ void w_InputFloat(WrenVM *vm)
 
 void w_InputInt(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
 	int* v = &v_box;
 	auto step = wrenExIsSlotDefault(vm, 3) ? 1 : wrenExGetSlot<int>(vm, 3);
@@ -2861,12 +2861,12 @@ void w_InputInt(WrenVM *vm)
 
 void w_InputDouble(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto v_box = Box::getCPP<double>(vm, 2);
 	double* v = &v_box;
 	auto step = wrenExIsSlotDefault(vm, 3) ? 0.0 : wrenExGetSlot<double>(vm, 3);
 	auto step_fast = wrenExIsSlotDefault(vm, 4) ? 0.0 : wrenExGetSlot<double>(vm, 4);
-	auto format = wrenExIsSlotDefault(vm, 5) ? "%.6f" : wrenGetSlotString(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%.6f" : wrenExGetSlot<const char*>(vm, 5);
 	auto flags = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 6);
 	
 	bool out = ImGui::InputDouble(label, v, step, step_fast, format, flags);
@@ -2886,7 +2886,7 @@ void w_InputDouble(WrenVM *vm)
 /*  display a colored square/button, hover for details, return true when pressed. */
 void w_ColorButton(WrenVM *vm)
 {
-	auto desc_id = wrenGetSlotString(vm, 1);
+	auto desc_id = wrenExGetSlot<const char*>(vm, 1);
 	auto col = WrapImVec4::getSlot(vm, 2);
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiColorEditFlags>(getImGuiColorEditFlagsFromString, vm, 3);
 	auto size = wrenExIsSlotDefault(vm, 4) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 4);
@@ -2907,7 +2907,7 @@ void w_SetColorEditOptions(WrenVM *vm)
 
 void w_TreeNode_Override1(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	
 	bool out = ImGui::TreeNode(label);
 	wrenSetSlotBool(vm, 0, out);
@@ -2917,8 +2917,8 @@ void w_TreeNode_Override1(WrenVM *vm)
 /*  helper variation to easily decorelate the id from the displayed string. Read the FAQ about why and how to use ID. to align arbitrary text at the same level as a TreeNode() you can use Bullet(). */
 void w_TreeNode_Override2(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
-	auto fmt = wrenGetSlotString(vm, 2);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 2);
 	
 	bool out = ImGui::TreeNode(str_id, fmt);
 	wrenSetSlotBool(vm, 0, out);
@@ -2929,7 +2929,7 @@ void w_TreeNode_Override2(WrenVM *vm)
 
 void w_TreeNodeEx_Override1(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto flags = wrenExIsSlotDefault(vm, 2) ? 0 : wrenExGetSlotFlags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 2);
 	
 	bool out = ImGui::TreeNodeEx(label, flags);
@@ -2939,9 +2939,9 @@ void w_TreeNodeEx_Override1(WrenVM *vm)
 
 void w_TreeNodeEx_Override2(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	auto flags = wrenExGetSlotFlags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 2);
-	auto fmt = wrenGetSlotString(vm, 3);
+	auto fmt = wrenExGetSlot<const char*>(vm, 3);
 	
 	bool out = ImGui::TreeNodeEx(str_id, flags, fmt);
 	wrenSetSlotBool(vm, 0, out);
@@ -2953,7 +2953,7 @@ void w_TreeNodeEx_Override2(WrenVM *vm)
 /*  ~ Indent()+PushId(). Already called by TreeNode() when returning true, but you can call TreePush/TreePop yourself if desired. */
 void w_TreePush_Override1(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::TreePush(str_id);
 	
@@ -2979,7 +2979,7 @@ void w_GetTreeNodeToLabelSpacing(WrenVM *vm)
 /*  if returning 'true' the header is open. doesn't indent nor push on ID stack. user doesn't have to call TreePop(). */
 void w_CollapsingHeader_Override1(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto flags = wrenExIsSlotDefault(vm, 2) ? 0 : wrenExGetSlotFlags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 2);
 	
 	bool out = ImGui::CollapsingHeader(label, flags);
@@ -2990,7 +2990,7 @@ void w_CollapsingHeader_Override1(WrenVM *vm)
 /*  when 'p_open' isn't NULL, display an additional small close button on upper right of the header */
 void w_CollapsingHeader_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto p_open_box = Box::getCPP<bool>(vm, 2);
 	bool* p_open = &p_open_box;
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 3);
@@ -3014,7 +3014,7 @@ void w_SetNextItemOpen(WrenVM *vm)
 /*  "bool selected" carry the selection state (read-only). Selectable() is clicked is returns true so you can modify your selection state. size.x==0.0: use remaining width, size.x>0.0: specify width. size.y==0.0: use label height, size.y>0.0: specify height */
 void w_Selectable_Override1(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto selected = wrenExIsSlotDefault(vm, 2) ? false : wrenExGetSlot<bool>(vm, 2);
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, vm, 3);
 	auto size = wrenExIsSlotDefault(vm, 4) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 4);
@@ -3027,7 +3027,7 @@ void w_Selectable_Override1(WrenVM *vm)
 /*  "bool* p_selected" point to the selection state (read-write), as a convenient helper. */
 void w_Selectable_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto p_selected_box = Box::getCPP<bool>(vm, 2);
 	bool* p_selected = &p_selected_box;
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, vm, 3);
@@ -3046,7 +3046,7 @@ void w_Selectable_Override2(WrenVM *vm)
 /*  use if you want to reimplement ListBox() will custom data or interactions. if the function return true, you can output elements then call ListBoxFooter() afterwards. */
 void w_ListBoxHeader_Override1(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto size = wrenExIsSlotDefault(vm, 2) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 2);
 	
 	bool out = ImGui::ListBoxHeader(label, size);
@@ -3057,7 +3057,7 @@ void w_ListBoxHeader_Override1(WrenVM *vm)
 /*  " */
 void w_ListBoxHeader_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto items_count = wrenExGetSlot<int>(vm, 2);
 	auto height_in_items = wrenExIsSlotDefault(vm, 3) ? -1 : wrenExGetSlot<int>(vm, 3);
 	
@@ -3083,7 +3083,7 @@ void w_ListBoxFooter(WrenVM *vm)
 
 void w_Value_Override1(WrenVM *vm)
 {
-	auto prefix = wrenGetSlotString(vm, 1);
+	auto prefix = wrenExGetSlot<const char*>(vm, 1);
 	auto b = wrenExGetSlot<bool>(vm, 2);
 	
 	ImGui::Value(prefix, b);
@@ -3092,7 +3092,7 @@ void w_Value_Override1(WrenVM *vm)
 
 void w_Value_Override2(WrenVM *vm)
 {
-	auto prefix = wrenGetSlotString(vm, 1);
+	auto prefix = wrenExGetSlot<const char*>(vm, 1);
 	auto v = wrenExGetSlot<int>(vm, 2);
 	
 	ImGui::Value(prefix, v);
@@ -3101,7 +3101,7 @@ void w_Value_Override2(WrenVM *vm)
 
 void w_Value_Override3(WrenVM *vm)
 {
-	auto prefix = wrenGetSlotString(vm, 1);
+	auto prefix = wrenExGetSlot<const char*>(vm, 1);
 	auto v = wrenExGetSlot<unsigned int>(vm, 2);
 	
 	ImGui::Value(prefix, v);
@@ -3110,9 +3110,9 @@ void w_Value_Override3(WrenVM *vm)
 
 void w_Value_Override4(WrenVM *vm)
 {
-	auto prefix = wrenGetSlotString(vm, 1);
+	auto prefix = wrenExGetSlot<const char*>(vm, 1);
 	auto v = wrenExGetSlot<float>(vm, 2);
-	auto float_format = wrenExIsSlotDefault(vm, 3) ? NULL : wrenGetSlotString(vm, 3);
+	auto float_format = wrenExIsSlotDefault(vm, 3) ? NULL : wrenExGetSlot<const char*>(vm, 3);
 	
 	ImGui::Value(prefix, v, float_format);
 	
@@ -3151,7 +3151,7 @@ void w_EndMainMenuBar(WrenVM *vm)
 /*  create a sub-menu entry. only call EndMenu() if this returns true! */
 void w_BeginMenu(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto enabled = wrenExIsSlotDefault(vm, 2) ? true : wrenExGetSlot<bool>(vm, 2);
 	
 	bool out = ImGui::BeginMenu(label, enabled);
@@ -3169,8 +3169,8 @@ void w_EndMenu(WrenVM *vm)
 /*  return true when activated. shortcuts are displayed for convenience but not processed by ImGui at the moment */
 void w_MenuItem_Override1(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
-	auto shortcut = wrenExIsSlotDefault(vm, 2) ? NULL : wrenGetSlotString(vm, 2);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto shortcut = wrenExIsSlotDefault(vm, 2) ? NULL : wrenExGetSlot<const char*>(vm, 2);
 	auto selected = wrenExIsSlotDefault(vm, 3) ? false : wrenExGetSlot<bool>(vm, 3);
 	auto enabled = wrenExIsSlotDefault(vm, 4) ? true : wrenExGetSlot<bool>(vm, 4);
 	
@@ -3182,8 +3182,8 @@ void w_MenuItem_Override1(WrenVM *vm)
 /*  return true when activated + toggle (*p_selected) if p_selected != NULL */
 void w_MenuItem_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
-	auto shortcut = wrenGetSlotString(vm, 2);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto shortcut = wrenExGetSlot<const char*>(vm, 2);
 	auto p_selected_box = Box::getCPP<bool>(vm, 3);
 	bool* p_selected = &p_selected_box;
 	auto enabled = wrenExIsSlotDefault(vm, 4) ? true : wrenExGetSlot<bool>(vm, 4);
@@ -3210,7 +3210,7 @@ void w_EndTooltip(WrenVM *vm)
 /*  set a text-only tooltip, typically use with ImGui::IsItemHovered(). override any previous call to SetTooltip(). */
 void w_SetTooltip(WrenVM *vm)
 {
-	auto fmt = wrenGetSlotString(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::SetTooltip(fmt);
 	
@@ -3219,7 +3219,7 @@ void w_SetTooltip(WrenVM *vm)
 /*  call to mark popup as open (don't call every frame!). popups are closed when user click outside, or if CloseCurrentPopup() is called within a BeginPopup()/EndPopup() block. By default, Selectable()/MenuItem() are calling CloseCurrentPopup(). Popup identifiers are relative to the current ID-stack (so OpenPopup and BeginPopup needs to be at the same level). */
 void w_OpenPopup(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::OpenPopup(str_id);
 	
@@ -3228,7 +3228,7 @@ void w_OpenPopup(WrenVM *vm)
 /*  return true if the popup is open, and you can start outputting to it. only call EndPopup() if BeginPopup() returns true! */
 void w_BeginPopup(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	auto flags = wrenExIsSlotDefault(vm, 2) ? 0 : wrenExGetSlotFlags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 2);
 	
 	bool out = ImGui::BeginPopup(str_id, flags);
@@ -3239,7 +3239,7 @@ void w_BeginPopup(WrenVM *vm)
 /*  helper to open and begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp! */
 void w_BeginPopupContextItem(WrenVM *vm)
 {
-	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenGetSlotString(vm, 1);
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
 	auto mouse_button = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2);
 	
 	bool out = ImGui::BeginPopupContextItem(str_id, mouse_button);
@@ -3250,7 +3250,7 @@ void w_BeginPopupContextItem(WrenVM *vm)
 /*  helper to open and begin popup when clicked on current window. */
 void w_BeginPopupContextWindow(WrenVM *vm)
 {
-	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenGetSlotString(vm, 1);
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
 	auto mouse_button = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2);
 	auto also_over_items = wrenExIsSlotDefault(vm, 3) ? true : wrenExGetSlot<bool>(vm, 3);
 	
@@ -3262,7 +3262,7 @@ void w_BeginPopupContextWindow(WrenVM *vm)
 /*  helper to open and begin popup when clicked in void (where there are no imgui windows). */
 void w_BeginPopupContextVoid(WrenVM *vm)
 {
-	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenGetSlotString(vm, 1);
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
 	auto mouse_button = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2);
 	
 	bool out = ImGui::BeginPopupContextVoid(str_id, mouse_button);
@@ -3273,7 +3273,7 @@ void w_BeginPopupContextVoid(WrenVM *vm)
 /*  modal dialog (regular window with title bar, block interactions behind the modal window, can't close the modal window by clicking outside) */
 void w_BeginPopupModal(WrenVM *vm)
 {
-	auto name = wrenGetSlotString(vm, 1);
+	auto name = wrenExGetSlot<const char*>(vm, 1);
 	bool* p_open = NULL;
 	bool p_open_box;
 	if(!wrenExIsSlotDefault(vm, 2)) {
@@ -3298,7 +3298,7 @@ void w_EndPopup(WrenVM *vm)
 /*  helper to open popup when clicked on last item (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors). return true when just opened. */
 void w_OpenPopupOnItemClick(WrenVM *vm)
 {
-	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenGetSlotString(vm, 1);
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
 	auto mouse_button = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotEnum<ImGuiMouseButton>(getImGuiMouseButtonFromString, vm, 2);
 	
 	bool out = ImGui::OpenPopupOnItemClick(str_id, mouse_button);
@@ -3309,7 +3309,7 @@ void w_OpenPopupOnItemClick(WrenVM *vm)
 /*  return true if the popup is open at the current begin-ed level of the popup stack. */
 void w_IsPopupOpen(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	
 	bool out = ImGui::IsPopupOpen(str_id);
 	wrenSetSlotBool(vm, 0, out);
@@ -3326,7 +3326,7 @@ void w_CloseCurrentPopup(WrenVM *vm)
 void w_Columns(WrenVM *vm)
 {
 	auto count = wrenExIsSlotDefault(vm, 1) ? 1 : wrenExGetSlot<int>(vm, 1);
-	auto id = wrenExIsSlotDefault(vm, 2) ? NULL : wrenGetSlotString(vm, 2);
+	auto id = wrenExIsSlotDefault(vm, 2) ? NULL : wrenExGetSlot<const char*>(vm, 2);
 	auto border = wrenExIsSlotDefault(vm, 3) ? true : wrenExGetSlot<bool>(vm, 3);
 	
 	ImGui::Columns(count, id, border);
@@ -3398,7 +3398,7 @@ void w_GetColumnsCount(WrenVM *vm)
 /*  create and append into a TabBar */
 void w_BeginTabBar(WrenVM *vm)
 {
-	auto str_id = wrenGetSlotString(vm, 1);
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
 	auto flags = wrenExIsSlotDefault(vm, 2) ? 0 : wrenExGetSlotFlags<ImGuiTabBarFlags>(getImGuiTabBarFlagsFromString, vm, 2);
 	
 	bool out = ImGui::BeginTabBar(str_id, flags);
@@ -3416,7 +3416,7 @@ void w_EndTabBar(WrenVM *vm)
 /*  create a Tab. Returns true if the Tab is selected. */
 void w_BeginTabItem(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	bool* p_open = NULL;
 	bool p_open_box;
 	if(!wrenExIsSlotDefault(vm, 2)) {
@@ -3441,7 +3441,7 @@ void w_EndTabItem(WrenVM *vm)
 /*  notify TabBar or Docking system of a closed tab/window ahead (useful to reduce visual flicker on reorderable tab bars). For tab-bar: call after BeginTabBar() and before Tab submissions. Otherwise call with a window name. */
 void w_SetTabItemClosed(WrenVM *vm)
 {
-	auto tab_or_docked_window_label = wrenGetSlotString(vm, 1);
+	auto tab_or_docked_window_label = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::SetTabItemClosed(tab_or_docked_window_label);
 	
@@ -3509,7 +3509,7 @@ void w_LogToTTY(WrenVM *vm)
 void w_LogToFile(WrenVM *vm)
 {
 	auto auto_open_depth = wrenExIsSlotDefault(vm, 1) ? -1 : wrenExGetSlot<int>(vm, 1);
-	auto filename = wrenExIsSlotDefault(vm, 2) ? NULL : wrenGetSlotString(vm, 2);
+	auto filename = wrenExIsSlotDefault(vm, 2) ? NULL : wrenExGetSlot<const char*>(vm, 2);
 	
 	ImGui::LogToFile(auto_open_depth, filename);
 	
@@ -3541,7 +3541,7 @@ void w_LogButtons(WrenVM *vm)
 /*  pass text data straight to log (without being displayed) */
 void w_LogText(WrenVM *vm)
 {
-	auto fmt = wrenGetSlotString(vm, 1);
+	auto fmt = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::LogText(fmt);
 	
@@ -3854,8 +3854,8 @@ void w_EndChildFrame(WrenVM *vm)
 
 void w_CalcTextSize(WrenVM *vm)
 {
-	auto text = wrenGetSlotString(vm, 1);
-	auto text_end = wrenExIsSlotDefault(vm, 2) ? NULL : wrenGetSlotString(vm, 2);
+	auto text = wrenExGetSlot<const char*>(vm, 1);
+	auto text_end = wrenExIsSlotDefault(vm, 2) ? NULL : wrenExGetSlot<const char*>(vm, 2);
 	auto hide_text_after_double_hash = wrenExIsSlotDefault(vm, 3) ? false : wrenExGetSlot<bool>(vm, 3);
 	auto wrap_width = wrenExIsSlotDefault(vm, 4) ? -1.0f : wrenExGetSlot<float>(vm, 4);
 	
@@ -4079,7 +4079,7 @@ void w_GetClipboardText(WrenVM *vm)
 
 void w_SetClipboardText(WrenVM *vm)
 {
-	auto text = wrenGetSlotString(vm, 1);
+	auto text = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::SetClipboardText(text);
 	
@@ -4088,7 +4088,7 @@ void w_SetClipboardText(WrenVM *vm)
 /*  call after CreateContext() and before the first call to NewFrame(). NewFrame() automatically calls LoadIniSettingsFromDisk(io.IniFilename). */
 void w_LoadIniSettingsFromDisk(WrenVM *vm)
 {
-	auto ini_filename = wrenGetSlotString(vm, 1);
+	auto ini_filename = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::LoadIniSettingsFromDisk(ini_filename);
 	
@@ -4099,7 +4099,7 @@ void w_LoadIniSettingsFromDisk(WrenVM *vm)
 /*  this is automatically called (if io.IniFilename is not empty) a few seconds after any modification that should be reflected in the .ini file (and also by DestroyContext). */
 void w_SaveIniSettingsToDisk(WrenVM *vm)
 {
-	auto ini_filename = wrenGetSlotString(vm, 1);
+	auto ini_filename = wrenExGetSlot<const char*>(vm, 1);
 	
 	ImGui::SaveIniSettingsToDisk(ini_filename);
 	
@@ -4133,7 +4133,7 @@ void w_DestroyPlatformWindows(WrenVM *vm)
 
 void w_InputText_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto str_box = Box::getCPP<std::string>(vm, 2);
 	std::string* str = &str_box;
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 3);
@@ -4148,7 +4148,7 @@ void w_InputText_Override2(WrenVM *vm)
 
 void w_InputTextMultiline_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto str_box = Box::getCPP<std::string>(vm, 2);
 	std::string* str = &str_box;
 	auto size = wrenExIsSlotDefault(vm, 3) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 3);
@@ -4164,8 +4164,8 @@ void w_InputTextMultiline_Override2(WrenVM *vm)
 
 void w_InputTextWithHint_Override2(WrenVM *vm)
 {
-	auto label = wrenGetSlotString(vm, 1);
-	auto hint = wrenGetSlotString(vm, 2);
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto hint = wrenExGetSlot<const char*>(vm, 2);
 	auto str_box = Box::getCPP<std::string>(vm, 3);
 	std::string* str = &str_box;
 	auto flags = wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 4);
