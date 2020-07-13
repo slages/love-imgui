@@ -4,10 +4,10 @@ local Types = {}
 
 do
 	-- Check argument types
-	local function simple_arg(getter, defaultGetter)
+	local function simple_arg(getter)
 		return function(buf, arg, i)
 			if arg.default then
-				buf:addf("auto %s = %s(vm, %d, %s);", arg.name, defaultGetter, i, arg.default)
+				buf:addf("auto %s = wrenExIsSlotDefault(vm, %d) ? %s : %s(vm, %d);", arg.name, i, arg.default, getter, i)
 			else
 				buf:addf("auto %s = %s(vm, %d);", arg.name, getter, i)
 			end
@@ -15,10 +15,10 @@ do
 		end
 	end
 
-	local function static_cast_arg(ctype, getter, defaultGetter)
+	local function static_cast_arg(ctype, getter)
 		return function(buf, arg, i)
 			if arg.default then
-				buf:addf("auto %s = static_cast<%s>(%s(vm, %d, %s));", arg.name, ctype, defaultGetter, i, arg.default)
+				buf:addf("auto %s = static_cast<%s>(wrenExIsSlotDefault(vm, %d) ? %s : %s(vm, %d));", arg.name, ctype, i, arg.default, getter, i)
 			else
 				buf:addf("auto %s = static_cast<%s>(%s(vm, %d));", arg.name, ctype, getter, i)
 			end
@@ -29,7 +29,7 @@ do
 	local function enum_arg(ctype, fromstring)
 		return function(buf, arg, i)
 			if arg.default then
-				buf:addf("auto %s = wrenExGetSlotEnumsDefault<%s>(%s, vm, %d, %s);", arg.name, ctype, fromstring, i, arg.default)
+				buf:addf("auto %s = wrenExIsSlotDefault(vm, %d) ? %s : wrenExGetSlotEnum<%s>(%s, vm, %d);", arg.name, i, arg.default, ctype, fromstring, i)
 			else
 				buf:addf("auto %s = wrenExGetSlotEnum<%s>(%s, vm, %d);", arg.name, ctype, fromstring, i)
 			end
@@ -40,7 +40,7 @@ do
 	local function flags_arg(ctype, fromstring)
 		return function(buf, arg, i)
 			if arg.default then
-				buf:addf("auto %s = wrenExGetSlotFlagsDefault<%s>(%s, vm, %d, %s);", arg.name, ctype, fromstring, i, arg.default)
+				buf:addf("auto %s = wrenExIsSlotDefault(vm, %d) ? %s : wrenExGetSlotFlags<%s>(%s, vm, %d);", arg.name, i, arg.default, ctype, fromstring, i)
 			else
 				buf:addf("auto %s = wrenExGetSlotFlags<%s>(%s, vm, %d);", arg.name, ctype, fromstring, i)
 			end
@@ -71,19 +71,19 @@ do
 
 	local typeCheckers = {
 		-- static input
-		["const char*"] = simple_arg("wrenGetSlotString", "wrenExGetSlotStringDefault"),
-		["bool"] = simple_arg("wrenGetSlotBool", "wrenExGetSlotBoolDefault"),
-		["int"] = simple_arg("wrenExGetSlotInt", "wrenExGetSlotIntDefault"),
-		["double"] = simple_arg("wrenGetSlotDouble", "wrenExGetSlotDoubleDefault"),
+		["const char*"] = simple_arg("wrenGetSlotString"),
+		["bool"] = simple_arg("wrenExGetSlot<bool>"),
+		["int"] = simple_arg("wrenExGetSlot<int>"),
+		["double"] = simple_arg("wrenExGetSlot<double>"),
 		--["ImTextureID"] = simple_arg("luax_checkTextureID", "luax_checkTextureID"),
 		--["ImGuiContext*"] = static_cast_arg("ImGuiContext*", "luax_checklightuserdata", "luax_optlightuserdata"),
 		--["ImGuiStyle*"] = static_cast_arg("ImGuiStyle*", "luax_checklightuserdata", "luax_optlightuserdata"),
-		["unsigned int"] = simple_arg("wrenExGetSlotUInt", "wrenExGetSlotUIntDefault"),
-		["float"] = simple_arg("wrenExGetSlotFloat", "wrenExGetSlotFloatDefault"),
-		["ImU32"] = static_cast_arg("ImU32", "wrenExGetSlotUInt", "wrenExGetSlotUIntDefault"),
-		["ImGuiID"] = static_cast_arg("ImGuiID", "wrenExGetSlotInt", "wrenExGetSlotIntDefault"),
-		["const ImVec2&"] = simple_arg("WrapImVec2::getSlot", "WrapImVec2::getSlotDefault"),
-		["const ImVec4&"] = simple_arg("WrapImVec4::getSlot", "WrapImVec4::getSlotDefault"),
+		["unsigned int"] = simple_arg("wrenExGetSlot<unsigned int>"),
+		["float"] = simple_arg("wrenExGetSlot<float>"),
+		["ImU32"] = static_cast_arg("ImU32", "wrenExGetSlot<unsigned int>"),
+		["ImGuiID"] = static_cast_arg("ImGuiID", "wrenExGetSlot<int>"),
+		["const ImVec2&"] = simple_arg("WrapImVec2::getSlot"),
+		["const ImVec4&"] = simple_arg("WrapImVec4::getSlot"),
 		--[[
 		["const ImVec2*"] = function(buf, arg, i, _)
 			local name = arg.name

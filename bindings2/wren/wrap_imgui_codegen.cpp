@@ -23,77 +23,6 @@ namespace {
 // End Enums }}}
 
 // Helpers {{{
-const char* wrenExGetSlotStringDefault(WrenVM* vm, int slotIdx, const char* d)
-{
-	if(wrenGetSlotCount(vm) > slotIdx) {
-		return wrenGetSlotString(vm, slotIdx);
-	} else {
-		return d;
-	}
-}
-
-bool wrenExGetSlotBoolDefault(WrenVM* vm, int slotIdx, bool d)
-{
-	if(wrenGetSlotCount(vm) > slotIdx) {
-		return wrenGetSlotBool(vm, slotIdx);
-	} else {
-		return d;
-	}
-}
-
-int wrenExGetSlotInt(WrenVM* vm, int slotIdx)
-{
-	// TODO: check integralness
-	return static_cast<int>(wrenGetSlotDouble(vm, slotIdx));
-}
-
-int wrenExGetSlotIntDefault(WrenVM* vm, int slotIdx, int d)
-{
-	if(wrenGetSlotCount(vm) > slotIdx) {
-		return wrenExGetSlotInt(vm, slotIdx);
-	} else {
-		return d;
-	}
-}
-
-double wrenExGetSlotDoubleDefault(WrenVM* vm, int slotIdx, double d)
-{
-	if(wrenGetSlotCount(vm) > slotIdx) {
-		return wrenGetSlotDouble(vm, slotIdx);
-	} else {
-		return d;
-	}
-}
-
-float wrenExGetSlotFloat(WrenVM* vm, int slotIdx)
-{
-	return static_cast<float>(wrenGetSlotDouble(vm, slotIdx));
-}
-
-float wrenExGetSlotFloatDefault(WrenVM* vm, int slotIdx, float d)
-{
-	if(wrenGetSlotCount(vm) > slotIdx) {
-		return wrenExGetSlotFloat(vm, slotIdx);
-	} else {
-		return d;
-	}
-}
-
-unsigned int wrenExGetSlotUInt(WrenVM* vm, int slotIdx)
-{
-	// TODO: check integralness
-	return static_cast<unsigned int>(wrenGetSlotDouble(vm, slotIdx));
-}
-
-unsigned int wrenExGetSlotUIntDefault(WrenVM* vm, int slotIdx, unsigned int d)
-{
-	if(wrenGetSlotCount(vm) > slotIdx) {
-		return wrenExGetSlotUInt(vm, slotIdx);
-	} else {
-		return d;
-	}
-}
-
 void wrenExAbortf(WrenVM* vm, const char* fmt, ...)
 {
 	char buf[1000]; // arbitrary size
@@ -109,6 +38,120 @@ void wrenExAbortf(WrenVM* vm, const char* fmt, ...)
 	wrenAbortFiber(vm, slotIdx);
 }
 
+using WrenNull = std::monostate;
+
+void wrenExSetSlot(WrenVM* vm, int slotIdx, WrenNull v)
+{
+	(void)v;
+	wrenSetSlotNull(vm, slotIdx);
+}
+
+void wrenExSetSlot(WrenVM* vm, int slotIdx, bool v)
+{
+	wrenSetSlotBool(vm, slotIdx, v);
+}
+
+void wrenExSetSlot(WrenVM* vm, int slotIdx, double v)
+{
+	wrenSetSlotDouble(vm, slotIdx, v);
+}
+
+void wrenExSetSlot(WrenVM* vm, int slotIdx, const std::string& v)
+{
+	wrenSetSlotString(vm, slotIdx, v.c_str());
+}
+
+const char* wrenExGetSlotTypeString(WrenVM* vm, int slotIdx)
+{
+	switch(wrenGetSlotType(vm, slotIdx))
+	{
+	case WREN_TYPE_BOOL: return "bool";
+	case WREN_TYPE_NUM: return "number";
+	case WREN_TYPE_FOREIGN: return "foreign object";
+	case WREN_TYPE_LIST: return "list";
+	case WREN_TYPE_NULL: return "null";
+	case WREN_TYPE_STRING: return "string";
+	case WREN_TYPE_UNKNOWN: return "unknown";
+	}
+	return "unknown";
+}
+
+template<typename T>
+T wrenExGetSlot(WrenVM* vm, int slotIdx);
+
+template<>
+bool wrenExGetSlot<bool>(WrenVM* vm, int slotIdx)
+{
+	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_BOOL) {
+		wrenExAbortf(vm, "Expected bool as argument %d, received %s", slotIdx, wrenExGetSlotTypeString(vm, slotIdx));
+	}
+
+	return wrenGetSlotBool(vm, slotIdx);
+}
+
+template<>
+double wrenExGetSlot<double>(WrenVM* vm, int slotIdx)
+{
+	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_NUM) {
+		wrenExAbortf(vm, "Expected double as argument %d, received %s", slotIdx, wrenExGetSlotTypeString(vm, slotIdx));
+	}
+
+	return wrenGetSlotDouble(vm, slotIdx);
+}
+
+template<>
+float wrenExGetSlot<float>(WrenVM* vm, int slotIdx)
+{
+	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_NUM) {
+		wrenExAbortf(vm, "Expected float as argument %d, received %s", slotIdx, wrenExGetSlotTypeString(vm, slotIdx));
+	}
+
+	return static_cast<float>(wrenGetSlotDouble(vm, slotIdx));
+}
+
+template<>
+int wrenExGetSlot<int>(WrenVM* vm, int slotIdx)
+{
+	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_NUM) {
+		wrenExAbortf(vm, "Expected int as argument %d, received %s", slotIdx, wrenExGetSlotTypeString(vm, slotIdx));
+	}
+
+	return static_cast<int>(wrenGetSlotDouble(vm, slotIdx));
+}
+
+template<>
+unsigned int wrenExGetSlot<unsigned int>(WrenVM* vm, int slotIdx)
+{
+	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_NUM) {
+		wrenExAbortf(vm, "Expected unsigned int as argument %d, received %s", slotIdx, wrenExGetSlotTypeString(vm, slotIdx));
+	}
+
+	return static_cast<unsigned int>(wrenGetSlotDouble(vm, slotIdx));
+}
+
+template<>
+std::string wrenExGetSlot<std::string>(WrenVM* vm, int slotIdx)
+{
+	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_STRING) {
+		wrenExAbortf(vm, "Expected bool as argument %d, received %s", slotIdx, wrenExGetSlotTypeString(vm, slotIdx));
+	}
+
+	return std::string(wrenGetSlotString(vm, slotIdx));
+}
+
+bool wrenExIsSlotDefault(WrenVM* vm, int slotIdx)
+{
+	if(wrenGetSlotCount(vm) > slotIdx) {
+		return true;
+	}
+
+	if (wrenGetSlotType(vm, slotIdx) == WREN_TYPE_NULL) {
+		return true;
+	}
+
+	return false;
+}
+
 template<typename T, typename U>
 T wrenExGetSlotEnum(U fromString, WrenVM* vm, int slotIdx)
 {
@@ -121,23 +164,13 @@ T wrenExGetSlotEnum(U fromString, WrenVM* vm, int slotIdx)
 }
 
 template<typename T, typename U>
-T wrenExGetSlotEnumsDefault(U fromString, WrenVM* vm, int slotIdx, T d)
-{
-	if(wrenGetSlotCount(vm) > slotIdx) {
-		return wrenExGetSlotEnum<T, U>(fromString, vm, slotIdx);
-	} else {
-		return d;
-	}
-}
-
-template<typename T, typename U>
 T wrenExGetSlotFlags(U fromString, WrenVM* vm, int slotIdx)
 {
 	T out{};
 	WrenType type = wrenGetSlotType(vm, slotIdx);
 	if (type == WREN_TYPE_NUM) {
 		// variant A: raw number
-		out = static_cast<T>(wrenExGetSlotInt(vm, slotIdx));
+		out = static_cast<T>(wrenExGetSlot<int>(vm, slotIdx));
 	} else if (type == WREN_TYPE_STRING) {
 		// variant B: string, split by '|'
 		const char* s = wrenGetSlotString(vm, slotIdx);
@@ -171,49 +204,6 @@ T wrenExGetSlotFlagsDefault(U fromString, WrenVM* vm, int slotIdx, T d)
 // End Helpers }}}
 
 // Helper classes {{{
-using WrenNull = std::monostate;
-void setSlotGeneric(WrenVM* vm, int slotIdx, WrenNull v)
-{
-	(void)v;
-	wrenSetSlotNull(vm, slotIdx);
-}
-
-void setSlotGeneric(WrenVM* vm, int slotIdx, bool v)
-{
-	wrenSetSlotBool(vm, slotIdx, v);
-}
-
-void setSlotGeneric(WrenVM* vm, int slotIdx, double v)
-{
-	wrenSetSlotDouble(vm, slotIdx, v);
-}
-
-void setSlotGeneric(WrenVM* vm, int slotIdx, const std::string& v)
-{
-	wrenSetSlotString(vm, slotIdx, v.c_str());
-}
-
-template<typename T>
-T getSlotGeneric(WrenVM* vm, int slotIdx);
-
-template<>
-bool getSlotGeneric<bool>(WrenVM* vm, int slotIdx)
-{
-	return wrenGetSlotBool(vm, slotIdx);
-}
-
-template<>
-double getSlotGeneric<double>(WrenVM* vm, int slotIdx)
-{
-	return wrenGetSlotDouble(vm, slotIdx);
-}
-
-template<>
-std::string getSlotGeneric<std::string>(WrenVM* vm, int slotIdx)
-{
-	return std::string(wrenGetSlotString(vm, slotIdx));
-}
-
 class Box {
 	using Field = std::variant<WrenNull, bool, double, std::string>;
 	public:
@@ -234,7 +224,7 @@ class Box {
 	static void get(WrenVM* vm)
 	{
 		Field* field = (Field*)wrenGetSlotForeign(vm, 0);
-		std::visit([&](auto&&arg){setSlotGeneric(vm, 0, arg);}, *field);
+		std::visit([&](auto&&arg){wrenExSetSlot(vm, 0, arg);}, *field);
 	}
 	template<typename T>
 	static T getCPP(WrenVM* vm, int slotIdx)
@@ -249,17 +239,17 @@ class Box {
 		{
 		case WREN_TYPE_BOOL:
 			{
-				*field = getSlotGeneric<bool>(vm, 1);
+				*field = wrenExGetSlot<bool>(vm, 1);
 			}
 			break;
 		case WREN_TYPE_NUM:
 			{
-				*field = getSlotGeneric<double>(vm, 1);
+				*field = wrenExGetSlot<double>(vm, 1);
 			}
 			break;
 		case WREN_TYPE_STRING:
 			{
-				*field = getSlotGeneric<std::string>(vm, 1);
+				*field = wrenExGetSlot<std::string>(vm, 1);
 			}
 			break;
 		default:
@@ -295,17 +285,17 @@ class WrapImVec2 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to X is not a number");
 		}
-		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 
 		if(!wrenGetSlotType(vm, 2) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to Y is not a number");
 		}
-		field->y = static_cast<float>(getSlotGeneric<double>(vm, 2));
+		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 2));
 	}
 	static void getX(WrenVM* vm)
 	{
 		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
-		setSlotGeneric(vm, 0, field->x);
+		wrenExSetSlot(vm, 0, field->x);
 	}
 	static void setX(WrenVM* vm)
 	{
@@ -313,12 +303,12 @@ class WrapImVec2 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to X is not a number");
 		}
-		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 	}
 	static void getY(WrenVM* vm)
 	{
 		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
-		setSlotGeneric(vm, 0, field->y);
+		wrenExSetSlot(vm, 0, field->y);
 	}
 	static void setY(WrenVM* vm)
 	{
@@ -326,7 +316,7 @@ class WrapImVec2 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to Y is not a number");
 		}
-		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 	}
 
 	static ImVec2 getSlot(WrenVM* vm, int slotIdx)
@@ -373,17 +363,17 @@ class WrapImVec4 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to X is not a number");
 		}
-		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 
 		if(!wrenGetSlotType(vm, 2) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to Y is not a number");
 		}
-		field->y = static_cast<float>(getSlotGeneric<double>(vm, 2));
+		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 2));
 	}
 	static void getX(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		setSlotGeneric(vm, 0, field->x);
+		wrenExSetSlot(vm, 0, field->x);
 	}
 	static void setX(WrenVM* vm)
 	{
@@ -391,12 +381,12 @@ class WrapImVec4 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to X is not a number");
 		}
-		field->x = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 	}
 	static void getY(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		setSlotGeneric(vm, 0, field->y);
+		wrenExSetSlot(vm, 0, field->y);
 	}
 	static void setY(WrenVM* vm)
 	{
@@ -404,12 +394,12 @@ class WrapImVec4 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to Y is not a number");
 		}
-		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 	}
 	static void getZ(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		setSlotGeneric(vm, 0, field->y);
+		wrenExSetSlot(vm, 0, field->y);
 	}
 	static void setZ(WrenVM* vm)
 	{
@@ -417,12 +407,12 @@ class WrapImVec4 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to Z is not a number");
 		}
-		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 	}
 	static void getW(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		setSlotGeneric(vm, 0, field->y);
+		wrenExSetSlot(vm, 0, field->y);
 	}
 	static void setW(WrenVM* vm)
 	{
@@ -430,7 +420,7 @@ class WrapImVec4 {
 		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
 			wrenExAbortf(vm, "value passed to W is not a number");
 		}
-		field->y = static_cast<float>(getSlotGeneric<double>(vm, 1));
+		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
 	}
 
 	static ImVec4 getSlot(WrenVM* vm, int slotIdx)
