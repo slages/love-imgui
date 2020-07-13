@@ -107,11 +107,8 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 				end
 			end
 
-			if arg.type:match("%*$") and arg.isOutParam then
-				table.insert(realargs, "&" .. arg.name)
-			else
-				table.insert(realargs, arg.name)
-			end
+			table.insert(realargs, arg.name)
+
 			if arg.name == "in" then
 				table.insert(docargs, "input") -- `in` is a keyword in wren
 			else

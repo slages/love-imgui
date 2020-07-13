@@ -1168,6 +1168,16 @@ unsigned int wrenExGetSlot<unsigned int>(WrenVM* vm, int slotIdx)
 }
 
 template<>
+const char* wrenExGetSlot<const char*>(WrenVM* vm, int slotIdx)
+{
+	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_STRING) {
+		wrenExAbortf(vm, "Expected bool as argument %d, received %s", slotIdx, wrenExGetSlotTypeString(vm, slotIdx));
+	}
+
+	return wrenGetSlotString(vm, slotIdx);
+}
+
+template<>
 std::string wrenExGetSlot<std::string>(WrenVM* vm, int slotIdx)
 {
 	if (wrenGetSlotType(vm, slotIdx) != WREN_TYPE_STRING) {
@@ -1193,10 +1203,10 @@ bool wrenExIsSlotDefault(WrenVM* vm, int slotIdx)
 template<typename T, typename U>
 T wrenExGetSlotEnum(U fromString, WrenVM* vm, int slotIdx)
 {
-	std::string s = wrenExGetSlot<std::string>(vm, slotIdx);
-	std::optional<T> opt = fromString(s.c_str());
+	const char* s = wrenExGetSlot<const char*>(vm, slotIdx);
+	std::optional<T> opt = fromString(s);
 	if(!opt) {
-		wrenExAbortf(vm, "Invalid enum as argument %d, received \"%s\"", slotIdx, s.c_str());
+		wrenExAbortf(vm, "Invalid enum as argument %d, received \"%s\"", slotIdx, s);
 	}
 	return *opt;
 }
@@ -1223,7 +1233,7 @@ T wrenExGetSlotFlags(U fromString, WrenVM* vm, int slotIdx)
 			out = out | *opt;
 		}
 	} else {
-		wrenExAbortf(vm, "Unrecognized flag parameter %d: must be int, string, or table", slotIdx);
+		wrenExAbortf(vm, "Unrecognized flag parameter %d: must be int or string", slotIdx);
 	}
 
 	return out;
@@ -1320,15 +1330,9 @@ class WrapImVec2 {
 	static void init(WrenVM* vm)
 	{
 		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to X is not a number");
-		}
-		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
+		field->x = wrenExGetSlot<float>(vm, 1);
 
-		if(!wrenGetSlotType(vm, 2) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to Y is not a number");
-		}
-		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 2));
+		field->y = wrenExGetSlot<float>(vm, 2);
 	}
 	static void getX(WrenVM* vm)
 	{
@@ -1338,10 +1342,7 @@ class WrapImVec2 {
 	static void setX(WrenVM* vm)
 	{
 		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to X is not a number");
-		}
-		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
+		field->x = wrenExGetSlot<float>(vm, 1);
 	}
 	static void getY(WrenVM* vm)
 	{
@@ -1351,10 +1352,7 @@ class WrapImVec2 {
 	static void setY(WrenVM* vm)
 	{
 		ImVec2* field = (ImVec2*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to Y is not a number");
-		}
-		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
+		field->y = wrenExGetSlot<float>(vm, 1);
 	}
 
 	static ImVec2 getSlot(WrenVM* vm, int slotIdx)
@@ -1398,15 +1396,8 @@ class WrapImVec4 {
 	static void init(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to X is not a number");
-		}
-		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
-
-		if(!wrenGetSlotType(vm, 2) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to Y is not a number");
-		}
-		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 2));
+		field->x = wrenExGetSlot<float>(vm, 1);
+		field->y = wrenExGetSlot<float>(vm, 2);
 	}
 	static void getX(WrenVM* vm)
 	{
@@ -1416,10 +1407,7 @@ class WrapImVec4 {
 	static void setX(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to X is not a number");
-		}
-		field->x = static_cast<float>(wrenExGetSlot<double>(vm, 1));
+		field->x = wrenExGetSlot<float>(vm, 1);
 	}
 	static void getY(WrenVM* vm)
 	{
@@ -1429,10 +1417,7 @@ class WrapImVec4 {
 	static void setY(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to Y is not a number");
-		}
-		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
+		field->y = wrenExGetSlot<float>(vm, 1);
 	}
 	static void getZ(WrenVM* vm)
 	{
@@ -1442,10 +1427,7 @@ class WrapImVec4 {
 	static void setZ(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to Z is not a number");
-		}
-		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
+		field->y = wrenExGetSlot<float>(vm, 1);
 	}
 	static void getW(WrenVM* vm)
 	{
@@ -1455,10 +1437,7 @@ class WrapImVec4 {
 	static void setW(WrenVM* vm)
 	{
 		ImVec4* field = (ImVec4*)wrenGetSlotForeign(vm, 0);
-		if(!wrenGetSlotType(vm, 1) == WREN_TYPE_NUM) {
-			wrenExAbortf(vm, "value passed to W is not a number");
-		}
-		field->y = static_cast<float>(wrenExGetSlot<double>(vm, 1));
+		field->y = wrenExGetSlot<float>(vm, 1);
 	}
 
 	static ImVec4 getSlot(WrenVM* vm, int slotIdx)
@@ -1527,31 +1506,46 @@ void w_Render(WrenVM *vm)
 /*  create Demo window (previously called ShowTestWindow). demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application! */
 void w_ShowDemoWindow(WrenVM *vm)
 {
-	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 1));
+	bool* p_open = NULL;
+	bool p_open_box;
+	if(!wrenExIsSlotDefault(vm, 1)) {
+		p_open_box = Box::getCPP<bool>(vm, 1);
+		p_open = &p_open_box;
+	}
 	
-	ImGui::ShowDemoWindow(&p_open);
+	ImGui::ShowDemoWindow(p_open);
 	
-	Box::setCPP<bool>(vm, 1, p_open);
+	if(p_open) { Box::setCPP<bool>(vm, 1, *p_open); }
 }
 
 /*  create About window. display Dear ImGui version, credits and build/system information. */
 void w_ShowAboutWindow(WrenVM *vm)
 {
-	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 1));
+	bool* p_open = NULL;
+	bool p_open_box;
+	if(!wrenExIsSlotDefault(vm, 1)) {
+		p_open_box = Box::getCPP<bool>(vm, 1);
+		p_open = &p_open_box;
+	}
 	
-	ImGui::ShowAboutWindow(&p_open);
+	ImGui::ShowAboutWindow(p_open);
 	
-	Box::setCPP<bool>(vm, 1, p_open);
+	if(p_open) { Box::setCPP<bool>(vm, 1, *p_open); }
 }
 
 /*  create Debug/Metrics window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
 void w_ShowMetricsWindow(WrenVM *vm)
 {
-	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 1));
+	bool* p_open = NULL;
+	bool p_open_box;
+	if(!wrenExIsSlotDefault(vm, 1)) {
+		p_open_box = Box::getCPP<bool>(vm, 1);
+		p_open = &p_open_box;
+	}
 	
-	ImGui::ShowMetricsWindow(&p_open);
+	ImGui::ShowMetricsWindow(p_open);
 	
-	Box::setCPP<bool>(vm, 1, p_open);
+	if(p_open) { Box::setCPP<bool>(vm, 1, *p_open); }
 }
 
 // skipping w_ShowStyleEditor due to unimplemented argument type: "ImGuiStyle*"
@@ -1599,13 +1593,18 @@ void w_GetVersion(WrenVM *vm)
 void w_Begin(WrenVM *vm)
 {
 	auto name = wrenGetSlotString(vm, 1);
-	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	bool* p_open = NULL;
+	bool p_open_box;
+	if(!wrenExIsSlotDefault(vm, 2)) {
+		p_open_box = Box::getCPP<bool>(vm, 2);
+		p_open = &p_open_box;
+	}
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 3);
 	
-	bool out = ImGui::Begin(name, &p_open, flags);
+	bool out = ImGui::Begin(name, p_open, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 2, p_open);
+	if(p_open) { Box::setCPP<bool>(vm, 2, *p_open); }
 }
 
 void w_End(WrenVM *vm)
@@ -2530,24 +2529,26 @@ void w_ArrowButton(WrenVM *vm)
 void w_Checkbox(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	auto v_box = Box::getCPP<bool>(vm, 2);
+	bool* v = &v_box;
 	
-	bool out = ImGui::Checkbox(label, &v);
+	bool out = ImGui::Checkbox(label, v);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 2, v);
+	Box::setCPP<bool>(vm, 2, *v);
 }
 
 void w_CheckboxFlags(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto flags = static_cast<unsigned int>(Box::getCPP<double>(vm, 2));
+	auto flags_box = static_cast<unsigned int>(Box::getCPP<double>(vm, 2));
+	unsigned int* flags = &flags_box;
 	auto flags_value = wrenExGetSlot<unsigned int>(vm, 3);
 	
-	bool out = ImGui::CheckboxFlags(label, &flags, flags_value);
+	bool out = ImGui::CheckboxFlags(label, flags, flags_value);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, flags);
+	Box::setCPP<double>(vm, 2, *flags);
 }
 
 /*  use with e.g. if (RadioButton("one", my_value==1)) { my_value = 1; } */
@@ -2565,13 +2566,14 @@ void w_RadioButton_Override1(WrenVM *vm)
 void w_RadioButton_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v = &v_box;
 	auto v_button = wrenExGetSlot<int>(vm, 3);
 	
-	bool out = ImGui::RadioButton(label, &v, v_button);
+	bool out = ImGui::RadioButton(label, v, v_button);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 void w_ProgressBar(WrenVM *vm)
@@ -2615,14 +2617,15 @@ void w_EndCombo(WrenVM *vm)
 void w_Combo_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto current_item = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto current_item_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* current_item = &current_item_box;
 	auto items_separated_by_zeros = wrenGetSlotString(vm, 3);
 	auto popup_max_height_in_items = wrenExIsSlotDefault(vm, 4) ? -1 : wrenExGetSlot<int>(vm, 4);
 	
-	bool out = ImGui::Combo(label, &current_item, items_separated_by_zeros, popup_max_height_in_items);
+	bool out = ImGui::Combo(label, current_item, items_separated_by_zeros, popup_max_height_in_items);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, current_item);
+	Box::setCPP<double>(vm, 2, *current_item);
 }
 
 // skipping w_Combo_Override3 due to unimplemented argument type: " bool(*items_getter)(void* data, int idx, const char** out_text)"
@@ -2631,17 +2634,18 @@ void w_Combo_Override2(WrenVM *vm)
 void w_DragFloat(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v = &v_box;
 	auto v_speed = wrenExIsSlotDefault(vm, 3) ? 1.0f : wrenExGetSlot<float>(vm, 3);
 	auto v_min = wrenExIsSlotDefault(vm, 4) ? 0.0f : wrenExGetSlot<float>(vm, 4);
 	auto v_max = wrenExIsSlotDefault(vm, 5) ? 0.0f : wrenExGetSlot<float>(vm, 5);
 	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenGetSlotString(vm, 6);
 	auto power = wrenExIsSlotDefault(vm, 7) ? 1.0f : wrenExGetSlot<float>(vm, 7);
 	
-	bool out = ImGui::DragFloat(label, &v, v_speed, v_min, v_max, format, power);
+	bool out = ImGui::DragFloat(label, v, v_speed, v_min, v_max, format, power);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 // skipping w_DragFloat2 due to unimplemented argument type: "float[2]"
@@ -2653,8 +2657,10 @@ void w_DragFloat(WrenVM *vm)
 void w_DragFloatRange2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v_current_min = static_cast<float>(Box::getCPP<double>(vm, 2));
-	auto v_current_max = static_cast<float>(Box::getCPP<double>(vm, 3));
+	auto v_current_min_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v_current_min = &v_current_min_box;
+	auto v_current_max_box = static_cast<float>(Box::getCPP<double>(vm, 3));
+	float* v_current_max = &v_current_max_box;
 	auto v_speed = wrenExIsSlotDefault(vm, 4) ? 1.0f : wrenExGetSlot<float>(vm, 4);
 	auto v_min = wrenExIsSlotDefault(vm, 5) ? 0.0f : wrenExGetSlot<float>(vm, 5);
 	auto v_max = wrenExIsSlotDefault(vm, 6) ? 0.0f : wrenExGetSlot<float>(vm, 6);
@@ -2662,27 +2668,28 @@ void w_DragFloatRange2(WrenVM *vm)
 	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenGetSlotString(vm, 8);
 	auto power = wrenExIsSlotDefault(vm, 9) ? 1.0f : wrenExGetSlot<float>(vm, 9);
 	
-	bool out = ImGui::DragFloatRange2(label, &v_current_min, &v_current_max, v_speed, v_min, v_max, format, format_max, power);
+	bool out = ImGui::DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, power);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v_current_min);
-	Box::setCPP<double>(vm, 3, v_current_max);
+	Box::setCPP<double>(vm, 2, *v_current_min);
+	Box::setCPP<double>(vm, 3, *v_current_max);
 }
 
 /*  If v_min >= v_max we have no bound */
 void w_DragInt(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v = &v_box;
 	auto v_speed = wrenExIsSlotDefault(vm, 3) ? 1.0f : wrenExGetSlot<float>(vm, 3);
 	auto v_min = wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlot<int>(vm, 4);
 	auto v_max = wrenExIsSlotDefault(vm, 5) ? 0 : wrenExGetSlot<int>(vm, 5);
 	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenGetSlotString(vm, 6);
 	
-	bool out = ImGui::DragInt(label, &v, v_speed, v_min, v_max, format);
+	bool out = ImGui::DragInt(label, v, v_speed, v_min, v_max, format);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 // skipping w_DragInt2 due to unimplemented argument type: "int[2]"
@@ -2694,35 +2701,38 @@ void w_DragInt(WrenVM *vm)
 void w_DragIntRange2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v_current_min = static_cast<int>(Box::getCPP<double>(vm, 2));
-	auto v_current_max = static_cast<int>(Box::getCPP<double>(vm, 3));
+	auto v_current_min_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v_current_min = &v_current_min_box;
+	auto v_current_max_box = static_cast<int>(Box::getCPP<double>(vm, 3));
+	int* v_current_max = &v_current_max_box;
 	auto v_speed = wrenExIsSlotDefault(vm, 4) ? 1.0f : wrenExGetSlot<float>(vm, 4);
 	auto v_min = wrenExIsSlotDefault(vm, 5) ? 0 : wrenExGetSlot<int>(vm, 5);
 	auto v_max = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlot<int>(vm, 6);
 	auto format = wrenExIsSlotDefault(vm, 7) ? "%d" : wrenGetSlotString(vm, 7);
 	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenGetSlotString(vm, 8);
 	
-	bool out = ImGui::DragIntRange2(label, &v_current_min, &v_current_max, v_speed, v_min, v_max, format, format_max);
+	bool out = ImGui::DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v_current_min);
-	Box::setCPP<double>(vm, 3, v_current_max);
+	Box::setCPP<double>(vm, 2, *v_current_min);
+	Box::setCPP<double>(vm, 3, *v_current_max);
 }
 
 /*  adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. Use power!=1.0 for power curve sliders */
 void w_SliderFloat(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v = &v_box;
 	auto v_min = wrenExGetSlot<float>(vm, 3);
 	auto v_max = wrenExGetSlot<float>(vm, 4);
 	auto format = wrenExIsSlotDefault(vm, 5) ? "%.3f" : wrenGetSlotString(vm, 5);
 	auto power = wrenExIsSlotDefault(vm, 6) ? 1.0f : wrenExGetSlot<float>(vm, 6);
 	
-	bool out = ImGui::SliderFloat(label, &v, v_min, v_max, format, power);
+	bool out = ImGui::SliderFloat(label, v, v_min, v_max, format, power);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 // skipping w_SliderFloat2 due to unimplemented argument type: "float[2]"
@@ -2734,29 +2744,31 @@ void w_SliderFloat(WrenVM *vm)
 void w_SliderAngle(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v_rad = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_rad_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v_rad = &v_rad_box;
 	auto v_degrees_min = wrenExIsSlotDefault(vm, 3) ? -360.0f : wrenExGetSlot<float>(vm, 3);
 	auto v_degrees_max = wrenExIsSlotDefault(vm, 4) ? +360.0f : wrenExGetSlot<float>(vm, 4);
 	auto format = wrenExIsSlotDefault(vm, 5) ? "%.0f deg" : wrenGetSlotString(vm, 5);
 	
-	bool out = ImGui::SliderAngle(label, &v_rad, v_degrees_min, v_degrees_max, format);
+	bool out = ImGui::SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v_rad);
+	Box::setCPP<double>(vm, 2, *v_rad);
 }
 
 void w_SliderInt(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v = &v_box;
 	auto v_min = wrenExGetSlot<int>(vm, 3);
 	auto v_max = wrenExGetSlot<int>(vm, 4);
 	auto format = wrenExIsSlotDefault(vm, 5) ? "%d" : wrenGetSlotString(vm, 5);
 	
-	bool out = ImGui::SliderInt(label, &v, v_min, v_max, format);
+	bool out = ImGui::SliderInt(label, v, v_min, v_max, format);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 // skipping w_SliderInt2 due to unimplemented argument type: "int[2]"
@@ -2769,31 +2781,33 @@ void w_VSliderFloat(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
 	auto size = WrapImVec2::getSlot(vm, 2);
-	auto v = static_cast<float>(Box::getCPP<double>(vm, 3));
+	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 3));
+	float* v = &v_box;
 	auto v_min = wrenExGetSlot<float>(vm, 4);
 	auto v_max = wrenExGetSlot<float>(vm, 5);
 	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenGetSlotString(vm, 6);
 	auto power = wrenExIsSlotDefault(vm, 7) ? 1.0f : wrenExGetSlot<float>(vm, 7);
 	
-	bool out = ImGui::VSliderFloat(label, size, &v, v_min, v_max, format, power);
+	bool out = ImGui::VSliderFloat(label, size, v, v_min, v_max, format, power);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 3, v);
+	Box::setCPP<double>(vm, 3, *v);
 }
 
 void w_VSliderInt(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
 	auto size = WrapImVec2::getSlot(vm, 2);
-	auto v = static_cast<int>(Box::getCPP<double>(vm, 3));
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 3));
+	int* v = &v_box;
 	auto v_min = wrenExGetSlot<int>(vm, 4);
 	auto v_max = wrenExGetSlot<int>(vm, 5);
 	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenGetSlotString(vm, 6);
 	
-	bool out = ImGui::VSliderInt(label, size, &v, v_min, v_max, format);
+	bool out = ImGui::VSliderInt(label, size, v, v_min, v_max, format);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 3, v);
+	Box::setCPP<double>(vm, 3, *v);
 }
 
 // skipping w_InputText_Override1 due to unimplemented argument type: "(TODO) const buf*"
@@ -2805,16 +2819,17 @@ void w_VSliderInt(WrenVM *vm)
 void w_InputFloat(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<float>(Box::getCPP<double>(vm, 2));
+	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v = &v_box;
 	auto step = wrenExIsSlotDefault(vm, 3) ? 0.0f : wrenExGetSlot<float>(vm, 3);
 	auto step_fast = wrenExIsSlotDefault(vm, 4) ? 0.0f : wrenExGetSlot<float>(vm, 4);
 	auto format = wrenExIsSlotDefault(vm, 5) ? "%.3f" : wrenGetSlotString(vm, 5);
 	auto flags = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 6);
 	
-	bool out = ImGui::InputFloat(label, &v, step, step_fast, format, flags);
+	bool out = ImGui::InputFloat(label, v, step, step_fast, format, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 // skipping w_InputFloat2 due to unimplemented argument type: "float[2]"
@@ -2826,15 +2841,16 @@ void w_InputFloat(WrenVM *vm)
 void w_InputInt(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<int>(Box::getCPP<double>(vm, 2));
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v = &v_box;
 	auto step = wrenExIsSlotDefault(vm, 3) ? 1 : wrenExGetSlot<int>(vm, 3);
 	auto step_fast = wrenExIsSlotDefault(vm, 4) ? 100 : wrenExGetSlot<int>(vm, 4);
 	auto flags = wrenExIsSlotDefault(vm, 5) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 5);
 	
-	bool out = ImGui::InputInt(label, &v, step, step_fast, flags);
+	bool out = ImGui::InputInt(label, v, step, step_fast, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 // skipping w_InputInt2 due to unimplemented argument type: "int[2]"
@@ -2846,16 +2862,17 @@ void w_InputInt(WrenVM *vm)
 void w_InputDouble(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto v = static_cast<double>(Box::getCPP<double>(vm, 2));
+	auto v_box = Box::getCPP<double>(vm, 2);
+	double* v = &v_box;
 	auto step = wrenExIsSlotDefault(vm, 3) ? 0.0 : wrenExGetSlot<double>(vm, 3);
 	auto step_fast = wrenExIsSlotDefault(vm, 4) ? 0.0 : wrenExGetSlot<double>(vm, 4);
 	auto format = wrenExIsSlotDefault(vm, 5) ? "%.6f" : wrenGetSlotString(vm, 5);
 	auto flags = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 6);
 	
-	bool out = ImGui::InputDouble(label, &v, step, step_fast, format, flags);
+	bool out = ImGui::InputDouble(label, v, step, step_fast, format, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<double>(vm, 2, v);
+	Box::setCPP<double>(vm, 2, *v);
 }
 
 // skipping w_ColorEdit3 due to unimplemented argument type: "float[3]"
@@ -2974,13 +2991,14 @@ void w_CollapsingHeader_Override1(WrenVM *vm)
 void w_CollapsingHeader_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	auto p_open_box = Box::getCPP<bool>(vm, 2);
+	bool* p_open = &p_open_box;
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 3);
 	
-	bool out = ImGui::CollapsingHeader(label, &p_open, flags);
+	bool out = ImGui::CollapsingHeader(label, p_open, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 2, p_open);
+	Box::setCPP<bool>(vm, 2, *p_open);
 }
 
 /*  set next TreeNode/CollapsingHeader open state. */
@@ -3010,14 +3028,15 @@ void w_Selectable_Override1(WrenVM *vm)
 void w_Selectable_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto p_selected = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	auto p_selected_box = Box::getCPP<bool>(vm, 2);
+	bool* p_selected = &p_selected_box;
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiSelectableFlags>(getImGuiSelectableFlagsFromString, vm, 3);
 	auto size = wrenExIsSlotDefault(vm, 4) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 4);
 	
-	bool out = ImGui::Selectable(label, &p_selected, flags, size);
+	bool out = ImGui::Selectable(label, p_selected, flags, size);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 2, p_selected);
+	Box::setCPP<bool>(vm, 2, *p_selected);
 }
 
 // skipping w_ListBox_Override1 due to unimplemented argument type: "const char* const[]"
@@ -3165,13 +3184,14 @@ void w_MenuItem_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
 	auto shortcut = wrenGetSlotString(vm, 2);
-	auto p_selected = static_cast<bool>(Box::getCPP<bool>(vm, 3));
+	auto p_selected_box = Box::getCPP<bool>(vm, 3);
+	bool* p_selected = &p_selected_box;
 	auto enabled = wrenExIsSlotDefault(vm, 4) ? true : wrenExGetSlot<bool>(vm, 4);
 	
-	bool out = ImGui::MenuItem(label, shortcut, &p_selected, enabled);
+	bool out = ImGui::MenuItem(label, shortcut, p_selected, enabled);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 3, p_selected);
+	Box::setCPP<bool>(vm, 3, *p_selected);
 }
 
 /*  begin/append a tooltip window. to create full-featured tooltip (with any kind of items). */
@@ -3254,13 +3274,18 @@ void w_BeginPopupContextVoid(WrenVM *vm)
 void w_BeginPopupModal(WrenVM *vm)
 {
 	auto name = wrenGetSlotString(vm, 1);
-	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	bool* p_open = NULL;
+	bool p_open_box;
+	if(!wrenExIsSlotDefault(vm, 2)) {
+		p_open_box = Box::getCPP<bool>(vm, 2);
+		p_open = &p_open_box;
+	}
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiWindowFlags>(getImGuiWindowFlagsFromString, vm, 3);
 	
-	bool out = ImGui::BeginPopupModal(name, &p_open, flags);
+	bool out = ImGui::BeginPopupModal(name, p_open, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 2, p_open);
+	if(p_open) { Box::setCPP<bool>(vm, 2, *p_open); }
 }
 
 /*  only call EndPopup() if BeginPopupXXX() returns true! */
@@ -3392,13 +3417,18 @@ void w_EndTabBar(WrenVM *vm)
 void w_BeginTabItem(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto p_open = static_cast<bool>(Box::getCPP<bool>(vm, 2));
+	bool* p_open = NULL;
+	bool p_open_box;
+	if(!wrenExIsSlotDefault(vm, 2)) {
+		p_open_box = Box::getCPP<bool>(vm, 2);
+		p_open = &p_open_box;
+	}
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiTabItemFlags>(getImGuiTabItemFlagsFromString, vm, 3);
 	
-	bool out = ImGui::BeginTabItem(label, &p_open, flags);
+	bool out = ImGui::BeginTabItem(label, p_open, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 2, p_open);
+	if(p_open) { Box::setCPP<bool>(vm, 2, *p_open); }
 }
 
 /*  only call EndTabItem() if BeginTabItem() returns true! */
@@ -3792,13 +3822,15 @@ void w_CalcListClipping(WrenVM *vm)
 {
 	auto items_count = wrenExGetSlot<int>(vm, 1);
 	auto items_height = wrenExGetSlot<float>(vm, 2);
-	auto out_items_display_start = static_cast<int>(Box::getCPP<double>(vm, 3));
-	auto out_items_display_end = static_cast<int>(Box::getCPP<double>(vm, 4));
+	auto out_items_display_start_box = static_cast<int>(Box::getCPP<double>(vm, 3));
+	int* out_items_display_start = &out_items_display_start_box;
+	auto out_items_display_end_box = static_cast<int>(Box::getCPP<double>(vm, 4));
+	int* out_items_display_end = &out_items_display_end_box;
 	
-	ImGui::CalcListClipping(items_count, items_height, &out_items_display_start, &out_items_display_end);
+	ImGui::CalcListClipping(items_count, items_height, out_items_display_start, out_items_display_end);
 	
-	Box::setCPP<double>(vm, 3, out_items_display_start);
-	Box::setCPP<double>(vm, 4, out_items_display_end);
+	Box::setCPP<double>(vm, 3, *out_items_display_start);
+	Box::setCPP<double>(vm, 4, *out_items_display_end);
 }
 
 /*  helper to create a child window / scrolling region that looks like a normal widget frame */
@@ -4102,45 +4134,48 @@ void w_DestroyPlatformWindows(WrenVM *vm)
 void w_InputText_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto str = static_cast<std::string>(Box::getCPP<std::string>(vm, 2));
+	auto str_box = Box::getCPP<std::string>(vm, 2);
+	std::string* str = &str_box;
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 3);
 	ImGuiInputTextCallback callback = nullptr; // TODO
 	void* user_data = nullptr;
 	
-	bool out = ImGui::InputText(label, &str, flags, callback, user_data);
+	bool out = ImGui::InputText(label, str, flags, callback, user_data);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<std::string>(vm, 2, str);
+	Box::setCPP<std::string>(vm, 2, *str);
 }
 
 void w_InputTextMultiline_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
-	auto str = static_cast<std::string>(Box::getCPP<std::string>(vm, 2));
+	auto str_box = Box::getCPP<std::string>(vm, 2);
+	std::string* str = &str_box;
 	auto size = wrenExIsSlotDefault(vm, 3) ? ImVec2(0, 0) : WrapImVec2::getSlot(vm, 3);
 	auto flags = wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 4);
 	ImGuiInputTextCallback callback = nullptr; // TODO
 	void* user_data = nullptr;
 	
-	bool out = ImGui::InputTextMultiline(label, &str, size, flags, callback, user_data);
+	bool out = ImGui::InputTextMultiline(label, str, size, flags, callback, user_data);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<std::string>(vm, 2, str);
+	Box::setCPP<std::string>(vm, 2, *str);
 }
 
 void w_InputTextWithHint_Override2(WrenVM *vm)
 {
 	auto label = wrenGetSlotString(vm, 1);
 	auto hint = wrenGetSlotString(vm, 2);
-	auto str = static_cast<std::string>(Box::getCPP<std::string>(vm, 3));
+	auto str_box = Box::getCPP<std::string>(vm, 3);
+	std::string* str = &str_box;
 	auto flags = wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlotFlags<ImGuiInputTextFlags>(getImGuiInputTextFlagsFromString, vm, 4);
 	ImGuiInputTextCallback callback = nullptr; // TODO
 	void* user_data = nullptr;
 	
-	bool out = ImGui::InputTextWithHint(label, hint, &str, flags, callback, user_data);
+	bool out = ImGui::InputTextWithHint(label, hint, str, flags, callback, user_data);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<std::string>(vm, 3, str);
+	Box::setCPP<std::string>(vm, 3, *str);
 }
 
 // skipping w_ImDrawList_PushClipRect due to unimplemented foreign class type: "ImDrawList"

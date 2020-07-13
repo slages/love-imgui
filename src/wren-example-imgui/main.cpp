@@ -13,19 +13,15 @@ import "imgui" for ImGui, Box, ImVec2
 class TestInstance {
   construct new() {
 	_showDemoBox = Box.new(true)
-	_showCPPDemoBox = Box.new(true)
 	_tempBox = Box.new(10)
   }
   update() {
+	ImGui.ShowDemoWindow()
+
     ImGui.SetNextWindowPos(ImVec2.new(300, 300))
 	if (ImGui.Begin("ImGui Wren Example", _showDemoBox, "AlwaysAutoResize|NoMove")) {
-		ImGui.Checkbox("Show C++ Demo", _showCPPDemoBox)
-		if (_showCPPDemoBox.value) {
-			ImGui.ShowDemoWindow(_showDemoBox)
-		}
-
-		ImGui.Separator()
 		ImGui.Text("Example Widgets")
+		ImGui.Separator()
 		ImGui.Checkbox("Checkbox", _tempBox.set(true))
 		ImGui.DragFloat("DragFloat", _tempBox.set(3.14), 1, 0, 0, "~\%0.4f~", 1)
 		ImGui.LabelText("Label", "%(_tempBox.value)")

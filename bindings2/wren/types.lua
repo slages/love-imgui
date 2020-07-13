@@ -60,11 +60,34 @@ do
 		end
 	end
 
-	local function box_arg(argType, storageType)
+	local function box_arg(storageType, argType)
+		if not argType then argType = storageType end
 		return function(buf, arg, i, outLines)
-			buf:addf("auto %s = static_cast<%s>(Box::getCPP<%s>(vm, %d));", arg.name, argType, storageType, i)
+			if arg.default then
+				buf:addf("%s* %s = %s;", argType, arg.name, arg.default)
+				buf:addf("%s %s_box;", argType, arg.name)
+				buf:addf("if(!wrenExIsSlotDefault(vm, %d)) {", i) buf:indent() do
+					if argType == storageType then
+						buf:addf("%s_box = Box::getCPP<%s>(vm, %d);", arg.name, storageType, i)
+					else
+						buf:addf("%s_box = static_cast<%s>(Box::getCPP<%s>(vm, %d));", argType, arg.name, argType, storageType, i)
+					end
+					buf:addf("%s = &%s_box;", arg.name, arg.name)
+				end buf:unindent() buf:addf("}")
+			else
+				if argType == storageType then
+					buf:addf("auto %s_box = Box::getCPP<%s>(vm, %d);", arg.name, storageType, i)
+				else
+					buf:addf("auto %s_box = static_cast<%s>(Box::getCPP<%s>(vm, %d));", arg.name, argType, storageType, i)
+				end
+				buf:addf("%s* %s = &%s_box;", argType, arg.name, arg.name)
+			end
 			arg.isOutParam = true
-			table.insert(outLines, ("Box::setCPP<%s>(vm, %d, %s);"):format(storageType, i, arg.name))
+			if arg.default then
+				table.insert(outLines, ("if(%s) { Box::setCPP<%s>(vm, %d, *%s); }"):format(arg.name, storageType, i, arg.name))
+			else
+				table.insert(outLines, ("Box::setCPP<%s>(vm, %d, *%s);"):format(storageType, i, arg.name))
+			end
 			return i + 1
 		end
 	end
@@ -108,7 +131,7 @@ do
 			return i+1
 		end,
 		--]]
-		["ImGuiInputTextCallback"] = function(buf, arg, i, _)
+		["ImGuiInputTextCallback"] = function(buf, arg, _, _)
 			local name = arg.name
 			buf:addf("ImGuiInputTextCallback %s = nullptr; // TODO", name);
 			buf:add("void* user_data = nullptr;")
@@ -148,12 +171,12 @@ do
 		end,
 
 		-- edit input
-		["bool*"] = box_arg("bool", "bool"),
-		["int*"] = box_arg("int", "double"),
-		["unsigned int*"] = box_arg("unsigned int", "double"),
-		["float*"] = box_arg("float", "double"),
-		["double*"] = box_arg("double", "double"),
-		["std::string*"] = box_arg("std::string", "std::string"),
+		["bool*"] = box_arg("bool"),
+		["int*"] = box_arg("double", "int"),
+		["unsigned int*"] = box_arg("double", "unsigned int"),
+		["float*"] = box_arg("double", "float"),
+		["double*"] = box_arg("double"),
+		["std::string*"] = box_arg("std::string"),
 		--["int[2]"] = array_out_arg(2, "int", "wrenExGetSlotInt"),
 		--["int[3]"] = array_out_arg(3, "int", "wrenExGetSlotInt"),
 		--["int[4]"] = array_out_arg(4, "int", "wrenExGetSlotInt"),
