@@ -1179,7 +1179,7 @@ std::string wrenExGetSlot<std::string>(WrenVM* vm, int slotIdx)
 
 bool wrenExIsSlotDefault(WrenVM* vm, int slotIdx)
 {
-	if(wrenGetSlotCount(vm) > slotIdx) {
+	if(wrenGetSlotCount(vm) <= slotIdx) {
 		return true;
 	}
 
@@ -1193,10 +1193,10 @@ bool wrenExIsSlotDefault(WrenVM* vm, int slotIdx)
 template<typename T, typename U>
 T wrenExGetSlotEnum(U fromString, WrenVM* vm, int slotIdx)
 {
-	const char* s = wrenGetSlotString(vm, slotIdx);
-	std::optional<T> opt = fromString(s);
+	std::string s = wrenExGetSlot<std::string>(vm, slotIdx);
+	std::optional<T> opt = fromString(s.c_str());
 	if(!opt) {
-		wrenExAbortf(vm, "Invalid enum as argument %d, received \"%s\"", slotIdx, s);
+		wrenExAbortf(vm, "Invalid enum as argument %d, received \"%s\"", slotIdx, s.c_str());
 	}
 	return *opt;
 }
