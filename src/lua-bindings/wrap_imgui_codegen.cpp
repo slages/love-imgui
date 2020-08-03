@@ -6071,15 +6071,16 @@ int w_Combo(lua_State* L)
 
 int w_ListBoxHeaderXY(lua_State* L)
 {
-		// There's no way to distinguish these two
+	// There's no way to distinguish these two
 	return w_ListBoxHeader_Override1(L); // label, size
 }
 
 int w_ListBoxHeaderItems(lua_State* L)
 {
-		// There's no way to distinguish these two
+	// There's no way to distinguish these two
 	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
 }
+
 
 int w_GetForegroundDrawList(lua_State* L)
 {

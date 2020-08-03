@@ -228,6 +228,32 @@ local function parseImguiFunction(line, regions)
 	}
 end
 
+local function parseImguiOverrideFunction(line)
+	local apiStop = 0
+	local returnType, _, returnStop = matchCType(line, apiStop + 1)
+	local name = line:match("[%w_]+", returnStop + 1)
+	local _, nameStop = line:find("%w+", returnStop + 1)
+	local args, isVarargs = matchCArgs(line, nameStop+1)
+	local comment = line:match("//(.+)")
+	local namespace = ""
+	local class = nil
+	local namepieces = {}
+	namepieces[#namepieces+1] = namespace
+	namepieces[#namepieces+1] = name
+	local qualifiedName = table.concat(namepieces, "::")
+	return {
+		rawLine = line,
+		returnType = returnType,
+		name = name,
+		qualifiedName = qualifiedName,
+		namespace = namespace,
+		class = class,
+		arguments = args,
+		isVarargs = isVarargs,
+		comment = comment,
+	}
+end
+
 local function findFunctions(source, data, class)
 	local functions = {}
 
@@ -295,6 +321,11 @@ function Parse.parseHeaders(filenames)
 	data.functions.ImDrawList = findFunctions(source, data, "ImDrawList")
 
 	return data
+end
+
+function Parse.parseImguiOverrideFunction(headerline)
+	-- pass in a custom function signature to generate an fnData for it
+	return parseImguiOverrideFunction(headerline)
 end
 
 return Parse

@@ -1,3 +1,4 @@
+local Parse = require 'bindings2.parse'
 local Buffer = require 'bindings2.buffer'
 local Types = require 'bindings2.lua.types'
 
@@ -147,7 +148,7 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 		-- output
 	end buf:unindent() buf:add("}")
 
-	helpers.addValidFunctions(fnElement, fnData.name)
+	helpers.addValidFunctions(fnElement, fnData)
 	return buf:done()
 end
 
@@ -155,12 +156,22 @@ function helpers.removeValidFunction(fnElement, toRemove)
 	fnElement.validNames[toRemove] = nil
 end
 
-function helpers.addValidFunctions(fnElement, ...)
-	for i = 1, select('#', ...) do
-		local name = select(i, ...)
-		fnElement.validNames[name] = true
-		fnElement.invalidNames[name] = nil
-	end
+function helpers.addValidFunctions(fnElement, fnData)
+	fnElement.validNames[fnData.name] = fnData
+	fnElement.invalidNames[fnData.name] = nil
+end
+
+function helpers.chooseFunctionOverride(fnElement, fnName, qualifiedSourceName, sourceIndex)
+	local overrides = fnElement.overrides[qualifiedSourceName]
+	local fnData = overrides[sourceIndex]
+	fnData.name = fnName
+	fnElement.invalidNames[fnName] = nil
+	fnElement.validNames[fnName] = fnData
+end
+
+function helpers.addFunctionOverride(fnElement, decl)
+	local fnData = Parse.parseImguiOverrideFunction(decl)
+	helpers.addValidFunctions(fnElement, fnData)
 end
 
 function helpers.addInvalidFunctions(fnElement, ...)
@@ -170,6 +181,19 @@ function helpers.addInvalidFunctions(fnElement, ...)
 			fnElement.invalidNames[name] = true
 		end
 	end
+end
+
+function helpers.generateDocSignature(fnData)
+	local args = {}
+	for _, arg in ipairs(fnData.arguments) do
+		if arg.default then
+			table.insert(args, string.format("%s = %s", arg.name, arg.default))
+		else
+			table.insert(args, arg.name)
+		end
+	end
+	args = table.concat(args,", ")
+	return string.format("ImGui.%s(%s)", fnData.name, args)
 end
 
 return helpers

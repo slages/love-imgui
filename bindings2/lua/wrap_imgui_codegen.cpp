@@ -593,7 +593,7 @@ struct WrapImDrawList
 	bool isValid() { return g_currentFrameNumber == frameNumber; }
 };
 
-<% helpers.addValidFunctions(imgui.functions.ImGui, "ColorPicker4") -%>
+<% helpers.addFunctionOverride(imgui.functions.ImGui, "bool ColorPicker4(const char* label, float& col1, float& col2, float& col3, float& col4, flags);") -%>
 int w_ColorPicker4(lua_State* L)
 {
 	// manually implemented to handle ref_col, which is a little goofy
@@ -624,7 +624,7 @@ int w_ColorPicker4(lua_State* L)
 	return 5;
 }
 
-<% helpers.addValidFunctions(imgui.functions.ImGui, "NewFrame") -%>
+<% helpers.addFunctionOverride(imgui.functions.ImGui, "void NewFrame();") -%>
 int w_NewFrame(lua_State* L)
 {
 	// manually implemented to track new frames
@@ -796,20 +796,21 @@ int w_Combo(lua_State* L)
 	return w_Combo_Override2(L); // label, current_item, items_separated_by_zeros, popup_max_height_in_items
 }
 
-<% helpers.removeValidFunction(imgui.functions.ImGui, "ListBoxHeader") -%>
+<% helpers.chooseFunctionOverride(imgui.functions.ImGui, "ListBoxHeaderXY", "ImGui::ListBoxHeader", 1) -%>
 int w_ListBoxHeaderXY(lua_State* L)
 {
-	<% helpers.addValidFunctions(imgui.functions.ImGui, "ListBoxHeaderXY") -%>
 	// There's no way to distinguish these two
 	return w_ListBoxHeader_Override1(L); // label, size
 }
 
+<% helpers.chooseFunctionOverride(imgui.functions.ImGui,"ListBoxHeaderItems", "ImGui::ListBoxHeader", 2) -%>
 int w_ListBoxHeaderItems(lua_State* L)
 {
-	<% helpers.addValidFunctions(imgui.functions.ImGui, "ListBoxHeaderItems") -%>
 	// There's no way to distinguish these two
 	return w_ListBoxHeader_Override2(L); // label, count, height_in_items
 }
+
+<% helpers.removeValidFunction(imgui.functions.ImGui, "ListBoxHeader") -%>
 
 int w_GetForegroundDrawList(lua_State* L)
 {
