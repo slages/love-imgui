@@ -103,7 +103,7 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 		for _, arg in ipairs(fnData.arguments) do
 			lua_arg, stop = Types.check(buf, fnData, arg, lua_arg, outParams)
 			if stop then
-				helpers.addInvalidFunctions(fnElement, fnData.name)
+				helpers.addInvalidFunction(fnElement, fnData)
 				return string.format("// skipping %s due to unimplemented argument type: %q", cname, arg.type)
 			end
 			atLeastOneArgument = true
@@ -149,7 +149,7 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 			local name, ctype = unpack(param)
 			outArg, stop = Types.push(buf, fnData, name, ctype, outArg)
 			if stop then
-				helpers.addInvalidFunctions(fnElement, fnData.name)
+				helpers.addInvalidFunction(fnElement, fnData)
 				return string.format("// skipping %s due to unimplemented return type: %q", cname, fnData.returnType)
 			end
 		end
@@ -186,12 +186,10 @@ function helpers.addFunctionOverride(fnElement, decl)
 	helpers.addValidFunctions(fnElement, fnData)
 end
 
-function helpers.addInvalidFunctions(fnElement, ...)
-	for i = 1, select('#', ...) do
-		local name = select(i, ...)
-		if not fnElement.validNames[name] then
-			fnElement.invalidNames[name] = true
-		end
+function helpers.addInvalidFunction(fnElement, fnData)
+	local name = fnData.name
+	if not fnElement.validNames[name] then
+		fnElement.invalidNames[name] = fnData
 	end
 end
 

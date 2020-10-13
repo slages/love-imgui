@@ -1,48 +1,4 @@
-# ImDrawList
-
-### Supported methods (37)
-* ImGui.AddBezierCurve(p1, p2, p3, p4, col, thickness, num_segments = 0)
-* ImGui.AddCircle(center, radius, col, num_segments = 0, thickness = 1.0f)
-* ImGui.AddCircleFilled(center, radius, col, num_segments = 0)
-* ImGui.AddDrawCmd()
-* ImGui.AddImage(user_texture_id, p_min, p_max, uv_min = ImVec2(0, 0), uv_max = ImVec2(1, 1), col = IM_COL32_WHITE)
-* ImGui.AddImageQuad(user_texture_id, p1, p2, p3, p4, uv1 = ImVec2(0, 0), uv2 = ImVec2(1, 0), uv3 = ImVec2(1, 1), uv4 = ImVec2(0, 1), col = IM_COL32_WHITE)
-* ImGui.AddImageRounded(user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners = ImDrawCornerFlags_All)
-* ImGui.AddLine(p1, p2, col, thickness = 1.0f)
-* ImGui.AddNgon(center, radius, col, num_segments, thickness = 1.0f)
-* ImGui.AddNgonFilled(center, radius, col, num_segments)
-* ImGui.AddQuad(p1, p2, p3, p4, col, thickness = 1.0f)
-* ImGui.AddQuadFilled(p1, p2, p3, p4, col)
-* ImGui.AddRect(p_min, p_max, col, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All, thickness = 1.0f)
-* ImGui.AddRectFilled(p_min, p_max, col, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All)
-* ImGui.AddRectFilledMultiColor(p_min, p_max, col_upr_left, col_upr_right, col_bot_right, col_bot_left)
-* ImGui.AddText(pos, col, text_begin, text_end = NULL)
-* ImGui.AddTriangle(p1, p2, p3, col, thickness = 1.0f)
-* ImGui.AddTriangleFilled(p1, p2, p3, col)
-* ImGui.CloneOutput()
-* ImGui.PathArcTo(center, radius, a_min, a_max, num_segments = 10)
-* ImGui.PathArcToFast(center, radius, a_min_of_12, a_max_of_12)
-* ImGui.PathBezierCurveTo(p2, p3, p4, num_segments = 0)
-* ImGui.PathRect(rect_min, rect_max, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All)
-* ImGui.PopClipRect()
-* ImGui.PopTextureID()
-* ImGui.PrimRect(a, b, col)
-* ImGui.PrimReserve(idx_count, vtx_count)
-* ImGui.PrimUnreserve(idx_count, vtx_count)
-* ImGui.PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect = false)
-* ImGui.PushClipRectFullScreen()
-* ImGui.PushTextureID(texture_id)
-* ImGui._ClearFreeMemory()
-* ImGui._OnChangedClipRect()
-* ImGui._OnChangedTextureID()
-* ImGui._OnChangedVtxOffset()
-* ImGui._PopUnusedDrawCmd()
-* ImGui._ResetForNewFrame()
-
-### Unsupported methods (3)
-* ImGui.AddCallback
-* ImGui.AddConvexPolyFilled
-* ImGui.AddPolyline
+This file was automatically generated on Tue Oct 13 03:36:21 2020, UTC
 # ImGui
 
 ### Supported methods (256)
@@ -304,54 +260,101 @@
 * ImGui.Value(prefix, v, float_format = NULL)
 
 ### Unsupported methods (51)
-* ImGui.AcceptDragDropPayload
-* ImGui.BeginPopupContextItem
-* ImGui.BeginPopupContextVoid
-* ImGui.BeginPopupContextWindow
-* ImGui.DragFloat
-* ImGui.DragFloat2
-* ImGui.DragFloat3
-* ImGui.DragFloat4
-* ImGui.DragFloatRange2
-* ImGui.DragInt
-* ImGui.DragInt2
-* ImGui.DragInt3
-* ImGui.DragInt4
-* ImGui.DragIntRange2
-* ImGui.FindViewportByID
-* ImGui.FindViewportByPlatformHandle
-* ImGui.GetDragDropPayload
-* ImGui.GetDrawData
-* ImGui.GetDrawListSharedData
-* ImGui.GetFont
-* ImGui.GetIO
-* ImGui.GetMainViewport
-* ImGui.GetPlatformIO
-* ImGui.GetStateStorage
-* ImGui.GetWindowViewport
-* ImGui.InvisibleButton
-* ImGui.IsPopupOpen
-* ImGui.ListBox
-* ImGui.LoadIniSettingsFromMemory
-* ImGui.OpenPopup
-* ImGui.OpenPopupOnItemClick
-* ImGui.PlotHistogram
-* ImGui.PlotLines
-* ImGui.PushFont
-* ImGui.RenderPlatformWindowsDefault
-* ImGui.SaveIniSettingsToMemory
-* ImGui.SetDragDropPayload
-* ImGui.SetNextWindowClass
-* ImGui.SetNextWindowSizeConstraints
-* ImGui.SetStateStorage
-* ImGui.SliderAngle
-* ImGui.SliderFloat
-* ImGui.SliderFloat2
-* ImGui.SliderFloat3
-* ImGui.SliderFloat4
-* ImGui.SliderInt
-* ImGui.SliderInt2
-* ImGui.SliderInt3
-* ImGui.SliderInt4
-* ImGui.VSliderFloat
-* ImGui.VSliderInt
+* ImGui.AcceptDragDropPayload(type, flags = 0)
+* ImGui.BeginPopupContextItem(str_id = NULL, popup_flags = 1)
+* ImGui.BeginPopupContextVoid(str_id = NULL, popup_flags = 1)
+* ImGui.BeginPopupContextWindow(str_id = NULL, popup_flags = 1)
+* ImGui.DragFloat(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
+* ImGui.DragFloat2(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
+* ImGui.DragFloat3(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
+* ImGui.DragFloat4(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
+* ImGui.DragFloatRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", format_max = NULL, flags = 0)
+* ImGui.DragInt(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
+* ImGui.DragInt2(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
+* ImGui.DragInt3(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
+* ImGui.DragInt4(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
+* ImGui.DragIntRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", format_max = NULL, flags = 0)
+* ImGui.FindViewportByID(id)
+* ImGui.FindViewportByPlatformHandle(platform_handle)
+* ImGui.GetDragDropPayload()
+* ImGui.GetDrawData()
+* ImGui.GetDrawListSharedData()
+* ImGui.GetFont()
+* ImGui.GetIO()
+* ImGui.GetMainViewport()
+* ImGui.GetPlatformIO()
+* ImGui.GetStateStorage()
+* ImGui.GetWindowViewport()
+* ImGui.InvisibleButton(str_id, size, flags = 0)
+* ImGui.IsPopupOpen(str_id, flags = 0)
+* ImGui.ListBox(label, current_item, myfn, data, items_count, height_in_items = -1)
+* ImGui.LoadIniSettingsFromMemory(ini_data)
+* ImGui.OpenPopup(str_id, popup_flags = 0)
+* ImGui.OpenPopupOnItemClick(str_id = NULL, popup_flags = 1)
+* ImGui.PlotHistogram(label, myfn, data, values_count, values_offset = 0, overlay_text = NULL, scale_min = FLT_MAX, scale_max = FLT_MAX, graph_size = ImVec2(0, 0))
+* ImGui.PlotLines(label, myfn, data, values_count, values_offset = 0, overlay_text = NULL, scale_min = FLT_MAX, scale_max = FLT_MAX, graph_size = ImVec2(0, 0))
+* ImGui.PushFont(font)
+* ImGui.RenderPlatformWindowsDefault(platform_render_arg = NULL, renderer_render_arg = NULL)
+* ImGui.SaveIniSettingsToMemory(out_ini_size = NULL)
+* ImGui.SetDragDropPayload(type, data, cond = 0)
+* ImGui.SetNextWindowClass(window_class)
+* ImGui.SetNextWindowSizeConstraints(size_min, size_max, custom_callback = NULL, custom_callback_data = NULL)
+* ImGui.SetStateStorage(storage)
+* ImGui.SliderAngle(label, v_rad, v_degrees_min = -360.0f, v_degrees_max = +360.0f, format = "%.0f deg", flags = 0)
+* ImGui.SliderFloat(label, v, v_min, v_max, format = "%.3f", flags = 0)
+* ImGui.SliderFloat2(label, v, v_min, v_max, format = "%.3f", flags = 0)
+* ImGui.SliderFloat3(label, v, v_min, v_max, format = "%.3f", flags = 0)
+* ImGui.SliderFloat4(label, v, v_min, v_max, format = "%.3f", flags = 0)
+* ImGui.SliderInt(label, v, v_min, v_max, format = "%d", flags = 0)
+* ImGui.SliderInt2(label, v, v_min, v_max, format = "%d", flags = 0)
+* ImGui.SliderInt3(label, v, v_min, v_max, format = "%d", flags = 0)
+* ImGui.SliderInt4(label, v, v_min, v_max, format = "%d", flags = 0)
+* ImGui.VSliderFloat(label, size, v, v_min, v_max, format = "%.3f", flags = 0)
+* ImGui.VSliderInt(label, size, v, v_min, v_max, format = "%d", flags = 0)
+
+# ImDrawList
+
+### Supported methods (37)
+* ImGui.AddBezierCurve(p1, p2, p3, p4, col, thickness, num_segments = 0)
+* ImGui.AddCircle(center, radius, col, num_segments = 0, thickness = 1.0f)
+* ImGui.AddCircleFilled(center, radius, col, num_segments = 0)
+* ImGui.AddDrawCmd()
+* ImGui.AddImage(user_texture_id, p_min, p_max, uv_min = ImVec2(0, 0), uv_max = ImVec2(1, 1), col = IM_COL32_WHITE)
+* ImGui.AddImageQuad(user_texture_id, p1, p2, p3, p4, uv1 = ImVec2(0, 0), uv2 = ImVec2(1, 0), uv3 = ImVec2(1, 1), uv4 = ImVec2(0, 1), col = IM_COL32_WHITE)
+* ImGui.AddImageRounded(user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners = ImDrawCornerFlags_All)
+* ImGui.AddLine(p1, p2, col, thickness = 1.0f)
+* ImGui.AddNgon(center, radius, col, num_segments, thickness = 1.0f)
+* ImGui.AddNgonFilled(center, radius, col, num_segments)
+* ImGui.AddQuad(p1, p2, p3, p4, col, thickness = 1.0f)
+* ImGui.AddQuadFilled(p1, p2, p3, p4, col)
+* ImGui.AddRect(p_min, p_max, col, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All, thickness = 1.0f)
+* ImGui.AddRectFilled(p_min, p_max, col, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All)
+* ImGui.AddRectFilledMultiColor(p_min, p_max, col_upr_left, col_upr_right, col_bot_right, col_bot_left)
+* ImGui.AddText(pos, col, text_begin, text_end = NULL)
+* ImGui.AddTriangle(p1, p2, p3, col, thickness = 1.0f)
+* ImGui.AddTriangleFilled(p1, p2, p3, col)
+* ImGui.CloneOutput()
+* ImGui.PathArcTo(center, radius, a_min, a_max, num_segments = 10)
+* ImGui.PathArcToFast(center, radius, a_min_of_12, a_max_of_12)
+* ImGui.PathBezierCurveTo(p2, p3, p4, num_segments = 0)
+* ImGui.PathRect(rect_min, rect_max, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All)
+* ImGui.PopClipRect()
+* ImGui.PopTextureID()
+* ImGui.PrimRect(a, b, col)
+* ImGui.PrimReserve(idx_count, vtx_count)
+* ImGui.PrimUnreserve(idx_count, vtx_count)
+* ImGui.PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect = false)
+* ImGui.PushClipRectFullScreen()
+* ImGui.PushTextureID(texture_id)
+* ImGui._ClearFreeMemory()
+* ImGui._OnChangedClipRect()
+* ImGui._OnChangedTextureID()
+* ImGui._OnChangedVtxOffset()
+* ImGui._PopUnusedDrawCmd()
+* ImGui._ResetForNewFrame()
+
+### Unsupported methods (3)
+* ImGui.AddCallback(callback, callback_data)
+* ImGui.AddConvexPolyFilled(points, num_points, col)
+* ImGui.AddPolyline(points, num_points, col, closed, thickness)
+
