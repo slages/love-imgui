@@ -22,7 +22,7 @@ a handle to your texture type. From there, you can now integrate imgui as you
 would integrate imgui into a C++ library.
 
 ## API docs
-TODO, sorry. the output for each function should fairly closely match the
+An automated listing of all supported functions can be found at [api_details.md](api_details.md). the output for each function should fairly closely match the
 signatures in [imgui.h](deps/libimgui/imgui.h), except for the ones that are
 not implemented :p
 Some mechanical notes:
@@ -30,10 +30,13 @@ Some mechanical notes:
 ```lua
 	local outValue, changed = imgui.DragFloat("my float", inValue)
 ```
-* We're taking a maximalist approach to enums. All of these are valid and interchangable with no configuration necessary:
+* We're taking a maximalist approach to enums and enum flags. All of these are valid and interchangable with no configuration necessary:
 ```lua
 imgui.Begin("MyWindow", true, "AlwaysAutoResize|NoTitleBar")
 imgui.Begin("MyWindow", true, {"AlwaysAutoResize", "NoTitleBar"})
 imgui.Begin("MyWindow", true, {AlwaysAutoResize = true, NoTitleBar = true})
 ```
 
+We are also generating autocomplete definitions at
+[autocomplete.json](autocomplete.json). this file matches the
+atom-autocomplete-lua format.
