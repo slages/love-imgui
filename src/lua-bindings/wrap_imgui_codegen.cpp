@@ -3079,7 +3079,7 @@ int w_GetStyleColorVec4(lua_State *L)
 	lua_pushnumber(L, out.y);
 	lua_pushnumber(L, out.z);
 	lua_pushnumber(L, out.w);
-	return 2;
+	return 4;
 }
 
 // skipping w_GetFont due to unimplemented return type: "ImFont*"
@@ -5531,7 +5531,7 @@ int w_ColorConvertU32ToFloat4(lua_State *L)
 	lua_pushnumber(L, out.y);
 	lua_pushnumber(L, out.z);
 	lua_pushnumber(L, out.w);
-	return 2;
+	return 4;
 }
 
 /*  map ImGuiKey_* values into user's key index. == io.KeyMap[key] */

@@ -27,6 +27,7 @@ IF(EnableCodeGen)
 		bindings2/lua/wrap_imgui_codegen.cpp
 		bindings2/lua/wrap_imgui_codegen.h
 		bindings2/lua/api_details.md
+		bindings2/lua/autocomplete.json
 
 		deps/libimgui/imgui.h
 		deps/libimgui/misc/cpp/imgui_stdlib.h
@@ -38,6 +39,7 @@ IF(EnableCodeGen)
 		${CMAKE_SOURCE_DIR}/src/lua-bindings/wrap_imgui_codegen.h
 		${CMAKE_SOURCE_DIR}/src/lua-bindings/wrap_imgui_codegen.cpp
 		${CMAKE_SOURCE_DIR}/src/lua-bindings/api_details.md
+		${CMAKE_SOURCE_DIR}/src/lua-bindings/autocomplete.json
 	)
 	ADD_CUSTOM_COMMAND(
 		COMMAND ${LUAJIT_EXE} ${CMAKE_SOURCE_DIR}/bindings2/generate_bindings.lua

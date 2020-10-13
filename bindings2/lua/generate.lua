@@ -90,8 +90,9 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 		end
 
 		local atLeastOneArgument = false
+		fnData.luaArgumentTypes = {}
 		for _, arg in ipairs(fnData.arguments) do
-			lua_arg, stop = Types.check(buf, arg, lua_arg, outParams)
+			lua_arg, stop = Types.check(buf, fnData, arg, lua_arg, outParams)
 			if stop then
 				helpers.addInvalidFunctions(fnElement, fnData.name)
 				return string.format("// skipping %s due to unimplemented argument type: %q", cname, arg.type)
@@ -134,9 +135,10 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 
 		-- out
 		local outArg = 0
+		fnData.luaReturnTypes = {}
 		for _, param in ipairs(outParams) do
 			local name, ctype = unpack(param)
-			outArg, stop = Types.push(buf, name, ctype, outArg)
+			outArg, stop = Types.push(buf, fnData, name, ctype, outArg)
 			if stop then
 				helpers.addInvalidFunctions(fnElement, fnData.name)
 				return string.format("// skipping %s due to unimplemented return type: %q", cname, fnData.returnType)
@@ -148,6 +150,7 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 		-- output
 	end buf:unindent() buf:add("}")
 
+	fnData.generatedFunction = true
 	helpers.addValidFunctions(fnElement, fnData)
 	return buf:done()
 end

@@ -55,6 +55,7 @@ local function main()
 			"deps/libimgui/misc/cpp/imgui_stdlib.h"
 		}
 		local luaHelpers = require 'bindings2.lua.generate'
+		local luaAutocompleteHelpers = require 'bindings2.lua.generate_autocomplete'
 		imgui.output = "lua"
 		generateFile(
 			"src/lua-bindings/wrap_imgui_codegen.cpp",
@@ -68,6 +69,10 @@ local function main()
 			"src/lua-bindings/api_details.md",
 			"bindings2/lua/api_details.md",
 			imgui, luaHelpers)
+		generateFile(
+			"src/lua-bindings/autocomplete.json",
+			"bindings2/lua/autocomplete.json",
+			imgui, luaAutocompleteHelpers)
 	end
 end
 
