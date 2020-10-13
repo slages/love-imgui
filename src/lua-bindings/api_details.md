@@ -1,63 +1,63 @@
-This file was automatically generated on Tue Oct 13 03:55:06 2020, UTC
+This file was automatically generated on Tue Oct 13 04:44:48 2020, UTC
 # ImGui
 
 ### Supported methods (284)
 * ImGui.AlignTextToFramePadding()
-* ImGui.ArrowButton(str_id, dir)
-* ImGui.Begin(name, p_open = NULL, flags = 0)
-* ImGui.BeginChild(id, size = ImVec2(0, 0), border = false, flags = 0)
-* ImGui.BeginChildFrame(id, size, flags = 0)
-* ImGui.BeginCombo(label, preview_value, flags = 0)
-* ImGui.BeginDragDropSource(flags = 0)
-* ImGui.BeginDragDropTarget()
+* ImGui.ArrowButton(str_id: string, dir: ImGuiDir) -> out: boolean
+* ImGui.Begin(name: string, p_open: boolean = nil, flags: ImGuiWindowFlags = 0) -> p_open: boolean, out: boolean
+* ImGui.BeginChild(id: number, size_x: number = 0, size_y: number =  0, border: boolean = false, flags: ImGuiWindowFlags = 0) -> out: boolean
+* ImGui.BeginChildFrame(id: number, size_x: number, size_y: number, flags: ImGuiWindowFlags = 0) -> out: boolean
+* ImGui.BeginCombo(label: string, preview_value: string, flags: ImGuiComboFlags = 0) -> out: boolean
+* ImGui.BeginDragDropSource(flags: ImGuiDragDropFlags = 0) -> out: boolean
+* ImGui.BeginDragDropTarget() -> out: boolean
 * ImGui.BeginGroup()
-* ImGui.BeginMainMenuBar()
-* ImGui.BeginMenu(label, enabled = true)
-* ImGui.BeginMenuBar()
-* ImGui.BeginPopup(str_id, flags = 0)
-* ImGui.BeginPopupContextItem(str_id = NULL, popup_flags = 1)
-* ImGui.BeginPopupContextVoid(str_id = NULL, popup_flags = 1)
-* ImGui.BeginPopupContextWindow(str_id = NULL, popup_flags = 1)
-* ImGui.BeginPopupModal(name, p_open = NULL, flags = 0)
-* ImGui.BeginTabBar(str_id, flags = 0)
-* ImGui.BeginTabItem(label, p_open = NULL, flags = 0)
+* ImGui.BeginMainMenuBar() -> out: boolean
+* ImGui.BeginMenu(label: string, enabled: boolean = true) -> out: boolean
+* ImGui.BeginMenuBar() -> out: boolean
+* ImGui.BeginPopup(str_id: string, flags: ImGuiWindowFlags = 0) -> out: boolean
+* ImGui.BeginPopupContextItem(str_id: string = nil, popup_flags: ImGuiPopupFlags = 1) -> out: boolean
+* ImGui.BeginPopupContextVoid(str_id: string = nil, popup_flags: ImGuiPopupFlags = 1) -> out: boolean
+* ImGui.BeginPopupContextWindow(str_id: string = nil, popup_flags: ImGuiPopupFlags = 1) -> out: boolean
+* ImGui.BeginPopupModal(name: string, p_open: boolean = nil, flags: ImGuiWindowFlags = 0) -> p_open: boolean, out: boolean
+* ImGui.BeginTabBar(str_id: string, flags: ImGuiTabBarFlags = 0) -> out: boolean
+* ImGui.BeginTabItem(label: string, p_open: boolean = nil, flags: ImGuiTabItemFlags = 0) -> p_open: boolean, out: boolean
 * ImGui.BeginTooltip()
 * ImGui.Bullet()
-* ImGui.BulletText(fmt)
-* ImGui.Button(label, size = ImVec2(0, 0))
-* ImGui.CalcItemWidth()
-* ImGui.CalcListClipping(items_count, items_height, out_items_display_start, out_items_display_end)
-* ImGui.CalcTextSize(text, text_end = NULL, hide_text_after_double_hash = false, wrap_width = -1.0f)
-* ImGui.CaptureKeyboardFromApp(want_capture_keyboard_value = true)
-* ImGui.CaptureMouseFromApp(want_capture_mouse_value = true)
-* ImGui.Checkbox(label, v)
-* ImGui.CheckboxFlags(label, flags, flags_value)
+* ImGui.BulletText(fmt: string, ...)
+* ImGui.Button(label: string, size_x: number = 0, size_y: number =  0) -> out: boolean
+* ImGui.CalcItemWidth() -> out: number
+* ImGui.CalcListClipping(items_count: number, items_height: number, out_items_display_start: number, out_items_display_end: number) -> out_items_display_start: number, out_items_display_end: number
+* ImGui.CalcTextSize(text: string, text_end: string = nil, hide_text_after_double_hash: boolean = false, wrap_width: number = -1.0) -> out_x: number, out_y: number
+* ImGui.CaptureKeyboardFromApp(want_capture_keyboard_value: boolean = true)
+* ImGui.CaptureMouseFromApp(want_capture_mouse_value: boolean = true)
+* ImGui.Checkbox(label: string, v: boolean) -> v: boolean, out: boolean
+* ImGui.CheckboxFlags(label: string, flags: number, flags_value: number) -> flags: number, out: boolean
 * ImGui.CloseCurrentPopup()
-* ImGui.CollapsingHeader(label, p_open, flags = 0)
-* ImGui.ColorButton(desc_id, col, flags = 0, size = ImVec2(0, 0))
-* ImGui.ColorConvertU32ToFloat4(in)
-* ImGui.ColorEdit3(label, col, flags = 0)
-* ImGui.ColorEdit4(label, col, flags = 0)
-* ImGui.ColorPicker3(label, col, flags = 0)
+* ImGui.CollapsingHeader(label: string, p_open: boolean, flags: ImGuiTreeNodeFlags = 0) -> p_open: boolean, out: boolean
+* ImGui.ColorButton(desc_id: string, col_x: number, col_y: number, col_z: number, col_w: number, flags: ImGuiColorEditFlags = 0, size_x: number = 0, size_y: number =  0) -> out: boolean
+* ImGui.ColorConvertU32ToFloat4(in: number) -> out_x: number, out_y: number, out_z: number, out_w: number
+* ImGui.ColorEdit3(label: string, col: table, flags: ImGuiColorEditFlags = 0) -> col[0]: number, col[1]: number, col[2]: number, out: boolean
+* ImGui.ColorEdit4(label: string, col: table, flags: ImGuiColorEditFlags = 0) -> col[0]: number, col[1]: number, col[2]: number, col[3]: number, out: boolean
+* ImGui.ColorPicker3(label: string, col: table, flags: ImGuiColorEditFlags = 0) -> col[0]: number, col[1]: number, col[2]: number, out: boolean
 * ImGui.ColorPicker4(label, col1, col2, col3, col4, flags)
-* ImGui.Columns(count = 1, id = NULL, border = true)
-* ImGui.Combo(label, current_item, items_separated_by_zeros, popup_max_height_in_items = -1)
-* ImGui.CreateContext(shared_font_atlas = NULL)
-* ImGui.DestroyContext(ctx = NULL)
+* ImGui.Columns(count: number = 1, id: string = nil, border: boolean = true)
+* ImGui.Combo(label: string, current_item: number, items_separated_by_zeros: string, popup_max_height_in_items: number = -1) -> current_item: number, out: boolean
+* ImGui.CreateContext() -> out: ImGuiContext
+* ImGui.DestroyContext(ctx: unknown = nil)
 * ImGui.DestroyPlatformWindows()
-* ImGui.DockSpace(id, size = ImVec2(0, 0), flags = 0, window_class = NULL)
-* ImGui.DockSpaceOverViewport(viewport = NULL, flags = 0, window_class = NULL)
-* ImGui.DragFloat(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
-* ImGui.DragFloat2(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
-* ImGui.DragFloat3(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
-* ImGui.DragFloat4(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
-* ImGui.DragFloatRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", format_max = NULL, flags = 0)
-* ImGui.DragInt(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
-* ImGui.DragInt2(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
-* ImGui.DragInt3(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
-* ImGui.DragInt4(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
-* ImGui.DragIntRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", format_max = NULL, flags = 0)
-* ImGui.Dummy(size)
+* ImGui.DockSpace(id: number, size_x: number = 0, size_y: number =  0, flags: ImGuiDockNodeFlags = 0)
+* ImGui.DockSpaceOverViewport(flags: ImGuiDockNodeFlags = 0) -> out: number
+* ImGui.DragFloat(label: string, v: number, v_speed: number = 1.0, v_min: number = 0.0, v_max: number = 0.0, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v: number, out: boolean
+* ImGui.DragFloat2(label: string, v: table, v_speed: number = 1.0, v_min: number = 0.0, v_max: number = 0.0, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, out: boolean
+* ImGui.DragFloat3(label: string, v: table, v_speed: number = 1.0, v_min: number = 0.0, v_max: number = 0.0, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, out: boolean
+* ImGui.DragFloat4(label: string, v: table, v_speed: number = 1.0, v_min: number = 0.0, v_max: number = 0.0, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, v[3]: number, out: boolean
+* ImGui.DragFloatRange2(label: string, v_current_min: number, v_current_max: number, v_speed: number = 1.0, v_min: number = 0.0, v_max: number = 0.0, format: string = "%.3f", format_max: string = nil, flags: ImGuiSliderFlags = 0) -> v_current_min: number, v_current_max: number, out: boolean
+* ImGui.DragInt(label: string, v: number, v_speed: number = 1.0, v_min: number = 0, v_max: number = 0, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v: number, out: boolean
+* ImGui.DragInt2(label: string, v: table, v_speed: number = 1.0, v_min: number = 0, v_max: number = 0, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, out: boolean
+* ImGui.DragInt3(label: string, v: table, v_speed: number = 1.0, v_min: number = 0, v_max: number = 0, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, out: boolean
+* ImGui.DragInt4(label: string, v: table, v_speed: number = 1.0, v_min: number = 0, v_max: number = 0, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, v[3]: number, out: boolean
+* ImGui.DragIntRange2(label: string, v_current_min: number, v_current_max: number, v_speed: number = 1.0, v_min: number = 0, v_max: number = 0, format: string = "%d", format_max: string = nil, flags: ImGuiSliderFlags = 0) -> v_current_min: number, v_current_max: number, out: boolean
+* ImGui.Dummy(size_x: number, size_y: number)
 * ImGui.End()
 * ImGui.EndChild()
 * ImGui.EndChildFrame()
@@ -73,223 +73,223 @@ This file was automatically generated on Tue Oct 13 03:55:06 2020, UTC
 * ImGui.EndTabBar()
 * ImGui.EndTabItem()
 * ImGui.EndTooltip()
-* ImGui.GetBackgroundDrawList()
-* ImGui.GetClipboardText()
-* ImGui.GetColumnIndex()
-* ImGui.GetColumnOffset(column_index = -1)
-* ImGui.GetColumnWidth(column_index = -1)
-* ImGui.GetColumnsCount()
-* ImGui.GetContentRegionAvail()
-* ImGui.GetContentRegionMax()
-* ImGui.GetCurrentContext()
-* ImGui.GetCursorPos()
-* ImGui.GetCursorPosX()
-* ImGui.GetCursorPosY()
-* ImGui.GetCursorScreenPos()
-* ImGui.GetCursorStartPos()
-* ImGui.GetFontSize()
-* ImGui.GetFontTexUvWhitePixel()
-* ImGui.GetForegroundDrawList()
-* ImGui.GetFrameCount()
-* ImGui.GetFrameHeight()
-* ImGui.GetFrameHeightWithSpacing()
-* ImGui.GetID(str_id_begin, str_id_end)
-* ImGui.GetItemRectMax()
-* ImGui.GetItemRectMin()
-* ImGui.GetItemRectSize()
-* ImGui.GetKeyIndex(imgui_key)
-* ImGui.GetKeyPressedAmount(key_index, repeat_delay, rate)
-* ImGui.GetMouseCursor()
-* ImGui.GetMouseDragDelta(button = 0, lock_threshold = -1.0f)
-* ImGui.GetMousePos()
-* ImGui.GetMousePosOnOpeningCurrentPopup()
-* ImGui.GetScrollMaxX()
-* ImGui.GetScrollMaxY()
-* ImGui.GetScrollX()
-* ImGui.GetScrollY()
-* ImGui.GetStyle()
-* ImGui.GetStyleColorName(idx)
-* ImGui.GetStyleColorVec4(idx)
-* ImGui.GetTextLineHeight()
-* ImGui.GetTextLineHeightWithSpacing()
-* ImGui.GetTime()
-* ImGui.GetTreeNodeToLabelSpacing()
-* ImGui.GetVersion()
-* ImGui.GetWindowContentRegionMax()
-* ImGui.GetWindowContentRegionMin()
-* ImGui.GetWindowContentRegionWidth()
-* ImGui.GetWindowDockID()
-* ImGui.GetWindowDpiScale()
-* ImGui.GetWindowDrawList()
-* ImGui.GetWindowHeight()
-* ImGui.GetWindowPos()
-* ImGui.GetWindowSize()
-* ImGui.GetWindowWidth()
-* ImGui.Image(user_texture_id, size, uv0 = ImVec2(0, 0), uv1 = ImVec2(1,1), tint_col = ImVec4(1,1,1,1), border_col = ImVec4(0,0,0,0))
-* ImGui.ImageButton(user_texture_id, size, uv0 = ImVec2(0, 0), uv1 = ImVec2(1,1), frame_padding = -1, bg_col = ImVec4(0,0,0,0), tint_col = ImVec4(1,1,1,1))
-* ImGui.Indent(indent_w = 0.0f)
-* ImGui.InputDouble(label, v, step = 0.0, step_fast = 0.0, format = "%.6f", flags = 0)
-* ImGui.InputFloat(label, v, step = 0.0f, step_fast = 0.0f, format = "%.3f", flags = 0)
-* ImGui.InputFloat2(label, v, format = "%.3f", flags = 0)
-* ImGui.InputFloat3(label, v, format = "%.3f", flags = 0)
-* ImGui.InputFloat4(label, v, format = "%.3f", flags = 0)
-* ImGui.InputInt(label, v, step = 1, step_fast = 100, flags = 0)
-* ImGui.InputInt2(label, v, flags = 0)
-* ImGui.InputInt3(label, v, flags = 0)
-* ImGui.InputInt4(label, v, flags = 0)
-* ImGui.InputText(label, str, flags = 0, callback = NULL, user_data = NULL)
-* ImGui.InputTextMultiline(label, str, size = ImVec2(0, 0), flags = 0, callback = NULL, user_data = NULL)
-* ImGui.InputTextWithHint(label, hint, str, flags = 0, callback = NULL, user_data = NULL)
-* ImGui.InvisibleButton(str_id, size, flags = 0)
-* ImGui.IsAnyItemActive()
-* ImGui.IsAnyItemFocused()
-* ImGui.IsAnyItemHovered()
-* ImGui.IsAnyMouseDown()
-* ImGui.IsItemActivated()
-* ImGui.IsItemActive()
-* ImGui.IsItemClicked(mouse_button = 0)
-* ImGui.IsItemDeactivated()
-* ImGui.IsItemDeactivatedAfterEdit()
-* ImGui.IsItemEdited()
-* ImGui.IsItemFocused()
-* ImGui.IsItemHovered(flags = 0)
-* ImGui.IsItemToggledOpen()
-* ImGui.IsItemVisible()
-* ImGui.IsKeyDown(user_key_index)
-* ImGui.IsKeyPressed(user_key_index, repeat = true)
-* ImGui.IsKeyReleased(user_key_index)
-* ImGui.IsMouseClicked(button, repeat = false)
-* ImGui.IsMouseDoubleClicked(button)
-* ImGui.IsMouseDown(button)
-* ImGui.IsMouseDragging(button, lock_threshold = -1.0f)
-* ImGui.IsMouseHoveringRect(r_min, r_max, clip = true)
-* ImGui.IsMousePosValid(mouse_pos = NULL)
-* ImGui.IsMouseReleased(button)
-* ImGui.IsPopupOpen(str_id, flags = 0)
-* ImGui.IsRectVisible(rect_min, rect_max)
-* ImGui.IsWindowAppearing()
-* ImGui.IsWindowCollapsed()
-* ImGui.IsWindowDocked()
-* ImGui.IsWindowFocused(flags = 0)
-* ImGui.IsWindowHovered(flags = 0)
-* ImGui.LabelText(label, fmt)
+* ImGui.GetBackgroundDrawList() -> out: ImDrawList
+* ImGui.GetClipboardText() -> out: number
+* ImGui.GetColumnIndex() -> out: number
+* ImGui.GetColumnOffset(column_index: number = -1) -> out: number
+* ImGui.GetColumnWidth(column_index: number = -1) -> out: number
+* ImGui.GetColumnsCount() -> out: number
+* ImGui.GetContentRegionAvail() -> out_x: number, out_y: number
+* ImGui.GetContentRegionMax() -> out_x: number, out_y: number
+* ImGui.GetCurrentContext() -> out: ImGuiContext
+* ImGui.GetCursorPos() -> out_x: number, out_y: number
+* ImGui.GetCursorPosX() -> out: number
+* ImGui.GetCursorPosY() -> out: number
+* ImGui.GetCursorScreenPos() -> out_x: number, out_y: number
+* ImGui.GetCursorStartPos() -> out_x: number, out_y: number
+* ImGui.GetFontSize() -> out: number
+* ImGui.GetFontTexUvWhitePixel() -> out_x: number, out_y: number
+* ImGui.GetForegroundDrawList() -> out: ImDrawList
+* ImGui.GetFrameCount() -> out: number
+* ImGui.GetFrameHeight() -> out: number
+* ImGui.GetFrameHeightWithSpacing() -> out: number
+* ImGui.GetID(str_id_begin: string, str_id_end: string) -> out: number
+* ImGui.GetItemRectMax() -> out_x: number, out_y: number
+* ImGui.GetItemRectMin() -> out_x: number, out_y: number
+* ImGui.GetItemRectSize() -> out_x: number, out_y: number
+* ImGui.GetKeyIndex(imgui_key: ImGuiKey) -> out: number
+* ImGui.GetKeyPressedAmount(key_index: number, repeat_delay: number, rate: number) -> out: number
+* ImGui.GetMouseCursor() -> out: string
+* ImGui.GetMouseDragDelta(button: ImGuiMouseButton = 0, lock_threshold: number = -1.0) -> out_x: number, out_y: number
+* ImGui.GetMousePos() -> out_x: number, out_y: number
+* ImGui.GetMousePosOnOpeningCurrentPopup() -> out_x: number, out_y: number
+* ImGui.GetScrollMaxX() -> out: number
+* ImGui.GetScrollMaxY() -> out: number
+* ImGui.GetScrollX() -> out: number
+* ImGui.GetScrollY() -> out: number
+* ImGui.GetStyle() -> out: ImGuiStyle
+* ImGui.GetStyleColorName(idx: ImGuiCol) -> out: number
+* ImGui.GetStyleColorVec4(idx: ImGuiCol) -> out_x: number, out_y: number, out_z: number, out_w: number
+* ImGui.GetTextLineHeight() -> out: number
+* ImGui.GetTextLineHeightWithSpacing() -> out: number
+* ImGui.GetTime() -> out: number
+* ImGui.GetTreeNodeToLabelSpacing() -> out: number
+* ImGui.GetVersion() -> out: number
+* ImGui.GetWindowContentRegionMax() -> out_x: number, out_y: number
+* ImGui.GetWindowContentRegionMin() -> out_x: number, out_y: number
+* ImGui.GetWindowContentRegionWidth() -> out: number
+* ImGui.GetWindowDockID() -> out: number
+* ImGui.GetWindowDpiScale() -> out: number
+* ImGui.GetWindowDrawList() -> out: ImDrawList
+* ImGui.GetWindowHeight() -> out: number
+* ImGui.GetWindowPos() -> out_x: number, out_y: number
+* ImGui.GetWindowSize() -> out_x: number, out_y: number
+* ImGui.GetWindowWidth() -> out: number
+* ImGui.Image(user_texture_id: Image, size_x: number, size_y: number, uv0_x: number = 0, uv0_y: number =  0, uv1_x: number = 1, uv1_y: number = 1, tint_col_x: number = 1, tint_col_y: number = 1, tint_col_z: number = 1, tint_col_w: number = 1, border_col_x: number = 0, border_col_y: number = 0, border_col_z: number = 0, border_col_w: number = 0)
+* ImGui.ImageButton(user_texture_id: Image, size_x: number, size_y: number, uv0_x: number = 0, uv0_y: number =  0, uv1_x: number = 1, uv1_y: number = 1, frame_padding: number = -1, bg_col_x: number = 0, bg_col_y: number = 0, bg_col_z: number = 0, bg_col_w: number = 0, tint_col_x: number = 1, tint_col_y: number = 1, tint_col_z: number = 1, tint_col_w: number = 1) -> out: boolean
+* ImGui.Indent(indent_w: number = 0.0)
+* ImGui.InputDouble(label: string, v: number, step: number = 0.0, step_fast: number = 0.0, format: string = "%.6f", flags: ImGuiInputTextFlags = 0) -> v: number, out: boolean
+* ImGui.InputFloat(label: string, v: number, step: number = 0.0, step_fast: number = 0.0, format: string = "%.3f", flags: ImGuiInputTextFlags = 0) -> v: number, out: boolean
+* ImGui.InputFloat2(label: string, v: table, format: string = "%.3f", flags: ImGuiInputTextFlags = 0) -> v[0]: number, v[1]: number, out: boolean
+* ImGui.InputFloat3(label: string, v: table, format: string = "%.3f", flags: ImGuiInputTextFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, out: boolean
+* ImGui.InputFloat4(label: string, v: table, format: string = "%.3f", flags: ImGuiInputTextFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, v[3]: number, out: boolean
+* ImGui.InputInt(label: string, v: number, step: number = 1, step_fast: number = 100, flags: ImGuiInputTextFlags = 0) -> v: number, out: boolean
+* ImGui.InputInt2(label: string, v: table, flags: ImGuiInputTextFlags = 0) -> v[0]: number, v[1]: number, out: boolean
+* ImGui.InputInt3(label: string, v: table, flags: ImGuiInputTextFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, out: boolean
+* ImGui.InputInt4(label: string, v: table, flags: ImGuiInputTextFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, v[3]: number, out: boolean
+* ImGui.InputText(label: string, str: string, flags: ImGuiInputTextFlags = 0, callback: function) -> str: string, out: boolean
+* ImGui.InputTextMultiline(label: string, str: string, size_x: number = 0, size_y: number =  0, flags: ImGuiInputTextFlags = 0, callback: function) -> str: string, out: boolean
+* ImGui.InputTextWithHint(label: string, hint: string, str: string, flags: ImGuiInputTextFlags = 0, callback: function) -> str: string, out: boolean
+* ImGui.InvisibleButton(str_id: string, size_x: number, size_y: number, flags: ImGuiButtonFlags = 0) -> out: boolean
+* ImGui.IsAnyItemActive() -> out: boolean
+* ImGui.IsAnyItemFocused() -> out: boolean
+* ImGui.IsAnyItemHovered() -> out: boolean
+* ImGui.IsAnyMouseDown() -> out: boolean
+* ImGui.IsItemActivated() -> out: boolean
+* ImGui.IsItemActive() -> out: boolean
+* ImGui.IsItemClicked(mouse_button: ImGuiMouseButton = 0) -> out: boolean
+* ImGui.IsItemDeactivated() -> out: boolean
+* ImGui.IsItemDeactivatedAfterEdit() -> out: boolean
+* ImGui.IsItemEdited() -> out: boolean
+* ImGui.IsItemFocused() -> out: boolean
+* ImGui.IsItemHovered(flags: ImGuiHoveredFlags = 0) -> out: boolean
+* ImGui.IsItemToggledOpen() -> out: boolean
+* ImGui.IsItemVisible() -> out: boolean
+* ImGui.IsKeyDown(user_key_index: number) -> out: boolean
+* ImGui.IsKeyPressed(user_key_index: number, repeat: boolean = true) -> out: boolean
+* ImGui.IsKeyReleased(user_key_index: number) -> out: boolean
+* ImGui.IsMouseClicked(button: ImGuiMouseButton, repeat: boolean = false) -> out: boolean
+* ImGui.IsMouseDoubleClicked(button: ImGuiMouseButton) -> out: boolean
+* ImGui.IsMouseDown(button: ImGuiMouseButton) -> out: boolean
+* ImGui.IsMouseDragging(button: ImGuiMouseButton, lock_threshold: number = -1.0) -> out: boolean
+* ImGui.IsMouseHoveringRect(r_min_x: number, r_min_y: number, r_max_x: number, r_max_y: number, clip: boolean = true) -> out: boolean
+* ImGui.IsMousePosValid(mouse_pos_x: number = nil, mouse_pos_y: number = nil) -> out: boolean
+* ImGui.IsMouseReleased(button: ImGuiMouseButton) -> out: boolean
+* ImGui.IsPopupOpen(str_id: string, flags: ImGuiPopupFlags = 0) -> out: boolean
+* ImGui.IsRectVisible(rect_min_x: number, rect_min_y: number, rect_max_x: number, rect_max_y: number) -> out: boolean
+* ImGui.IsWindowAppearing() -> out: boolean
+* ImGui.IsWindowCollapsed() -> out: boolean
+* ImGui.IsWindowDocked() -> out: boolean
+* ImGui.IsWindowFocused(flags: ImGuiFocusedFlags = 0) -> out: boolean
+* ImGui.IsWindowHovered(flags: ImGuiHoveredFlags = 0) -> out: boolean
+* ImGui.LabelText(label: string, fmt: string, ...)
 * ImGui.ListBoxFooter()
-* ImGui.ListBoxHeaderItems(label, items_count, height_in_items = -1)
-* ImGui.ListBoxHeaderXY(label, size = ImVec2(0, 0))
-* ImGui.LoadIniSettingsFromDisk(ini_filename)
+* ImGui.ListBoxHeaderItems(label: string, items_count: number, height_in_items: number = -1) -> out: boolean
+* ImGui.ListBoxHeaderXY(label: string, size_x: number = 0, size_y: number =  0) -> out: boolean
+* ImGui.LoadIniSettingsFromDisk(ini_filename: string)
 * ImGui.LogButtons()
 * ImGui.LogFinish()
-* ImGui.LogText(fmt)
-* ImGui.LogToClipboard(auto_open_depth = -1)
-* ImGui.LogToFile(auto_open_depth = -1, filename = NULL)
-* ImGui.LogToTTY(auto_open_depth = -1)
-* ImGui.MenuItem(label, shortcut, p_selected, enabled = true)
+* ImGui.LogText(fmt: string, ...)
+* ImGui.LogToClipboard(auto_open_depth: number = -1)
+* ImGui.LogToFile(auto_open_depth: number = -1, filename: string = nil)
+* ImGui.LogToTTY(auto_open_depth: number = -1)
+* ImGui.MenuItem(label: string, shortcut: string, p_selected: boolean, enabled: boolean = true) -> p_selected: boolean, out: boolean
 * ImGui.NewFrame()
 * ImGui.NewLine()
 * ImGui.NextColumn()
-* ImGui.OpenPopup(str_id, popup_flags = 0)
-* ImGui.OpenPopupOnItemClick(str_id = NULL, popup_flags = 1)
+* ImGui.OpenPopup(str_id: string, popup_flags: ImGuiPopupFlags = 0)
+* ImGui.OpenPopupOnItemClick(str_id: string = nil, popup_flags: ImGuiPopupFlags = 1)
 * ImGui.PopAllowKeyboardFocus()
 * ImGui.PopButtonRepeat()
 * ImGui.PopClipRect()
 * ImGui.PopFont()
 * ImGui.PopID()
 * ImGui.PopItemWidth()
-* ImGui.PopStyleColor(count = 1)
-* ImGui.PopStyleVar(count = 1)
+* ImGui.PopStyleColor(count: number = 1)
+* ImGui.PopStyleVar(count: number = 1)
 * ImGui.PopTextWrapPos()
-* ImGui.ProgressBar(fraction, size_arg = ImVec2(-1, 0), overlay = NULL)
-* ImGui.PushAllowKeyboardFocus(allow_keyboard_focus)
-* ImGui.PushButtonRepeat(repeat)
-* ImGui.PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect)
-* ImGui.PushID(int_id)
-* ImGui.PushItemWidth(item_width)
-* ImGui.PushStyleColor(idx, col)
-* ImGui.PushStyleVar(idx, val)
-* ImGui.PushTextWrapPos(wrap_local_pos_x = 0.0f)
-* ImGui.RadioButton(label, v, v_button)
+* ImGui.ProgressBar(fraction: number, size_arg_x: number = -1, size_arg_y: number =  0, overlay: string = nil)
+* ImGui.PushAllowKeyboardFocus(allow_keyboard_focus: boolean)
+* ImGui.PushButtonRepeat(repeat: boolean)
+* ImGui.PushClipRect(clip_rect_min_x: number, clip_rect_min_y: number, clip_rect_max_x: number, clip_rect_max_y: number, intersect_with_current_clip_rect: boolean)
+* ImGui.PushID(int_id: number)
+* ImGui.PushItemWidth(item_width: number)
+* ImGui.PushStyleColor(idx: ImGuiCol, col_x: number, col_y: number, col_z: number, col_w: number)
+* ImGui.PushStyleVar(idx: ImGuiStyleVar, val_x: number, val_y: number)
+* ImGui.PushTextWrapPos(wrap_local_pos_x: number = 0.0)
+* ImGui.RadioButton(label: string, v: number, v_button: number) -> v: number, out: boolean
 * ImGui.Render()
-* ImGui.ResetMouseDragDelta(button = 0)
-* ImGui.SameLine(offset_from_start_x = 0.0f, spacing = -1.0f)
-* ImGui.SaveIniSettingsToDisk(ini_filename)
-* ImGui.Selectable(label, p_selected, flags = 0, size = ImVec2(0, 0))
+* ImGui.ResetMouseDragDelta(button: ImGuiMouseButton = 0)
+* ImGui.SameLine(offset_from_start_x: number = 0.0, spacing: number = -1.0)
+* ImGui.SaveIniSettingsToDisk(ini_filename: string)
+* ImGui.Selectable(label: string, p_selected: boolean, flags: ImGuiSelectableFlags = 0, size_x: number = 0, size_y: number =  0) -> p_selected: boolean, out: boolean
 * ImGui.Separator()
-* ImGui.SetClipboardText(text)
-* ImGui.SetColorEditOptions(flags)
-* ImGui.SetColumnOffset(column_index, offset_x)
-* ImGui.SetColumnWidth(column_index, width)
-* ImGui.SetCurrentContext(ctx)
-* ImGui.SetCursorPos(local_pos)
-* ImGui.SetCursorPosX(local_x)
-* ImGui.SetCursorPosY(local_y)
-* ImGui.SetCursorScreenPos(pos)
+* ImGui.SetClipboardText(text: string)
+* ImGui.SetColorEditOptions(flags: ImGuiColorEditFlags)
+* ImGui.SetColumnOffset(column_index: number, offset_x: number)
+* ImGui.SetColumnWidth(column_index: number, width: number)
+* ImGui.SetCurrentContext(ctx: unknown)
+* ImGui.SetCursorPos(local_pos_x: number, local_pos_y: number)
+* ImGui.SetCursorPosX(local_x: number)
+* ImGui.SetCursorPosY(local_y: number)
+* ImGui.SetCursorScreenPos(pos_x: number, pos_y: number)
 * ImGui.SetItemAllowOverlap()
 * ImGui.SetItemDefaultFocus()
-* ImGui.SetKeyboardFocusHere(offset = 0)
-* ImGui.SetMouseCursor(cursor_type)
-* ImGui.SetNextItemOpen(is_open, cond = 0)
-* ImGui.SetNextItemWidth(item_width)
-* ImGui.SetNextWindowBgAlpha(alpha)
-* ImGui.SetNextWindowCollapsed(collapsed, cond = 0)
-* ImGui.SetNextWindowContentSize(size)
-* ImGui.SetNextWindowDockID(dock_id, cond = 0)
+* ImGui.SetKeyboardFocusHere(offset: number = 0)
+* ImGui.SetMouseCursor(cursor_type: ImGuiMouseCursor)
+* ImGui.SetNextItemOpen(is_open: boolean, cond: ImGuiCond = 0)
+* ImGui.SetNextItemWidth(item_width: number)
+* ImGui.SetNextWindowBgAlpha(alpha: number)
+* ImGui.SetNextWindowCollapsed(collapsed: boolean, cond: ImGuiCond = 0)
+* ImGui.SetNextWindowContentSize(size_x: number, size_y: number)
+* ImGui.SetNextWindowDockID(dock_id: number, cond: ImGuiCond = 0)
 * ImGui.SetNextWindowFocus()
-* ImGui.SetNextWindowPos(pos, cond = 0, pivot = ImVec2(0, 0))
-* ImGui.SetNextWindowSize(size, cond = 0)
-* ImGui.SetNextWindowViewport(viewport_id)
-* ImGui.SetScrollFromPosX(local_x, center_x_ratio = 0.5f)
-* ImGui.SetScrollFromPosY(local_y, center_y_ratio = 0.5f)
-* ImGui.SetScrollHereX(center_x_ratio = 0.5f)
-* ImGui.SetScrollHereY(center_y_ratio = 0.5f)
-* ImGui.SetScrollX(scroll_x)
-* ImGui.SetScrollY(scroll_y)
-* ImGui.SetTabItemClosed(tab_or_docked_window_label)
-* ImGui.SetTooltip(fmt)
-* ImGui.SetWindowCollapsed(name, collapsed, cond = 0)
-* ImGui.SetWindowFocus(name)
-* ImGui.SetWindowFontScale(scale)
-* ImGui.SetWindowPos(name, pos, cond = 0)
-* ImGui.SetWindowSize(name, size, cond = 0)
-* ImGui.ShowAboutWindow(p_open = NULL)
-* ImGui.ShowDemoWindow(p_open = NULL)
-* ImGui.ShowFontSelector(label)
-* ImGui.ShowMetricsWindow(p_open = NULL)
-* ImGui.ShowStyleEditor(ref = NULL)
-* ImGui.ShowStyleSelector(label)
+* ImGui.SetNextWindowPos(pos_x: number, pos_y: number, cond: ImGuiCond = 0, pivot_x: number = 0, pivot_y: number =  0)
+* ImGui.SetNextWindowSize(size_x: number, size_y: number, cond: ImGuiCond = 0)
+* ImGui.SetNextWindowViewport(viewport_id: number)
+* ImGui.SetScrollFromPosX(local_x: number, center_x_ratio: number = 0.5)
+* ImGui.SetScrollFromPosY(local_y: number, center_y_ratio: number = 0.5)
+* ImGui.SetScrollHereX(center_x_ratio: number = 0.5)
+* ImGui.SetScrollHereY(center_y_ratio: number = 0.5)
+* ImGui.SetScrollX(scroll_x: number)
+* ImGui.SetScrollY(scroll_y: number)
+* ImGui.SetTabItemClosed(tab_or_docked_window_label: string)
+* ImGui.SetTooltip(fmt: string, ...)
+* ImGui.SetWindowCollapsed(name: string, collapsed: boolean, cond: ImGuiCond = 0)
+* ImGui.SetWindowFocus(name: string)
+* ImGui.SetWindowFontScale(scale: number)
+* ImGui.SetWindowPos(name: string, pos_x: number, pos_y: number, cond: ImGuiCond = 0)
+* ImGui.SetWindowSize(name: string, size_x: number, size_y: number, cond: ImGuiCond = 0)
+* ImGui.ShowAboutWindow(p_open: boolean = nil) -> p_open: boolean
+* ImGui.ShowDemoWindow(p_open: boolean = nil) -> p_open: boolean
+* ImGui.ShowFontSelector(label: string)
+* ImGui.ShowMetricsWindow(p_open: boolean = nil) -> p_open: boolean
+* ImGui.ShowStyleEditor(ref: unknown = nil)
+* ImGui.ShowStyleSelector(label: string) -> out: boolean
 * ImGui.ShowUserGuide()
-* ImGui.SliderAngle(label, v_rad, v_degrees_min = -360.0f, v_degrees_max = +360.0f, format = "%.0f deg", flags = 0)
-* ImGui.SliderFloat(label, v, v_min, v_max, format = "%.3f", flags = 0)
-* ImGui.SliderFloat2(label, v, v_min, v_max, format = "%.3f", flags = 0)
-* ImGui.SliderFloat3(label, v, v_min, v_max, format = "%.3f", flags = 0)
-* ImGui.SliderFloat4(label, v, v_min, v_max, format = "%.3f", flags = 0)
-* ImGui.SliderInt(label, v, v_min, v_max, format = "%d", flags = 0)
-* ImGui.SliderInt2(label, v, v_min, v_max, format = "%d", flags = 0)
-* ImGui.SliderInt3(label, v, v_min, v_max, format = "%d", flags = 0)
-* ImGui.SliderInt4(label, v, v_min, v_max, format = "%d", flags = 0)
-* ImGui.SmallButton(label)
+* ImGui.SliderAngle(label: string, v_rad: number, v_degrees_min: number = -360.0, v_degrees_max: number = +360.0, format: string = "%.0f deg", flags: ImGuiSliderFlags = 0) -> v_rad: number, out: boolean
+* ImGui.SliderFloat(label: string, v: number, v_min: number, v_max: number, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v: number, out: boolean
+* ImGui.SliderFloat2(label: string, v: table, v_min: number, v_max: number, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, out: boolean
+* ImGui.SliderFloat3(label: string, v: table, v_min: number, v_max: number, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, out: boolean
+* ImGui.SliderFloat4(label: string, v: table, v_min: number, v_max: number, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, v[3]: number, out: boolean
+* ImGui.SliderInt(label: string, v: number, v_min: number, v_max: number, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v: number, out: boolean
+* ImGui.SliderInt2(label: string, v: table, v_min: number, v_max: number, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, out: boolean
+* ImGui.SliderInt3(label: string, v: table, v_min: number, v_max: number, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, out: boolean
+* ImGui.SliderInt4(label: string, v: table, v_min: number, v_max: number, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v[0]: number, v[1]: number, v[2]: number, v[3]: number, out: boolean
+* ImGui.SmallButton(label: string) -> out: boolean
 * ImGui.Spacing()
-* ImGui.StyleColorsClassic(dst = NULL)
-* ImGui.StyleColorsDark(dst = NULL)
-* ImGui.StyleColorsLight(dst = NULL)
-* ImGui.TabItemButton(label, flags = 0)
-* ImGui.Text(fmt)
-* ImGui.TextColored(col, fmt)
-* ImGui.TextDisabled(fmt)
-* ImGui.TextUnformatted(text, text_end = NULL)
-* ImGui.TextWrapped(fmt)
-* ImGui.TreeNode(str_id, fmt)
-* ImGui.TreeNodeEx(str_id, flags, fmt)
+* ImGui.StyleColorsClassic(dst: unknown = nil)
+* ImGui.StyleColorsDark(dst: unknown = nil)
+* ImGui.StyleColorsLight(dst: unknown = nil)
+* ImGui.TabItemButton(label: string, flags: ImGuiTabItemFlags = 0) -> out: boolean
+* ImGui.Text(fmt: string, ...)
+* ImGui.TextColored(col_x: number, col_y: number, col_z: number, col_w: number, fmt: string, ...)
+* ImGui.TextDisabled(fmt: string, ...)
+* ImGui.TextUnformatted(text: string, text_end: string = nil)
+* ImGui.TextWrapped(fmt: string, ...)
+* ImGui.TreeNode(str_id: string, fmt: string, ...) -> out: boolean
+* ImGui.TreeNodeEx(str_id: string, flags: ImGuiTreeNodeFlags, fmt: string, ...) -> out: boolean
 * ImGui.TreePop()
-* ImGui.TreePush(str_id)
-* ImGui.Unindent(indent_w = 0.0f)
+* ImGui.TreePush(str_id: string)
+* ImGui.Unindent(indent_w: number = 0.0)
 * ImGui.UpdatePlatformWindows()
-* ImGui.VSliderFloat(label, size, v, v_min, v_max, format = "%.3f", flags = 0)
-* ImGui.VSliderInt(label, size, v, v_min, v_max, format = "%d", flags = 0)
-* ImGui.Value(prefix, v, float_format = NULL)
+* ImGui.VSliderFloat(label: string, size_x: number, size_y: number, v: number, v_min: number, v_max: number, format: string = "%.3f", flags: ImGuiSliderFlags = 0) -> v: number, out: boolean
+* ImGui.VSliderInt(label: string, size_x: number, size_y: number, v: number, v_min: number, v_max: number, format: string = "%d", flags: ImGuiSliderFlags = 0) -> v: number, out: boolean
+* ImGui.Value(prefix: string, v: number, float_format: string = nil)
 
 ### Unsupported methods (23)
-* ImGui.AcceptDragDropPayload(type, flags = 0)
-* ImGui.FindViewportByID(id)
+* ImGui.AcceptDragDropPayload(type: string, flags: ImGuiDragDropFlags = 0)
+* ImGui.FindViewportByID(id: number)
 * ImGui.FindViewportByPlatformHandle(platform_handle)
 * ImGui.GetDragDropPayload()
 * ImGui.GetDrawData()
@@ -315,43 +315,43 @@ This file was automatically generated on Tue Oct 13 03:55:06 2020, UTC
 # ImDrawList
 
 ### Supported methods (37)
-* ImGui.AddBezierCurve(p1, p2, p3, p4, col, thickness, num_segments = 0)
-* ImGui.AddCircle(center, radius, col, num_segments = 0, thickness = 1.0f)
-* ImGui.AddCircleFilled(center, radius, col, num_segments = 0)
-* ImGui.AddDrawCmd()
-* ImGui.AddImage(user_texture_id, p_min, p_max, uv_min = ImVec2(0, 0), uv_max = ImVec2(1, 1), col = IM_COL32_WHITE)
-* ImGui.AddImageQuad(user_texture_id, p1, p2, p3, p4, uv1 = ImVec2(0, 0), uv2 = ImVec2(1, 0), uv3 = ImVec2(1, 1), uv4 = ImVec2(0, 1), col = IM_COL32_WHITE)
-* ImGui.AddImageRounded(user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners = ImDrawCornerFlags_All)
-* ImGui.AddLine(p1, p2, col, thickness = 1.0f)
-* ImGui.AddNgon(center, radius, col, num_segments, thickness = 1.0f)
-* ImGui.AddNgonFilled(center, radius, col, num_segments)
-* ImGui.AddQuad(p1, p2, p3, p4, col, thickness = 1.0f)
-* ImGui.AddQuadFilled(p1, p2, p3, p4, col)
-* ImGui.AddRect(p_min, p_max, col, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All, thickness = 1.0f)
-* ImGui.AddRectFilled(p_min, p_max, col, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All)
-* ImGui.AddRectFilledMultiColor(p_min, p_max, col_upr_left, col_upr_right, col_bot_right, col_bot_left)
-* ImGui.AddText(pos, col, text_begin, text_end = NULL)
-* ImGui.AddTriangle(p1, p2, p3, col, thickness = 1.0f)
-* ImGui.AddTriangleFilled(p1, p2, p3, col)
-* ImGui.CloneOutput()
-* ImGui.PathArcTo(center, radius, a_min, a_max, num_segments = 10)
-* ImGui.PathArcToFast(center, radius, a_min_of_12, a_max_of_12)
-* ImGui.PathBezierCurveTo(p2, p3, p4, num_segments = 0)
-* ImGui.PathRect(rect_min, rect_max, rounding = 0.0f, rounding_corners = ImDrawCornerFlags_All)
-* ImGui.PopClipRect()
-* ImGui.PopTextureID()
-* ImGui.PrimRect(a, b, col)
-* ImGui.PrimReserve(idx_count, vtx_count)
-* ImGui.PrimUnreserve(idx_count, vtx_count)
-* ImGui.PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect = false)
-* ImGui.PushClipRectFullScreen()
-* ImGui.PushTextureID(texture_id)
-* ImGui._ClearFreeMemory()
-* ImGui._OnChangedClipRect()
-* ImGui._OnChangedTextureID()
-* ImGui._OnChangedVtxOffset()
-* ImGui._PopUnusedDrawCmd()
-* ImGui._ResetForNewFrame()
+* ImDrawList:AddBezierCurve(p1_x: number, p1_y: number, p2_x: number, p2_y: number, p3_x: number, p3_y: number, p4_x: number, p4_y: number, col: number, thickness: number, num_segments: number = 0)
+* ImDrawList:AddCircle(center_x: number, center_y: number, radius: number, col: number, num_segments: number = 0, thickness: number = 1.0)
+* ImDrawList:AddCircleFilled(center_x: number, center_y: number, radius: number, col: number, num_segments: number = 0)
+* ImDrawList:AddDrawCmd()
+* ImDrawList:AddImage(user_texture_id: Image, p_min_x: number, p_min_y: number, p_max_x: number, p_max_y: number, uv_min_x: number = 0, uv_min_y: number =  0, uv_max_x: number = 1, uv_max_y: number =  1, col: number = IM_COL32_WHITE)
+* ImDrawList:AddImageQuad(user_texture_id: Image, p1_x: number, p1_y: number, p2_x: number, p2_y: number, p3_x: number, p3_y: number, p4_x: number, p4_y: number, uv1_x: number = 0, uv1_y: number =  0, uv2_x: number = 1, uv2_y: number =  0, uv3_x: number = 1, uv3_y: number =  1, uv4_x: number = 0, uv4_y: number =  1, col: number = IM_COL32_WHITE)
+* ImDrawList:AddImageRounded(user_texture_id: Image, p_min_x: number, p_min_y: number, p_max_x: number, p_max_y: number, uv_min_x: number, uv_min_y: number, uv_max_x: number, uv_max_y: number, col: number, rounding: number, rounding_corners: ImDrawCornerFlags = ImDrawCornerFlags_All)
+* ImDrawList:AddLine(p1_x: number, p1_y: number, p2_x: number, p2_y: number, col: number, thickness: number = 1.0)
+* ImDrawList:AddNgon(center_x: number, center_y: number, radius: number, col: number, num_segments: number, thickness: number = 1.0)
+* ImDrawList:AddNgonFilled(center_x: number, center_y: number, radius: number, col: number, num_segments: number)
+* ImDrawList:AddQuad(p1_x: number, p1_y: number, p2_x: number, p2_y: number, p3_x: number, p3_y: number, p4_x: number, p4_y: number, col: number, thickness: number = 1.0)
+* ImDrawList:AddQuadFilled(p1_x: number, p1_y: number, p2_x: number, p2_y: number, p3_x: number, p3_y: number, p4_x: number, p4_y: number, col: number)
+* ImDrawList:AddRect(p_min_x: number, p_min_y: number, p_max_x: number, p_max_y: number, col: number, rounding: number = 0.0, rounding_corners: ImDrawCornerFlags = ImDrawCornerFlags_All, thickness: number = 1.0)
+* ImDrawList:AddRectFilled(p_min_x: number, p_min_y: number, p_max_x: number, p_max_y: number, col: number, rounding: number = 0.0, rounding_corners: ImDrawCornerFlags = ImDrawCornerFlags_All)
+* ImDrawList:AddRectFilledMultiColor(p_min_x: number, p_min_y: number, p_max_x: number, p_max_y: number, col_upr_left: number, col_upr_right: number, col_bot_right: number, col_bot_left: number)
+* ImDrawList:AddText(pos_x: number, pos_y: number, col: number, text_begin: string, text_end: string = nil)
+* ImDrawList:AddTriangle(p1_x: number, p1_y: number, p2_x: number, p2_y: number, p3_x: number, p3_y: number, col: number, thickness: number = 1.0)
+* ImDrawList:AddTriangleFilled(p1_x: number, p1_y: number, p2_x: number, p2_y: number, p3_x: number, p3_y: number, col: number)
+* ImDrawList:CloneOutput() -> out: ImDrawList
+* ImDrawList:PathArcTo(center_x: number, center_y: number, radius: number, a_min: number, a_max: number, num_segments: number = 10)
+* ImDrawList:PathArcToFast(center_x: number, center_y: number, radius: number, a_min_of_12: number, a_max_of_12: number)
+* ImDrawList:PathBezierCurveTo(p2_x: number, p2_y: number, p3_x: number, p3_y: number, p4_x: number, p4_y: number, num_segments: number = 0)
+* ImDrawList:PathRect(rect_min_x: number, rect_min_y: number, rect_max_x: number, rect_max_y: number, rounding: number = 0.0, rounding_corners: ImDrawCornerFlags = ImDrawCornerFlags_All)
+* ImDrawList:PopClipRect()
+* ImDrawList:PopTextureID()
+* ImDrawList:PrimRect(a_x: number, a_y: number, b_x: number, b_y: number, col: number)
+* ImDrawList:PrimReserve(idx_count: number, vtx_count: number)
+* ImDrawList:PrimUnreserve(idx_count: number, vtx_count: number)
+* ImDrawList:PushClipRect(clip_rect_min_x: number, clip_rect_min_y: number, clip_rect_max_x: number, clip_rect_max_y: number, intersect_with_current_clip_rect: boolean = false)
+* ImDrawList:PushClipRectFullScreen()
+* ImDrawList:PushTextureID(texture_id: Image)
+* ImDrawList:_ClearFreeMemory()
+* ImDrawList:_OnChangedClipRect()
+* ImDrawList:_OnChangedTextureID()
+* ImDrawList:_OnChangedVtxOffset()
+* ImDrawList:_PopUnusedDrawCmd()
+* ImDrawList:_ResetForNewFrame()
 
 ### Unsupported methods (3)
 * ImGui.AddCallback(callback, callback_data)

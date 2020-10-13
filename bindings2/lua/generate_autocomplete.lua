@@ -48,6 +48,11 @@ local function addFunctions(tableType, imguiFunctions)
 			end
 		end
 
+		if fnData.isVarArgs then
+			table.insert(fn.args, {name = "", displayName = "..."})
+			table.insert(fn.argTypes, {type = "unknown"})
+		end
+
 		if fnData.luaReturnTypes and fnData.luaReturnTypes[1] then
 			fn.returnTypes = {}
 			for _, returnData in ipairs(fnData.luaReturnTypes) do

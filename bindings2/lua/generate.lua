@@ -193,17 +193,78 @@ function helpers.addInvalidFunction(fnElement, fnData)
 	end
 end
 
-function helpers.generateDocSignature(fnData)
-	local args = {}
-	for _, arg in ipairs(fnData.arguments) do
-		if arg.default then
-			table.insert(args, string.format("%s = %s", arg.name, arg.default))
-		else
-			table.insert(args, arg.name)
+local function prettifyDefault(defaultStr)
+	if defaultStr == "NULL" then
+		return "nil"
+	else
+		local maybeFloat = defaultStr:match("(.+)f$")
+		if tonumber(maybeFloat) then
+			return maybeFloat
 		end
 	end
-	args = table.concat(args,", ")
-	return string.format("ImGui.%s(%s)", fnData.name, args)
+	return defaultStr
+end
+
+function helpers.generateDocSignature(fnData)
+	if fnData.luaArgumentTypes and fnData.luaReturnTypes then
+		-- this is a valid function
+		local qualifiedName
+		if fnData.class then
+			qualifiedName = ("%s:%s"):format(fnData.class, fnData.name)
+		else
+			qualifiedName = ("ImGui.%s"):format(fnData.name)
+		end
+
+		local args = {}
+		for _, argData in ipairs(fnData.luaArgumentTypes) do
+			local argstr = argData.name
+			if argData.type == 'userdata' or argData.type == 'lightuserdata' then
+				argstr = argstr .. ": " .. argData.class
+			elseif argData.type == 'enum' or argData.type == 'flags' then
+				argstr = argstr .. ": " .. argData.enum
+			elseif argData.type then
+				argstr = argstr .. ": " .. argData.type
+			end
+			if argData.default then
+				argstr = argstr .. " = " .. prettifyDefault(argData.default)
+			end
+			table.insert(args, argstr)
+		end
+		if fnData.isVarargs then
+			table.insert(args, "...")
+		end
+
+		local rets = {}
+		for _, retData in ipairs(fnData.luaReturnTypes) do
+			local retstr = retData.name
+			if retData.type == 'userdata' or retData.type == 'lightuserdata' then
+				retstr = retstr .. ": " .. retData.class
+			elseif retData.type == 'enum' or retData.type == 'flags' then
+				retstr = retstr .. ": " .. retData.enum
+			elseif retData.type then
+				retstr = retstr .. ": " .. retData.type
+			end
+			table.insert(rets, retstr)
+		end
+
+		if rets[1] then
+			return string.format("%s(%s) -> %s", qualifiedName, table.concat(args, ", "), table.concat(rets, ", "))
+		else
+			return string.format("%s(%s)", qualifiedName, table.concat(args, ", "))
+		end
+	else
+		--probably invalid
+		local args = {}
+		for _, arg in ipairs(fnData.arguments) do
+			if arg.default then
+				table.insert(args, string.format("%s = %s", arg.name, arg.default))
+			else
+				table.insert(args, arg.name)
+			end
+		end
+		args = table.concat(args,", ")
+		return string.format("ImGui.%s(%s)", fnData.name, args)
+	end
 end
 
 return helpers

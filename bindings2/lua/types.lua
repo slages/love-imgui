@@ -113,6 +113,18 @@ do
 		end
 	end
 
+	local function getImVecDefaults(defaultStr)
+		if defaultStr == "NULL" then
+			return "NULL", "NULL", "NULL", "NULL"
+		end
+		local o = {}
+		local args = defaultStr:match("(%b())"):sub(2, -2)
+		for s in args:gmatch("[^,]+") do
+			table.insert(o, s)
+		end
+		return unpack(o)
+	end
+
 	local typeCheckers = {
 		-- static input
 		["const char*"] = simple_arg("luaL_checkstring", "luaL_optstring", "string"),
@@ -127,23 +139,23 @@ do
 		["ImU32"] = static_cast_arg("ImU32", "luaL_checklong", "luaL_optlong", "number"),
 		["ImGuiID"] = static_cast_arg("ImGuiID", "luaL_checkint", "luaL_optint", "number"),
 		["const fmt*"] = function(buf, fnData, arg, i)
-			assert(not arg.default, "defaults unimplemented")
 			-- get format string
 			buf:addf("auto %s = luax_formatargs(L, %s);", arg.name, i)
-			table.insert(fnData.luaArgumentTypes, {type = "string"})
+			table.insert(fnData.luaArgumentTypes, {name = "fmt", type = "string"})
 			return i + 1
 		end,
 		["const ImVec2*"] = function(buf, fnData, arg, i, _)
 			local name = arg.name
 			if arg.default then
+				local x, y = getImVecDefaults(arg.default)
 				buf:addf("ImVec2* %s = %s;", name, arg.default)
 				buf:addf("ImVec2 %s_buf;", name)
 				buf:addf("if(!lua_isnoneornil(L, %d)) {", i+1) buf:indent()
 					buf:addf("%s_buf.x = luax_checkfloat(L, %d);", name, i)
 					buf:addf("%s_buf.y = luax_checkfloat(L, %d);", name, i+1)
 				buf:unindent() buf:add("}")
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = "?"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = "?"})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = x})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = y})
 				return i + 2
 			else
 				return i, "stop"
@@ -152,11 +164,12 @@ do
 		["const ImVec2&"] = function(buf, fnData, arg, i, _)
 			local name = arg.name
 			if arg.default then
+				local x, y = getImVecDefaults(arg.default)
 				buf:addf("auto %s = %s;", name, arg.default)
 				buf:addf("%s.x = luax_optfloat(L, %d, %s.x);", name, i, name)
 				buf:addf("%s.y = luax_optfloat(L, %d, %s.y);", name, i+1, name)
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = "?"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = "?"})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = x})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = y})
 			else
 				buf:addf("ImVec2 %s;", name)
 				buf:addf("%s.x = luax_checkfloat(L, %d);", name, i)
@@ -169,15 +182,16 @@ do
 		["const ImVec4&"] = function(buf, fnData, arg, i, _)
 			local name = arg.name
 			if arg.default then
+				local x, y, z, w = getImVecDefaults(arg.default)
 				buf:addf("ImVec4 %s = %s;", name, arg.default)
 				buf:addf("%s.x = luax_optfloat(L, %d, %s.x);", name, i, name)
 				buf:addf("%s.y = luax_optfloat(L, %d, %s.y);", name, i+1, name)
 				buf:addf("%s.z = luax_optfloat(L, %d, %s.z);", name, i+2, name)
 				buf:addf("%s.w = luax_optfloat(L, %d, %s.w);", name, i+3, name)
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = "?"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = "?"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_z", type = "number", default = "?"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_w", type = "number", default = "?"})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = x})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = y})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_z", type = "number", default = z})
+				table.insert(fnData.luaArgumentTypes, {name = name.."_w", type = "number", default = w})
 			else
 				buf:addf("ImVec4 %s;", name)
 				buf:addf("%s.x = luax_checkfloat(L, %d);", name, i)
@@ -218,12 +232,12 @@ do
 		end,
 
 		-- edit input
-		["bool*"] = simple_out_arg("bool", "luax_checkboolean", "luax_optboolean"),
-		["int*"] = simple_out_arg("int", "luaL_checkint", "luaL_optint"),
-		["double*"] = simple_out_arg("double", "luaL_checknumber", "luaL_optnumber"),
-		["unsigned int*"] = static_cast_out_arg("unsigned int", "luaL_checkint", "luaL_optint"),
-		["float*"] = static_cast_out_arg("float", "luaL_checknumber", "luaL_optnumber"),
-		["std::string*"] = simple_out_arg("std::string", "luaL_checkstring", "luaL_optstring"),
+		["bool*"] = simple_out_arg("bool", "luax_checkboolean", "luax_optboolean", "boolean"),
+		["int*"] = simple_out_arg("int", "luaL_checkint", "luaL_optint", "number"),
+		["double*"] = simple_out_arg("double", "luaL_checknumber", "luaL_optnumber", "number"),
+		["unsigned int*"] = static_cast_out_arg("unsigned int", "luaL_checkint", "luaL_optint", "number"),
+		["float*"] = static_cast_out_arg("float", "luaL_checknumber", "luaL_optnumber", "number"),
+		["std::string*"] = simple_out_arg("std::string", "luaL_checkstring", "luaL_optstring", "string"),
 		["int[2]"] = array_out_arg(2, "int", "luaL_checkint"),
 		["int[3]"] = array_out_arg(3, "int", "luaL_checkint"),
 		["int[4]"] = array_out_arg(4, "int", "luaL_checkint"),
