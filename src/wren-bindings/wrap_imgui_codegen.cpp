@@ -1436,7 +1436,7 @@ void w_IsWindowFocused(WrenVM *vm)
 /*  is current window hovered (and typically: not blocked by a popup/modal)? see flags for options. NB: If you are trying to check whether your mouse should be dispatched to imgui or to your app, you should use the 'io.WantCaptureMouse' boolean for that! Please read the FAQ! */
 void w_IsWindowHovered(WrenVM *vm)
 {
-	auto flags = wrenExIsSlotDefault(vm, 1) ? 0 : wrenExGetSlotFlags<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, vm, 1);
+	auto flags = wrenExIsSlotDefault(vm, 1) ? 0 : wrenExGetSlotFlags<ImGuiHoveredFlags>(getImGuiHoveredFlagsFromString, vm, 1);
 	
 	bool out = ImGui::IsWindowHovered(flags);
 	wrenSetSlotBool(vm, 0, out);
@@ -2266,7 +2266,17 @@ void w_SmallButton(WrenVM *vm)
 	
 }
 
-// skipping w_InvisibleButton due to unimplemented argument type: "ImGuiButtonFlags"
+/*  flexible button behavior without the visuals, frequently useful to build custom behaviors using the public api (along with IsItemActive, IsItemHovered, etc.) */
+void w_InvisibleButton(WrenVM *vm)
+{
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
+	auto size = WrapImVec2::getSlot(vm, 2);
+	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiButtonFlags>(getImGuiButtonFlagsFromString, vm, 3);
+	
+	bool out = ImGui::InvisibleButton(str_id, size, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+}
 
 /*  square button with an arrow shape */
 void w_ArrowButton(WrenVM *vm)
@@ -2387,7 +2397,23 @@ void w_Combo_Override2(WrenVM *vm)
 
 // skipping w_Combo_Override3 due to unimplemented argument type: " bool(*items_getter)(void* data, int idx, const char** out_text)"
 
-// skipping w_DragFloat due to unimplemented argument type: "ImGuiSliderFlags"
+/*  If v_min >= v_max we have no bound */
+void w_DragFloat(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v = &v_box;
+	auto v_speed = wrenExIsSlotDefault(vm, 3) ? 1.0f : wrenExGetSlot<float>(vm, 3);
+	auto v_min = wrenExIsSlotDefault(vm, 4) ? 0.0f : wrenExGetSlot<float>(vm, 4);
+	auto v_max = wrenExIsSlotDefault(vm, 5) ? 0.0f : wrenExGetSlot<float>(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenExGetSlot<const char*>(vm, 6);
+	auto flags = wrenExIsSlotDefault(vm, 7) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 7);
+	
+	bool out = ImGui::DragFloat(label, v, v_speed, v_min, v_max, format, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *v);
+}
 
 // skipping w_DragFloat2 due to unimplemented argument type: "float[2]"
 
@@ -2395,9 +2421,44 @@ void w_Combo_Override2(WrenVM *vm)
 
 // skipping w_DragFloat4 due to unimplemented argument type: "float[4]"
 
-// skipping w_DragFloatRange2 due to unimplemented argument type: "ImGuiSliderFlags"
+void w_DragFloatRange2(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto v_current_min_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v_current_min = &v_current_min_box;
+	auto v_current_max_box = static_cast<float>(Box::getCPP<double>(vm, 3));
+	float* v_current_max = &v_current_max_box;
+	auto v_speed = wrenExIsSlotDefault(vm, 4) ? 1.0f : wrenExGetSlot<float>(vm, 4);
+	auto v_min = wrenExIsSlotDefault(vm, 5) ? 0.0f : wrenExGetSlot<float>(vm, 5);
+	auto v_max = wrenExIsSlotDefault(vm, 6) ? 0.0f : wrenExGetSlot<float>(vm, 6);
+	auto format = wrenExIsSlotDefault(vm, 7) ? "%.3f" : wrenExGetSlot<const char*>(vm, 7);
+	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenExGetSlot<const char*>(vm, 8);
+	auto flags = wrenExIsSlotDefault(vm, 9) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 9);
+	
+	bool out = ImGui::DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *v_current_min);
+	Box::setCPP<double>(vm, 3, *v_current_max);
+}
 
-// skipping w_DragInt due to unimplemented argument type: "ImGuiSliderFlags"
+/*  If v_min >= v_max we have no bound */
+void w_DragInt(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v = &v_box;
+	auto v_speed = wrenExIsSlotDefault(vm, 3) ? 1.0f : wrenExGetSlot<float>(vm, 3);
+	auto v_min = wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlot<int>(vm, 4);
+	auto v_max = wrenExIsSlotDefault(vm, 5) ? 0 : wrenExGetSlot<int>(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenExGetSlot<const char*>(vm, 6);
+	auto flags = wrenExIsSlotDefault(vm, 7) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 7);
+	
+	bool out = ImGui::DragInt(label, v, v_speed, v_min, v_max, format, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *v);
+}
 
 // skipping w_DragInt2 due to unimplemented argument type: "int[2]"
 
@@ -2405,9 +2466,43 @@ void w_Combo_Override2(WrenVM *vm)
 
 // skipping w_DragInt4 due to unimplemented argument type: "int[4]"
 
-// skipping w_DragIntRange2 due to unimplemented argument type: "ImGuiSliderFlags"
+void w_DragIntRange2(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto v_current_min_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v_current_min = &v_current_min_box;
+	auto v_current_max_box = static_cast<int>(Box::getCPP<double>(vm, 3));
+	int* v_current_max = &v_current_max_box;
+	auto v_speed = wrenExIsSlotDefault(vm, 4) ? 1.0f : wrenExGetSlot<float>(vm, 4);
+	auto v_min = wrenExIsSlotDefault(vm, 5) ? 0 : wrenExGetSlot<int>(vm, 5);
+	auto v_max = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlot<int>(vm, 6);
+	auto format = wrenExIsSlotDefault(vm, 7) ? "%d" : wrenExGetSlot<const char*>(vm, 7);
+	auto format_max = wrenExIsSlotDefault(vm, 8) ? NULL : wrenExGetSlot<const char*>(vm, 8);
+	auto flags = wrenExIsSlotDefault(vm, 9) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 9);
+	
+	bool out = ImGui::DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *v_current_min);
+	Box::setCPP<double>(vm, 3, *v_current_max);
+}
 
-// skipping w_SliderFloat due to unimplemented argument type: "ImGuiSliderFlags"
+/*  adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. */
+void w_SliderFloat(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v = &v_box;
+	auto v_min = wrenExGetSlot<float>(vm, 3);
+	auto v_max = wrenExGetSlot<float>(vm, 4);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%.3f" : wrenExGetSlot<const char*>(vm, 5);
+	auto flags = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 6);
+	
+	bool out = ImGui::SliderFloat(label, v, v_min, v_max, format, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *v);
+}
 
 // skipping w_SliderFloat2 due to unimplemented argument type: "float[2]"
 
@@ -2415,9 +2510,37 @@ void w_Combo_Override2(WrenVM *vm)
 
 // skipping w_SliderFloat4 due to unimplemented argument type: "float[4]"
 
-// skipping w_SliderAngle due to unimplemented argument type: "ImGuiSliderFlags"
+void w_SliderAngle(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto v_rad_box = static_cast<float>(Box::getCPP<double>(vm, 2));
+	float* v_rad = &v_rad_box;
+	auto v_degrees_min = wrenExIsSlotDefault(vm, 3) ? -360.0f : wrenExGetSlot<float>(vm, 3);
+	auto v_degrees_max = wrenExIsSlotDefault(vm, 4) ? +360.0f : wrenExGetSlot<float>(vm, 4);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%.0f deg" : wrenExGetSlot<const char*>(vm, 5);
+	auto flags = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 6);
+	
+	bool out = ImGui::SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *v_rad);
+}
 
-// skipping w_SliderInt due to unimplemented argument type: "ImGuiSliderFlags"
+void w_SliderInt(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* v = &v_box;
+	auto v_min = wrenExGetSlot<int>(vm, 3);
+	auto v_max = wrenExGetSlot<int>(vm, 4);
+	auto format = wrenExIsSlotDefault(vm, 5) ? "%d" : wrenExGetSlot<const char*>(vm, 5);
+	auto flags = wrenExIsSlotDefault(vm, 6) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 6);
+	
+	bool out = ImGui::SliderInt(label, v, v_min, v_max, format, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *v);
+}
 
 // skipping w_SliderInt2 due to unimplemented argument type: "int[2]"
 
@@ -2425,9 +2548,39 @@ void w_Combo_Override2(WrenVM *vm)
 
 // skipping w_SliderInt4 due to unimplemented argument type: "int[4]"
 
-// skipping w_VSliderFloat due to unimplemented argument type: "ImGuiSliderFlags"
+void w_VSliderFloat(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto size = WrapImVec2::getSlot(vm, 2);
+	auto v_box = static_cast<float>(Box::getCPP<double>(vm, 3));
+	float* v = &v_box;
+	auto v_min = wrenExGetSlot<float>(vm, 4);
+	auto v_max = wrenExGetSlot<float>(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%.3f" : wrenExGetSlot<const char*>(vm, 6);
+	auto flags = wrenExIsSlotDefault(vm, 7) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 7);
+	
+	bool out = ImGui::VSliderFloat(label, size, v, v_min, v_max, format, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 3, *v);
+}
 
-// skipping w_VSliderInt due to unimplemented argument type: "ImGuiSliderFlags"
+void w_VSliderInt(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto size = WrapImVec2::getSlot(vm, 2);
+	auto v_box = static_cast<int>(Box::getCPP<double>(vm, 3));
+	int* v = &v_box;
+	auto v_min = wrenExGetSlot<int>(vm, 4);
+	auto v_max = wrenExGetSlot<int>(vm, 5);
+	auto format = wrenExIsSlotDefault(vm, 6) ? "%d" : wrenExGetSlot<const char*>(vm, 6);
+	auto flags = wrenExIsSlotDefault(vm, 7) ? 0 : wrenExGetSlotFlags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, vm, 7);
+	
+	bool out = ImGui::VSliderInt(label, size, v, v_min, v_max, format, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 3, *v);
+}
 
 // skipping w_InputText_Override1 due to unimplemented argument type: "(TODO) const buf*"
 
@@ -2871,9 +3024,25 @@ void w_EndPopup(WrenVM *vm)
 	
 }
 
-// skipping w_OpenPopup due to unimplemented argument type: "ImGuiPopupFlags"
+/*  call to mark popup as open (don't call every frame!). */
+void w_OpenPopup(WrenVM *vm)
+{
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
+	auto popup_flags = wrenExIsSlotDefault(vm, 2) ? 0 : wrenExGetSlotFlags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, vm, 2);
+	
+	ImGui::OpenPopup(str_id, popup_flags);
+	
+}
 
-// skipping w_OpenPopupOnItemClick due to unimplemented argument type: "ImGuiPopupFlags"
+/*  helper to open popup when clicked on last item. return true when just opened. (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors) */
+void w_OpenPopupOnItemClick(WrenVM *vm)
+{
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
+	auto popup_flags = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotFlags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, vm, 2);
+	
+	ImGui::OpenPopupOnItemClick(str_id, popup_flags);
+	
+}
 
 /*  manually close the popup we have begin-ed into. */
 void w_CloseCurrentPopup(WrenVM *vm)
@@ -2882,13 +3051,49 @@ void w_CloseCurrentPopup(WrenVM *vm)
 	
 }
 
-// skipping w_BeginPopupContextItem due to unimplemented argument type: "ImGuiPopupFlags"
+/*  open+begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp! */
+void w_BeginPopupContextItem(WrenVM *vm)
+{
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
+	auto popup_flags = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotFlags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, vm, 2);
+	
+	bool out = ImGui::BeginPopupContextItem(str_id, popup_flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+}
 
-// skipping w_BeginPopupContextWindow due to unimplemented argument type: "ImGuiPopupFlags"
+/*  open+begin popup when clicked on current window. */
+void w_BeginPopupContextWindow(WrenVM *vm)
+{
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
+	auto popup_flags = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotFlags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, vm, 2);
+	
+	bool out = ImGui::BeginPopupContextWindow(str_id, popup_flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+}
 
-// skipping w_BeginPopupContextVoid due to unimplemented argument type: "ImGuiPopupFlags"
+/*  open+begin popup when clicked in void (where there are no windows). */
+void w_BeginPopupContextVoid(WrenVM *vm)
+{
+	auto str_id = wrenExIsSlotDefault(vm, 1) ? NULL : wrenExGetSlot<const char*>(vm, 1);
+	auto popup_flags = wrenExIsSlotDefault(vm, 2) ? 1 : wrenExGetSlotFlags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, vm, 2);
+	
+	bool out = ImGui::BeginPopupContextVoid(str_id, popup_flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+}
 
-// skipping w_IsPopupOpen due to unimplemented argument type: "ImGuiPopupFlags"
+/*  return true if the popup is open. */
+void w_IsPopupOpen(WrenVM *vm)
+{
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
+	auto flags = wrenExIsSlotDefault(vm, 2) ? 0 : wrenExGetSlotFlags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, vm, 2);
+	
+	bool out = ImGui::IsPopupOpen(str_id, flags);
+	wrenSetSlotBool(vm, 0, out);
+	
+}
 
 void w_Columns(WrenVM *vm)
 {
@@ -3198,7 +3403,7 @@ void w_SetKeyboardFocusHere(WrenVM *vm)
 /*  is the last item hovered? (and usable, aka not blocked by a popup, etc.). See ImGuiHoveredFlags for more options. */
 void w_IsItemHovered(WrenVM *vm)
 {
-	auto flags = wrenExIsSlotDefault(vm, 1) ? 0 : wrenExGetSlotFlags<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, vm, 1);
+	auto flags = wrenExIsSlotDefault(vm, 1) ? 0 : wrenExGetSlotFlags<ImGuiHoveredFlags>(getImGuiHoveredFlagsFromString, vm, 1);
 	
 	bool out = ImGui::IsItemHovered(flags);
 	wrenSetSlotBool(vm, 0, out);
@@ -3889,6 +4094,15 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::BeginMenuBar()", w_BeginMenuBar},
 {"ImGui::BeginPopup(_)", w_BeginPopup},
 {"ImGui::BeginPopup(_,_)", w_BeginPopup},
+{"ImGui::BeginPopupContextItem()", w_BeginPopupContextItem},
+{"ImGui::BeginPopupContextItem(_)", w_BeginPopupContextItem},
+{"ImGui::BeginPopupContextItem(_,_)", w_BeginPopupContextItem},
+{"ImGui::BeginPopupContextVoid()", w_BeginPopupContextVoid},
+{"ImGui::BeginPopupContextVoid(_)", w_BeginPopupContextVoid},
+{"ImGui::BeginPopupContextVoid(_,_)", w_BeginPopupContextVoid},
+{"ImGui::BeginPopupContextWindow()", w_BeginPopupContextWindow},
+{"ImGui::BeginPopupContextWindow(_)", w_BeginPopupContextWindow},
+{"ImGui::BeginPopupContextWindow(_,_)", w_BeginPopupContextWindow},
 {"ImGui::BeginPopupModal(_)", w_BeginPopupModal},
 {"ImGui::BeginPopupModal(_,_)", w_BeginPopupModal},
 {"ImGui::BeginPopupModal(_,_,_)", w_BeginPopupModal},
@@ -3932,6 +4146,32 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::DockSpaceOverViewport(_)", w_DockSpaceOverViewport},
 {"ImGui::DockSpaceOverViewport(_,_)", w_DockSpaceOverViewport},
 {"ImGui::DockSpaceOverViewport(_,_,_)", w_DockSpaceOverViewport},
+{"ImGui::DragFloat(_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_,_,_)", w_DragFloat},
+{"ImGui::DragFloat(_,_,_,_,_,_,_)", w_DragFloat},
+{"ImGui::DragFloatRange2(_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragFloatRange2(_,_,_,_,_,_,_,_,_)", w_DragFloatRange2},
+{"ImGui::DragInt(_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_,_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_,_,_,_)", w_DragInt},
+{"ImGui::DragInt(_,_,_,_,_,_,_)", w_DragInt},
+{"ImGui::DragIntRange2(_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_,_,_,_)", w_DragIntRange2},
+{"ImGui::DragIntRange2(_,_,_,_,_,_,_,_,_)", w_DragIntRange2},
 {"ImGui::Dummy(_)", w_Dummy},
 {"ImGui::End()", w_End},
 {"ImGui::EndChild()", w_EndChild},
@@ -4014,6 +4254,8 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::InputInt(_,_,_)", w_InputInt},
 {"ImGui::InputInt(_,_,_,_)", w_InputInt},
 {"ImGui::InputInt(_,_,_,_,_)", w_InputInt},
+{"ImGui::InvisibleButton(_,_)", w_InvisibleButton},
+{"ImGui::InvisibleButton(_,_,_)", w_InvisibleButton},
 {"ImGui::IsAnyItemActive()", w_IsAnyItemActive},
 {"ImGui::IsAnyItemFocused()", w_IsAnyItemFocused},
 {"ImGui::IsAnyItemHovered()", w_IsAnyItemHovered},
@@ -4043,6 +4285,8 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::IsMouseHoveringRect(_,_)", w_IsMouseHoveringRect},
 {"ImGui::IsMouseHoveringRect(_,_,_)", w_IsMouseHoveringRect},
 {"ImGui::IsMouseReleased(_)", w_IsMouseReleased},
+{"ImGui::IsPopupOpen(_)", w_IsPopupOpen},
+{"ImGui::IsPopupOpen(_,_)", w_IsPopupOpen},
 {"ImGui::IsWindowAppearing()", w_IsWindowAppearing},
 {"ImGui::IsWindowCollapsed()", w_IsWindowCollapsed},
 {"ImGui::IsWindowDocked()", w_IsWindowDocked},
@@ -4066,6 +4310,11 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::NewFrame()", w_NewFrame},
 {"ImGui::NewLine()", w_NewLine},
 {"ImGui::NextColumn()", w_NextColumn},
+{"ImGui::OpenPopup(_)", w_OpenPopup},
+{"ImGui::OpenPopup(_,_)", w_OpenPopup},
+{"ImGui::OpenPopupOnItemClick()", w_OpenPopupOnItemClick},
+{"ImGui::OpenPopupOnItemClick(_)", w_OpenPopupOnItemClick},
+{"ImGui::OpenPopupOnItemClick(_,_)", w_OpenPopupOnItemClick},
 {"ImGui::PopAllowKeyboardFocus()", w_PopAllowKeyboardFocus},
 {"ImGui::PopButtonRepeat()", w_PopButtonRepeat},
 {"ImGui::PopClipRect()", w_PopClipRect},
@@ -4145,6 +4394,17 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::ShowMetricsWindow(_)", w_ShowMetricsWindow},
 {"ImGui::ShowStyleSelector(_)", w_ShowStyleSelector},
 {"ImGui::ShowUserGuide()", w_ShowUserGuide},
+{"ImGui::SliderAngle(_,_)", w_SliderAngle},
+{"ImGui::SliderAngle(_,_,_)", w_SliderAngle},
+{"ImGui::SliderAngle(_,_,_,_)", w_SliderAngle},
+{"ImGui::SliderAngle(_,_,_,_,_)", w_SliderAngle},
+{"ImGui::SliderAngle(_,_,_,_,_,_)", w_SliderAngle},
+{"ImGui::SliderFloat(_,_,_,_)", w_SliderFloat},
+{"ImGui::SliderFloat(_,_,_,_,_)", w_SliderFloat},
+{"ImGui::SliderFloat(_,_,_,_,_,_)", w_SliderFloat},
+{"ImGui::SliderInt(_,_,_,_)", w_SliderInt},
+{"ImGui::SliderInt(_,_,_,_,_)", w_SliderInt},
+{"ImGui::SliderInt(_,_,_,_,_,_)", w_SliderInt},
 {"ImGui::SmallButton(_)", w_SmallButton},
 {"ImGui::Spacing()", w_Spacing},
 {"ImGui::TabItemButton(_)", w_TabItemButton},
@@ -4159,6 +4419,12 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::Unindent()", w_Unindent},
 {"ImGui::Unindent(_)", w_Unindent},
 {"ImGui::UpdatePlatformWindows()", w_UpdatePlatformWindows},
+{"ImGui::VSliderFloat(_,_,_,_,_)", w_VSliderFloat},
+{"ImGui::VSliderFloat(_,_,_,_,_,_)", w_VSliderFloat},
+{"ImGui::VSliderFloat(_,_,_,_,_,_,_)", w_VSliderFloat},
+{"ImGui::VSliderInt(_,_,_,_,_)", w_VSliderInt},
+{"ImGui::VSliderInt(_,_,_,_,_,_)", w_VSliderInt},
+{"ImGui::VSliderInt(_,_,_,_,_,_,_)", w_VSliderInt},
 
 {"ImGui::IsRectVisible(_)", w_IsRectVisible_Override1},
 {"ImGui::IsRectVisible(_,_)", w_IsRectVisible_Override2},
@@ -4242,11 +4508,15 @@ class ImGui {
 	foreign static SetNextWindowCollapsed(collapsed, cond)
 	foreign static TextWrapped(fmt)
 	foreign static GetStyleColorName(idx)
-	foreign static BeginCombo(label, preview_value)
-	foreign static BeginCombo(label, preview_value, flags)
+	foreign static ColorButton(desc_id, col)
+	foreign static ColorButton(desc_id, col, flags)
+	foreign static ColorButton(desc_id, col, flags, size)
 	foreign static SmallButton(label)
 	foreign static IsMouseClicked(button)
 	foreign static IsMouseClicked(button, repeat)
+	foreign static BeginPopupContextWindow()
+	foreign static BeginPopupContextWindow(str_id)
+	foreign static BeginPopupContextWindow(str_id, popup_flags)
 	foreign static Checkbox(label, v)
 	foreign static InputFloat(label, v)
 	foreign static InputFloat(label, v, step)
@@ -4254,6 +4524,9 @@ class ImGui {
 	foreign static InputFloat(label, v, step, step_fast, format)
 	foreign static InputFloat(label, v, step, step_fast, format, flags)
 	foreign static IsMouseDown(button)
+	foreign static VSliderInt(label, size, v, v_min, v_max)
+	foreign static VSliderInt(label, size, v, v_min, v_max, format)
+	foreign static VSliderInt(label, size, v, v_min, v_max, format, flags)
 	foreign static LogFinish()
 	foreign static ShowFontSelector(label)
 	foreign static SetScrollHereX()
@@ -4270,6 +4543,9 @@ class ImGui {
 	foreign static GetColumnIndex()
 	foreign static GetColumnOffset()
 	foreign static GetColumnOffset(column_index)
+	foreign static VSliderFloat(label, size, v, v_min, v_max)
+	foreign static VSliderFloat(label, size, v, v_min, v_max, format)
+	foreign static VSliderFloat(label, size, v, v_min, v_max, format, flags)
 	foreign static DockSpace(id)
 	foreign static DockSpace(id, size)
 	foreign static DockSpace(id, size, flags)
@@ -4287,7 +4563,12 @@ class ImGui {
 	foreign static BeginMenu(label)
 	foreign static BeginMenu(label, enabled)
 	foreign static ShowUserGuide()
-	foreign static SetTooltip(fmt)
+	foreign static DragFloat(label, v)
+	foreign static DragFloat(label, v, v_speed)
+	foreign static DragFloat(label, v, v_speed, v_min)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max, format)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max, format, flags)
 	foreign static BeginChildFrame(id, size)
 	foreign static BeginChildFrame(id, size, flags)
 	foreign static InputDouble(label, v)
@@ -4295,6 +4576,8 @@ class ImGui {
 	foreign static InputDouble(label, v, step, step_fast)
 	foreign static InputDouble(label, v, step, step_fast, format)
 	foreign static InputDouble(label, v, step, step_fast, format, flags)
+	foreign static SetColumnWidth(column_index, width)
+	foreign static EndPopup()
 	foreign static UpdatePlatformWindows()
 	foreign static IsWindowHovered()
 	foreign static IsWindowHovered(flags)
@@ -4305,41 +4588,66 @@ class ImGui {
 	foreign static GetTextLineHeightWithSpacing()
 	foreign static BeginTabBar(str_id)
 	foreign static BeginTabBar(str_id, flags)
+	foreign static LoadIniSettingsFromDisk(ini_filename)
+	foreign static SetClipboardText(text)
 	foreign static EndGroup()
+	foreign static GetMouseDragDelta()
+	foreign static GetMouseDragDelta(button)
+	foreign static GetMouseDragDelta(button, lock_threshold)
+	foreign static EndTabBar()
+	foreign static Button(label)
+	foreign static Button(label, size)
+	foreign static SetCursorPos(local_pos)
 	foreign static BeginTabItem(label)
 	foreign static BeginTabItem(label, p_open)
 	foreign static BeginTabItem(label, p_open, flags)
 	foreign static IsItemEdited()
+	foreign static IsItemHovered()
+	foreign static IsItemHovered(flags)
 	foreign static GetClipboardText()
-	foreign static ListBoxFooter()
-	foreign static BeginDragDropTarget()
-	foreign static TabItemButton(label)
-	foreign static TabItemButton(label, flags)
-	foreign static GetVersion()
-	foreign static LoadIniSettingsFromDisk(ini_filename)
-	foreign static BeginMainMenuBar()
-	foreign static SetClipboardText(text)
-	foreign static PopClipRect()
-	foreign static CheckboxFlags(label, flags, flags_value)
-	foreign static EndMenuBar()
-	foreign static Indent()
-	foreign static Indent(indent_w)
-	foreign static GetItemRectMax()
-	foreign static ShowAboutWindow()
-	foreign static ShowAboutWindow(p_open)
-	foreign static GetMouseDragDelta()
-	foreign static GetMouseDragDelta(button)
-	foreign static GetMouseDragDelta(button, lock_threshold)
-	foreign static GetFrameHeight()
-	foreign static SetNextWindowFocus()
-	foreign static GetWindowPos()
 	foreign static GetMousePosOnOpeningCurrentPopup()
 	foreign static GetMousePos()
-	foreign static GetScrollY()
 	foreign static IsAnyMouseDown()
 	foreign static IsMouseHoveringRect(r_min, r_max)
 	foreign static IsMouseHoveringRect(r_min, r_max, clip)
-	foreign static IsItemDeactivated()
+	foreign static ListBoxFooter()
+	foreign static LogButtons()
+	foreign static DragFloatRange2(label, v_current_min, v_current_max)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
+	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags)
+	foreign static GetVersion()
+	foreign static IsAnyItemHovered()
+	foreign static BeginMainMenuBar()
+	foreign static GetKeyPressedAmount(key_index, repeat_delay, rate)
+	foreign static IsKeyReleased(user_key_index)
+	foreign static GetKeyIndex(imgui_key)
+	foreign static EndMenuBar()
+	foreign static ColorConvertU32ToFloat4(input)
+	foreign static CheckboxFlags(label, flags, flags_value)
+	foreign static ShowAboutWindow()
+	foreign static ShowAboutWindow(p_open)
+	foreign static EndChildFrame()
+	foreign static GetFrameHeight()
+	foreign static SetNextWindowFocus()
+	foreign static GetWindowPos()
+	foreign static DragIntRange2(label, v_current_min, v_current_max)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
+	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags)
+	foreign static GetWindowContentRegionMin()
+	foreign static GetScrollY()
+	foreign static OpenPopupOnItemClick()
+	foreign static OpenPopupOnItemClick(str_id)
+	foreign static OpenPopupOnItemClick(str_id, popup_flags)
+	foreign static GetTime()
+	foreign static SetItemAllowOverlap()
 	foreign static BeginMenuBar()
 	foreign static IsWindowDocked()
 	foreign static GetFrameHeightWithSpacing()
@@ -4347,100 +4655,106 @@ class ImGui {
 	foreign static LogToTTY(auto_open_depth)
 	foreign static NextColumn()
 	foreign static GetWindowSize()
-	foreign static TextUnformatted(text)
-	foreign static TextUnformatted(text, text_end)
+	foreign static GetItemRectSize()
 	foreign static GetWindowHeight()
 	foreign static IsWindowAppearing()
 	foreign static EndCombo()
-	foreign static GetKeyPressedAmount(key_index, repeat_delay, rate)
+	foreign static GetItemRectMax()
 	foreign static SetNextWindowSize(size)
 	foreign static SetNextWindowSize(size, cond)
-	foreign static IsKeyReleased(user_key_index)
+	foreign static GetItemRectMin()
 	foreign static AlignTextToFramePadding()
 	foreign static CloseCurrentPopup()
 	foreign static LogToFile()
 	foreign static LogToFile(auto_open_depth)
 	foreign static LogToFile(auto_open_depth, filename)
-	foreign static GetKeyIndex(imgui_key)
-	foreign static ColorConvertU32ToFloat4(input)
+	foreign static IsAnyItemFocused()
+	foreign static IsAnyItemActive()
 	foreign static CaptureKeyboardFromApp()
 	foreign static CaptureKeyboardFromApp(want_capture_keyboard_value)
-	foreign static EndChildFrame()
-	foreign static SetTabItemClosed(tab_or_docked_window_label)
+	foreign static EndFrame()
+	foreign static IsItemDeactivated()
 	foreign static BeginDragDropSource()
 	foreign static BeginDragDropSource(flags)
-	foreign static SetColumnWidth(column_index, width)
-	foreign static DockSpaceOverViewport()
-	foreign static DockSpaceOverViewport(viewport)
-	foreign static DockSpaceOverViewport(viewport, flags)
-	foreign static DockSpaceOverViewport(viewport, flags, window_class)
+	foreign static GetCursorPosY()
+	foreign static IsItemActivated()
 	foreign static SetCursorPosX(local_x)
-	foreign static GetScrollMaxX()
+	foreign static EndMenu()
 	foreign static TextDisabled(fmt)
-	foreign static GetTime()
+	foreign static IsItemVisible()
 	foreign static Unindent()
 	foreign static Unindent(indent_w)
-	foreign static SetItemAllowOverlap()
+	foreign static IsItemClicked()
+	foreign static IsItemClicked(mouse_button)
 	foreign static SetScrollX(scroll_x)
 	foreign static IsItemFocused()
 	foreign static PopButtonRepeat()
-	foreign static GetItemRectSize()
+	foreign static SetNextWindowDockID(dock_id)
+	foreign static SetNextWindowDockID(dock_id, cond)
 	foreign static PopAllowKeyboardFocus()
 	foreign static SetScrollFromPosX(local_x)
 	foreign static SetScrollFromPosX(local_x, center_x_ratio)
 	foreign static ResetMouseDragDelta()
 	foreign static ResetMouseDragDelta(button)
-	foreign static EndPopup()
-	foreign static GetItemRectMin()
+	foreign static SetWindowFontScale(scale)
+	foreign static SetKeyboardFocusHere()
+	foreign static SetKeyboardFocusHere(offset)
 	foreign static SetNextWindowBgAlpha(alpha)
 	foreign static ShowStyleSelector(label)
-	foreign static IsAnyItemFocused()
-	foreign static IsAnyItemActive()
-	foreign static IsAnyItemHovered()
+	foreign static PushItemWidth(item_width)
+	foreign static PopClipRect()
+	foreign static TextUnformatted(text)
+	foreign static TextUnformatted(text, text_end)
 	foreign static SetItemDefaultFocus()
-	foreign static EndFrame()
+	foreign static BeginDragDropTarget()
 	foreign static PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect)
 	foreign static LogToClipboard()
 	foreign static LogToClipboard(auto_open_depth)
 	foreign static IsWindowCollapsed()
 	foreign static IsMouseReleased(button)
-	foreign static IsItemActivated()
+	foreign static IsWindowFocused()
+	foreign static IsWindowFocused(flags)
 	foreign static IsItemActive()
 	foreign static Spacing()
-	foreign static IsItemVisible()
+	foreign static DockSpaceOverViewport()
+	foreign static DockSpaceOverViewport(viewport)
+	foreign static DockSpaceOverViewport(viewport, flags)
+	foreign static DockSpaceOverViewport(viewport, flags, window_class)
 	foreign static NewLine()
-	foreign static IsItemClicked()
-	foreign static IsItemClicked(mouse_button)
-	foreign static IsItemHovered()
-	foreign static IsItemHovered(flags)
+	foreign static SetTabItemClosed(tab_or_docked_window_label)
+	foreign static TabItemButton(label)
+	foreign static TabItemButton(label, flags)
 	foreign static PushButtonRepeat(repeat)
-	foreign static SetKeyboardFocusHere()
-	foreign static SetKeyboardFocusHere(offset)
+	foreign static GetStyleColorVec4(idx)
 	foreign static CalcItemWidth()
-	foreign static BeginPopupModal(name)
-	foreign static BeginPopupModal(name, p_open)
-	foreign static BeginPopupModal(name, p_open, flags)
+	foreign static SetCursorScreenPos(pos)
 	foreign static EndChild()
 	foreign static CaptureMouseFromApp()
 	foreign static CaptureMouseFromApp(want_capture_mouse_value)
+	foreign static GetColumnsCount()
+	foreign static DestroyPlatformWindows()
+	foreign static BeginPopup(str_id)
+	foreign static BeginPopup(str_id, flags)
 	foreign static Columns()
 	foreign static Columns(count)
 	foreign static Columns(count, id)
 	foreign static Columns(count, id, border)
-	foreign static DestroyPlatformWindows()
-	foreign static SetScrollY(scroll_y)
-	foreign static LogButtons()
-	foreign static GetWindowContentRegionMin()
-	foreign static ShowDemoWindow()
-	foreign static ShowDemoWindow(p_open)
+	foreign static IsPopupOpen(str_id)
+	foreign static IsPopupOpen(str_id, flags)
+	foreign static Bullet()
 	foreign static EndTooltip()
 	foreign static InputInt(label, v)
 	foreign static InputInt(label, v, step)
 	foreign static InputInt(label, v, step, step_fast)
 	foreign static InputInt(label, v, step, step_fast, flags)
-	foreign static TextColored(col, fmt)
-	foreign static SetNextWindowDockID(dock_id)
-	foreign static SetNextWindowDockID(dock_id, cond)
+	foreign static SliderAngle(label, v_rad)
+	foreign static SliderAngle(label, v_rad, v_degrees_min)
+	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max)
+	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format)
+	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format, flags)
+	foreign static SetNextWindowPos(pos)
+	foreign static SetNextWindowPos(pos, cond)
+	foreign static SetNextWindowPos(pos, cond, pivot)
 	foreign static SetScrollFromPosY(local_y)
 	foreign static SetScrollFromPosY(local_y, center_y_ratio)
 	foreign static GetColumnWidth()
@@ -4454,48 +4768,60 @@ class ImGui {
 	foreign static GetCursorScreenPos()
 	foreign static EndMainMenuBar()
 	foreign static SaveIniSettingsToDisk(ini_filename)
-	foreign static SetCursorPosY(local_y)
-	foreign static EndTabBar()
+	foreign static BeginPopupModal(name)
+	foreign static BeginPopupModal(name, p_open)
+	foreign static BeginPopupModal(name, p_open, flags)
+	foreign static BeginPopupContextItem()
+	foreign static BeginPopupContextItem(str_id)
+	foreign static BeginPopupContextItem(str_id, popup_flags)
 	foreign static GetCursorStartPos()
-	foreign static GetColumnsCount()
-	foreign static SetNextItemWidth(item_width)
+	foreign static SetTooltip(fmt)
+	foreign static GetScrollMaxX()
 	foreign static IsItemToggledOpen()
+	foreign static GetCursorPosX()
 	foreign static PopItemWidth()
 	foreign static SetNextWindowContentSize(size)
-	foreign static GetCursorPosX()
 	foreign static LogText(fmt)
+	foreign static SetScrollY(scroll_y)
 	foreign static End()
-	foreign static Bullet()
-	foreign static PushTextWrapPos()
-	foreign static PushTextWrapPos(wrap_local_pos_x)
+	foreign static SetNextItemWidth(item_width)
 	foreign static TreePop()
 	foreign static GetWindowContentRegionWidth()
 	foreign static GetFontTexUvWhitePixel()
-	foreign static SetNextWindowPos(pos)
-	foreign static SetNextWindowPos(pos, cond)
-	foreign static SetNextWindowPos(pos, cond, pivot)
+	foreign static PushTextWrapPos()
+	foreign static PushTextWrapPos(wrap_local_pos_x)
 	foreign static ArrowButton(str_id, dir)
+	foreign static BeginPopupContextVoid()
+	foreign static BeginPopupContextVoid(str_id)
+	foreign static BeginPopupContextVoid(str_id, popup_flags)
 	foreign static ShowMetricsWindow()
 	foreign static ShowMetricsWindow(p_open)
-	foreign static IsWindowFocused()
-	foreign static IsWindowFocused(flags)
 	foreign static GetWindowDockID()
-	foreign static GetScrollX()
-	foreign static SetCursorPos(local_pos)
+	foreign static SetCursorPosY(local_y)
+	foreign static DragInt(label, v)
+	foreign static DragInt(label, v, v_speed)
+	foreign static DragInt(label, v, v_speed, v_min)
+	foreign static DragInt(label, v, v_speed, v_min, v_max)
+	foreign static DragInt(label, v, v_speed, v_min, v_max, format)
+	foreign static DragInt(label, v, v_speed, v_min, v_max, format, flags)
 	foreign static NewFrame()
 	foreign static SetColorEditOptions(flags)
 	foreign static GetMouseCursor()
 	foreign static PopID()
-	foreign static GetStyleColorVec4(idx)
-	foreign static GetCursorPosY()
 	foreign static BeginGroup()
+	foreign static Indent()
+	foreign static Indent(indent_w)
+	foreign static SliderInt(label, v, v_min, v_max)
+	foreign static SliderInt(label, v, v_min, v_max, format)
+	foreign static SliderInt(label, v, v_min, v_max, format, flags)
 	foreign static EndTabItem()
 	foreign static Separator()
 	foreign static GetTextLineHeight()
+	foreign static GetScrollX()
+	foreign static OpenPopup(str_id)
+	foreign static OpenPopup(str_id, popup_flags)
 	foreign static LabelText(label, fmt)
 	foreign static BulletText(fmt)
-	foreign static SetNextWindowViewport(viewport_id)
-	foreign static GetContentRegionAvail()
 	foreign static SetMouseCursor(cursor_type)
 	foreign static Dummy(size)
 	foreign static GetWindowContentRegionMax()
@@ -4503,19 +4829,20 @@ class ImGui {
 	foreign static CalcTextSize(text, text_end)
 	foreign static CalcTextSize(text, text_end, hide_text_after_double_hash)
 	foreign static CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width)
-	foreign static Button(label)
-	foreign static Button(label, size)
-	foreign static Render()
-	foreign static ColorButton(desc_id, col)
-	foreign static ColorButton(desc_id, col, flags)
-	foreign static ColorButton(desc_id, col, flags, size)
+	foreign static SliderFloat(label, v, v_min, v_max)
+	foreign static SliderFloat(label, v, v_min, v_max, format)
+	foreign static SliderFloat(label, v, v_min, v_max, format, flags)
+	foreign static GetContentRegionAvail()
+	foreign static BeginCombo(label, preview_value)
+	foreign static BeginCombo(label, preview_value, flags)
 	foreign static GetCursorPos()
-	foreign static PushItemWidth(item_width)
-	foreign static SetCursorScreenPos(pos)
-	foreign static EndMenu()
-	foreign static SetWindowFontScale(scale)
-	foreign static BeginPopup(str_id)
-	foreign static BeginPopup(str_id, flags)
+	foreign static SetNextWindowViewport(viewport_id)
+	foreign static Render()
+	foreign static TextColored(col, fmt)
+	foreign static ShowDemoWindow()
+	foreign static ShowDemoWindow(p_open)
+	foreign static InvisibleButton(str_id, size)
+	foreign static InvisibleButton(str_id, size, flags)
 	foreign static EndDragDropTarget()
 	foreign static Text(fmt)
 }

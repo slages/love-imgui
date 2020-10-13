@@ -1,7 +1,7 @@
-This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
+This file was automatically generated on Tue Oct 13 03:55:06 2020, UTC
 # ImGui
 
-### Supported methods (207)
+### Supported methods (223)
 * ImGui.AlignTextToFramePadding()
 * ImGui.ArrowButton(str_id, dir)
 * ImGui.Begin(name, p_open = NULL, flags = 0)
@@ -14,6 +14,9 @@ This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
 * ImGui.BeginMenu(label, enabled = true)
 * ImGui.BeginMenuBar()
 * ImGui.BeginPopup(str_id, flags = 0)
+* ImGui.BeginPopupContextItem(str_id = NULL, popup_flags = 1)
+* ImGui.BeginPopupContextVoid(str_id = NULL, popup_flags = 1)
+* ImGui.BeginPopupContextWindow(str_id = NULL, popup_flags = 1)
 * ImGui.BeginPopupModal(name, p_open = NULL, flags = 0)
 * ImGui.BeginTabBar(str_id, flags = 0)
 * ImGui.BeginTabItem(label, p_open = NULL, flags = 0)
@@ -35,6 +38,10 @@ This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
 * ImGui.DestroyPlatformWindows()
 * ImGui.DockSpace(id, size = ImVec2(0, 0), flags = 0, window_class = NULL)
 * ImGui.DockSpaceOverViewport(viewport = NULL, flags = 0, window_class = NULL)
+* ImGui.DragFloat(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", flags = 0)
+* ImGui.DragFloatRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", format_max = NULL, flags = 0)
+* ImGui.DragInt(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", flags = 0)
+* ImGui.DragIntRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", format_max = NULL, flags = 0)
 * ImGui.Dummy(size)
 * ImGui.End()
 * ImGui.EndChild()
@@ -101,6 +108,7 @@ This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
 * ImGui.InputDouble(label, v, step = 0.0, step_fast = 0.0, format = "%.6f", flags = 0)
 * ImGui.InputFloat(label, v, step = 0.0f, step_fast = 0.0f, format = "%.3f", flags = 0)
 * ImGui.InputInt(label, v, step = 1, step_fast = 100, flags = 0)
+* ImGui.InvisibleButton(str_id, size, flags = 0)
 * ImGui.IsAnyItemActive()
 * ImGui.IsAnyItemFocused()
 * ImGui.IsAnyItemHovered()
@@ -124,6 +132,7 @@ This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
 * ImGui.IsMouseDragging(button, lock_threshold = -1.0f)
 * ImGui.IsMouseHoveringRect(r_min, r_max, clip = true)
 * ImGui.IsMouseReleased(button)
+* ImGui.IsPopupOpen(str_id, flags = 0)
 * ImGui.IsWindowAppearing()
 * ImGui.IsWindowCollapsed()
 * ImGui.IsWindowDocked()
@@ -141,6 +150,8 @@ This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
 * ImGui.NewFrame()
 * ImGui.NewLine()
 * ImGui.NextColumn()
+* ImGui.OpenPopup(str_id, popup_flags = 0)
+* ImGui.OpenPopupOnItemClick(str_id = NULL, popup_flags = 1)
 * ImGui.PopAllowKeyboardFocus()
 * ImGui.PopButtonRepeat()
 * ImGui.PopClipRect()
@@ -198,6 +209,9 @@ This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
 * ImGui.ShowMetricsWindow(p_open = NULL)
 * ImGui.ShowStyleSelector(label)
 * ImGui.ShowUserGuide()
+* ImGui.SliderAngle(label, v_rad, v_degrees_min = -360.0f, v_degrees_max = +360.0f, format = "%.0f deg", flags = 0)
+* ImGui.SliderFloat(label, v, v_min, v_max, format = "%.3f", flags = 0)
+* ImGui.SliderInt(label, v, v_min, v_max, format = "%d", flags = 0)
 * ImGui.SmallButton(label)
 * ImGui.Spacing()
 * ImGui.TabItemButton(label, flags = 0)
@@ -209,178 +223,79 @@ This file was automatically generated on Tue Oct 13 03:36:20 2020, UTC
 * ImGui.TreePop()
 * ImGui.Unindent(indent_w = 0.0f)
 * ImGui.UpdatePlatformWindows()
+* ImGui.VSliderFloat(label, size, v, v_min, v_max, format = "%.3f", flags = 0)
+* ImGui.VSliderInt(label, size, v, v_min, v_max, format = "%d", flags = 0)
 
-### Unsupported methods (85)
-* ImGui.AcceptDragDropPayload
-* true
-* ImGui.BeginPopupContextItem
-* true
-* ImGui.BeginPopupContextVoid
-* true
-* ImGui.BeginPopupContextWindow
-* true
-* ImGui.ColorEdit3
-* true
-* ImGui.ColorEdit4
-* true
-* ImGui.ColorPicker3
-* true
-* ImGui.ColorPicker4
-* true
-* ImGui.Combo
-* true
-* ImGui.CreateContext
-* true
-* ImGui.DestroyContext
-* true
-* ImGui.DragFloat
-* true
-* ImGui.DragFloat2
-* true
-* ImGui.DragFloat3
-* true
-* ImGui.DragFloat4
-* true
-* ImGui.DragFloatRange2
-* true
-* ImGui.DragInt
-* true
-* ImGui.DragInt2
-* true
-* ImGui.DragInt3
-* true
-* ImGui.DragInt4
-* true
-* ImGui.DragIntRange2
-* true
-* ImGui.FindViewportByID
-* true
-* ImGui.FindViewportByPlatformHandle
-* true
-* ImGui.GetBackgroundDrawList
-* true
-* ImGui.GetCurrentContext
-* true
-* ImGui.GetDragDropPayload
-* true
-* ImGui.GetDrawData
-* true
-* ImGui.GetDrawListSharedData
-* true
-* ImGui.GetFont
-* true
-* ImGui.GetForegroundDrawList
-* true
-* ImGui.GetID
-* true
-* ImGui.GetIO
-* true
-* ImGui.GetMainViewport
-* true
-* ImGui.GetPlatformIO
-* true
-* ImGui.GetStateStorage
-* true
-* ImGui.GetStyle
-* true
-* ImGui.GetWindowDrawList
-* true
-* ImGui.GetWindowViewport
-* true
-* ImGui.Image
-* true
-* ImGui.ImageButton
-* true
-* ImGui.InputFloat2
-* true
-* ImGui.InputFloat3
-* true
-* ImGui.InputFloat4
-* true
-* ImGui.InputInt2
-* true
-* ImGui.InputInt3
-* true
-* ImGui.InputInt4
-* true
-* ImGui.InputText
-* true
-* ImGui.InputTextMultiline
-* true
-* ImGui.InputTextWithHint
-* true
-* ImGui.InvisibleButton
-* true
-* ImGui.IsMousePosValid
-* true
-* ImGui.IsPopupOpen
-* true
-* ImGui.ListBox
-* true
-* ImGui.LoadIniSettingsFromMemory
-* true
-* ImGui.OpenPopup
-* true
-* ImGui.OpenPopupOnItemClick
-* true
-* ImGui.PlotHistogram
-* true
-* ImGui.PlotLines
-* true
-* ImGui.PushFont
-* true
-* ImGui.PushID
-* true
-* ImGui.RenderPlatformWindowsDefault
-* true
-* ImGui.SaveIniSettingsToMemory
-* true
-* ImGui.SetCurrentContext
-* true
-* ImGui.SetDragDropPayload
-* true
-* ImGui.SetNextWindowClass
-* true
-* ImGui.SetNextWindowSizeConstraints
-* true
-* ImGui.SetStateStorage
-* true
-* ImGui.ShowStyleEditor
-* true
-* ImGui.SliderAngle
-* true
-* ImGui.SliderFloat
-* true
-* ImGui.SliderFloat2
-* true
-* ImGui.SliderFloat3
-* true
-* ImGui.SliderFloat4
-* true
-* ImGui.SliderInt
-* true
-* ImGui.SliderInt2
-* true
-* ImGui.SliderInt3
-* true
-* ImGui.SliderInt4
-* true
-* ImGui.StyleColorsClassic
-* true
-* ImGui.StyleColorsDark
-* true
-* ImGui.StyleColorsLight
-* true
-* ImGui.TreeNode
-* true
-* ImGui.TreeNodeEx
-* true
-* ImGui.TreePush
-* true
-* ImGui.VSliderFloat
-* true
-* ImGui.VSliderInt
-* true
+### Unsupported methods (69)
+* ImGui.AcceptDragDropPayload()
+* ImGui.ColorEdit3()
+* ImGui.ColorEdit4()
+* ImGui.ColorPicker3()
+* ImGui.ColorPicker4()
+* ImGui.Combo()
+* ImGui.CreateContext()
+* ImGui.DestroyContext()
+* ImGui.DragFloat2()
+* ImGui.DragFloat3()
+* ImGui.DragFloat4()
+* ImGui.DragInt2()
+* ImGui.DragInt3()
+* ImGui.DragInt4()
+* ImGui.FindViewportByID()
+* ImGui.FindViewportByPlatformHandle()
+* ImGui.GetBackgroundDrawList()
+* ImGui.GetCurrentContext()
+* ImGui.GetDragDropPayload()
+* ImGui.GetDrawData()
+* ImGui.GetDrawListSharedData()
+* ImGui.GetFont()
+* ImGui.GetForegroundDrawList()
+* ImGui.GetID()
+* ImGui.GetIO()
+* ImGui.GetMainViewport()
+* ImGui.GetPlatformIO()
+* ImGui.GetStateStorage()
+* ImGui.GetStyle()
+* ImGui.GetWindowDrawList()
+* ImGui.GetWindowViewport()
+* ImGui.Image()
+* ImGui.ImageButton()
+* ImGui.InputFloat2()
+* ImGui.InputFloat3()
+* ImGui.InputFloat4()
+* ImGui.InputInt2()
+* ImGui.InputInt3()
+* ImGui.InputInt4()
+* ImGui.InputText()
+* ImGui.InputTextMultiline()
+* ImGui.InputTextWithHint()
+* ImGui.IsMousePosValid()
+* ImGui.ListBox()
+* ImGui.LoadIniSettingsFromMemory()
+* ImGui.PlotHistogram()
+* ImGui.PlotLines()
+* ImGui.PushFont()
+* ImGui.PushID()
+* ImGui.RenderPlatformWindowsDefault()
+* ImGui.SaveIniSettingsToMemory()
+* ImGui.SetCurrentContext()
+* ImGui.SetDragDropPayload()
+* ImGui.SetNextWindowClass()
+* ImGui.SetNextWindowSizeConstraints()
+* ImGui.SetStateStorage()
+* ImGui.ShowStyleEditor()
+* ImGui.SliderFloat2()
+* ImGui.SliderFloat3()
+* ImGui.SliderFloat4()
+* ImGui.SliderInt2()
+* ImGui.SliderInt3()
+* ImGui.SliderInt4()
+* ImGui.StyleColorsClassic()
+* ImGui.StyleColorsDark()
+* ImGui.StyleColorsLight()
+* ImGui.TreeNode()
+* ImGui.TreeNodeEx()
+* ImGui.TreePush()
 
 # ImDrawList
 

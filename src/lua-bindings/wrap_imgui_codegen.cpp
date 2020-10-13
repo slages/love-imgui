@@ -1532,7 +1532,7 @@ int w_ImDrawList_AddRect(lua_State *L)
 	p_max.y = luax_checkfloat(L, 5);
 	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
 	auto rounding = luax_optfloat(L, 7, 0.0f);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
+	auto rounding_corners = luax_optflags<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
 	auto thickness = luax_optfloat(L, 9, 1.0f);
 	
 	self->AddRect(p_min, p_max, col, rounding, rounding_corners, thickness);
@@ -1554,7 +1554,7 @@ int w_ImDrawList_AddRectFilled(lua_State *L)
 	p_max.y = luax_checkfloat(L, 5);
 	auto col = static_cast<ImU32>(luaL_checklong(L, 6));
 	auto rounding = luax_optfloat(L, 7, 0.0f);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
+	auto rounding_corners = luax_optflags<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 8, ImDrawCornerFlags_All);
 	
 	self->AddRectFilled(p_min, p_max, col, rounding, rounding_corners);
 	
@@ -1875,7 +1875,7 @@ int w_ImDrawList_AddImageRounded(lua_State *L)
 	uv_max.y = luax_checkfloat(L, 10);
 	auto col = static_cast<ImU32>(luaL_checklong(L, 11));
 	auto rounding = luax_checkfloat(L, 12);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 13, ImDrawCornerFlags_All);
+	auto rounding_corners = luax_optflags<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 13, ImDrawCornerFlags_All);
 	
 	self->AddImageRounded(user_texture_id, p_min, p_max, uv_min, uv_max, col, rounding, rounding_corners);
 	
@@ -1951,7 +1951,7 @@ int w_ImDrawList_PathRect(lua_State *L)
 	rect_max.x = luax_checkfloat(L, 4);
 	rect_max.y = luax_checkfloat(L, 5);
 	auto rounding = luax_optfloat(L, 6, 0.0f);
-	auto rounding_corners = luax_optenum<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 7, ImDrawCornerFlags_All);
+	auto rounding_corners = luax_optflags<ImDrawCornerFlags>(getImDrawCornerFlagsFromString, L, 7, ImDrawCornerFlags_All);
 	
 	self->PathRect(rect_min, rect_max, rounding, rounding_corners);
 	
@@ -2358,7 +2358,7 @@ int w_IsWindowFocused(lua_State *L)
 /*  is current window hovered (and typically: not blocked by a popup/modal)? see flags for options. NB: If you are trying to check whether your mouse should be dispatched to imgui or to your app, you should use the 'io.WantCaptureMouse' boolean for that! Please read the FAQ! */
 int w_IsWindowHovered(lua_State *L)
 {
-	auto flags = luax_optflags<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, L, 1, 0);
+	auto flags = luax_optflags<ImGuiHoveredFlags>(getImGuiHoveredFlagsFromString, L, 1, 0);
 	
 	bool out = ImGui::IsWindowHovered(flags);
 	
@@ -3341,7 +3341,20 @@ int w_SmallButton(lua_State *L)
 	return 1;
 }
 
-// skipping w_InvisibleButton due to unimplemented argument type: "ImGuiButtonFlags"
+/*  flexible button behavior without the visuals, frequently useful to build custom behaviors using the public api (along with IsItemActive, IsItemHovered, etc.) */
+int w_InvisibleButton(lua_State *L)
+{
+	auto str_id = luaL_checkstring(L, 1);
+	ImVec2 size;
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
+	auto flags = luax_optflags<ImGuiButtonFlags>(getImGuiButtonFlagsFromString, L, 4, 0);
+	
+	bool out = ImGui::InvisibleButton(str_id, size, flags);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
 /*  square button with an arrow shape */
 int w_ArrowButton(lua_State *L)
@@ -3525,47 +3538,426 @@ int w_Combo_Override2(lua_State *L)
 
 // skipping w_Combo_Override3 due to unimplemented argument type: " bool(*items_getter)(void* data, int idx, const char** out_text)"
 
-// skipping w_DragFloat due to unimplemented argument type: "ImGuiSliderFlags"
+/*  If v_min >= v_max we have no bound */
+int w_DragFloat(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	auto v = static_cast<float>(luaL_checknumber(L, 2));
+	auto v_speed = luax_optfloat(L, 3, 1.0f);
+	auto v_min = luax_optfloat(L, 4, 0.0f);
+	auto v_max = luax_optfloat(L, 5, 0.0f);
+	auto format = luaL_optstring(L, 6, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 7, 0);
+	
+	bool out = ImGui::DragFloat(label, &v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v);
+	lua_pushboolean(L, out);
+	return 2;
+}
 
-// skipping w_DragFloat2 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragFloat2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	float v[2];
+	v[0] = static_cast<float>(luaL_checknumber(L, 2));
+	v[1] = static_cast<float>(luaL_checknumber(L, 3));
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
+	auto v_min = luax_optfloat(L, 5, 0.0f);
+	auto v_max = luax_optfloat(L, 6, 0.0f);
+	auto format = luaL_optstring(L, 7, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 8, 0);
+	
+	bool out = ImGui::DragFloat2(label, v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v[0]);
+	lua_pushnumber(L, v[1]);
+	lua_pushboolean(L, out);
+	return 3;
+}
 
-// skipping w_DragFloat3 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragFloat3(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	float v[3];
+	v[0] = static_cast<float>(luaL_checknumber(L, 2));
+	v[1] = static_cast<float>(luaL_checknumber(L, 3));
+	v[2] = static_cast<float>(luaL_checknumber(L, 4));
+	auto v_speed = luax_optfloat(L, 5, 1.0f);
+	auto v_min = luax_optfloat(L, 6, 0.0f);
+	auto v_max = luax_optfloat(L, 7, 0.0f);
+	auto format = luaL_optstring(L, 8, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 9, 0);
+	
+	bool out = ImGui::DragFloat3(label, v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v[0]);
+	lua_pushnumber(L, v[1]);
+	lua_pushnumber(L, v[2]);
+	lua_pushboolean(L, out);
+	return 4;
+}
 
-// skipping w_DragFloat4 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragFloat4(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	float v[4];
+	v[0] = static_cast<float>(luaL_checknumber(L, 2));
+	v[1] = static_cast<float>(luaL_checknumber(L, 3));
+	v[2] = static_cast<float>(luaL_checknumber(L, 4));
+	v[3] = static_cast<float>(luaL_checknumber(L, 5));
+	auto v_speed = luax_optfloat(L, 6, 1.0f);
+	auto v_min = luax_optfloat(L, 7, 0.0f);
+	auto v_max = luax_optfloat(L, 8, 0.0f);
+	auto format = luaL_optstring(L, 9, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 10, 0);
+	
+	bool out = ImGui::DragFloat4(label, v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v[0]);
+	lua_pushnumber(L, v[1]);
+	lua_pushnumber(L, v[2]);
+	lua_pushnumber(L, v[3]);
+	lua_pushboolean(L, out);
+	return 5;
+}
 
-// skipping w_DragFloatRange2 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragFloatRange2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	auto v_current_min = static_cast<float>(luaL_checknumber(L, 2));
+	auto v_current_max = static_cast<float>(luaL_checknumber(L, 3));
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
+	auto v_min = luax_optfloat(L, 5, 0.0f);
+	auto v_max = luax_optfloat(L, 6, 0.0f);
+	auto format = luaL_optstring(L, 7, "%.3f");
+	auto format_max = luaL_optstring(L, 8, NULL);
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 9, 0);
+	
+	bool out = ImGui::DragFloatRange2(label, &v_current_min, &v_current_max, v_speed, v_min, v_max, format, format_max, flags);
+	
+	lua_pushnumber(L, v_current_min);
+	lua_pushnumber(L, v_current_max);
+	lua_pushboolean(L, out);
+	return 3;
+}
 
-// skipping w_DragInt due to unimplemented argument type: "ImGuiSliderFlags"
+/*  If v_min >= v_max we have no bound */
+int w_DragInt(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v = luaL_checkint(L, 2);
+	auto v_speed = luax_optfloat(L, 3, 1.0f);
+	auto v_min = luaL_optint(L, 4, 0);
+	auto v_max = luaL_optint(L, 5, 0);
+	auto format = luaL_optstring(L, 6, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 7, 0);
+	
+	bool out = ImGui::DragInt(label, &v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v);
+	lua_pushboolean(L, out);
+	return 2;
+}
 
-// skipping w_DragInt2 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragInt2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v[2];
+	v[0] = static_cast<int>(luaL_checkint(L, 2));
+	v[1] = static_cast<int>(luaL_checkint(L, 3));
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
+	auto v_min = luaL_optint(L, 5, 0);
+	auto v_max = luaL_optint(L, 6, 0);
+	auto format = luaL_optstring(L, 7, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 8, 0);
+	
+	bool out = ImGui::DragInt2(label, v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v[0]);
+	lua_pushinteger(L, v[1]);
+	lua_pushboolean(L, out);
+	return 3;
+}
 
-// skipping w_DragInt3 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragInt3(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v[3];
+	v[0] = static_cast<int>(luaL_checkint(L, 2));
+	v[1] = static_cast<int>(luaL_checkint(L, 3));
+	v[2] = static_cast<int>(luaL_checkint(L, 4));
+	auto v_speed = luax_optfloat(L, 5, 1.0f);
+	auto v_min = luaL_optint(L, 6, 0);
+	auto v_max = luaL_optint(L, 7, 0);
+	auto format = luaL_optstring(L, 8, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 9, 0);
+	
+	bool out = ImGui::DragInt3(label, v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v[0]);
+	lua_pushinteger(L, v[1]);
+	lua_pushinteger(L, v[2]);
+	lua_pushboolean(L, out);
+	return 4;
+}
 
-// skipping w_DragInt4 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragInt4(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v[4];
+	v[0] = static_cast<int>(luaL_checkint(L, 2));
+	v[1] = static_cast<int>(luaL_checkint(L, 3));
+	v[2] = static_cast<int>(luaL_checkint(L, 4));
+	v[3] = static_cast<int>(luaL_checkint(L, 5));
+	auto v_speed = luax_optfloat(L, 6, 1.0f);
+	auto v_min = luaL_optint(L, 7, 0);
+	auto v_max = luaL_optint(L, 8, 0);
+	auto format = luaL_optstring(L, 9, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 10, 0);
+	
+	bool out = ImGui::DragInt4(label, v, v_speed, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v[0]);
+	lua_pushinteger(L, v[1]);
+	lua_pushinteger(L, v[2]);
+	lua_pushinteger(L, v[3]);
+	lua_pushboolean(L, out);
+	return 5;
+}
 
-// skipping w_DragIntRange2 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_DragIntRange2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v_current_min = luaL_checkint(L, 2);
+	int v_current_max = luaL_checkint(L, 3);
+	auto v_speed = luax_optfloat(L, 4, 1.0f);
+	auto v_min = luaL_optint(L, 5, 0);
+	auto v_max = luaL_optint(L, 6, 0);
+	auto format = luaL_optstring(L, 7, "%d");
+	auto format_max = luaL_optstring(L, 8, NULL);
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 9, 0);
+	
+	bool out = ImGui::DragIntRange2(label, &v_current_min, &v_current_max, v_speed, v_min, v_max, format, format_max, flags);
+	
+	lua_pushinteger(L, v_current_min);
+	lua_pushinteger(L, v_current_max);
+	lua_pushboolean(L, out);
+	return 3;
+}
 
-// skipping w_SliderFloat due to unimplemented argument type: "ImGuiSliderFlags"
+/*  adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display. */
+int w_SliderFloat(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	auto v = static_cast<float>(luaL_checknumber(L, 2));
+	auto v_min = luax_checkfloat(L, 3);
+	auto v_max = luax_checkfloat(L, 4);
+	auto format = luaL_optstring(L, 5, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 6, 0);
+	
+	bool out = ImGui::SliderFloat(label, &v, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v);
+	lua_pushboolean(L, out);
+	return 2;
+}
 
-// skipping w_SliderFloat2 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderFloat2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	float v[2];
+	v[0] = static_cast<float>(luaL_checknumber(L, 2));
+	v[1] = static_cast<float>(luaL_checknumber(L, 3));
+	auto v_min = luax_checkfloat(L, 4);
+	auto v_max = luax_checkfloat(L, 5);
+	auto format = luaL_optstring(L, 6, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 7, 0);
+	
+	bool out = ImGui::SliderFloat2(label, v, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v[0]);
+	lua_pushnumber(L, v[1]);
+	lua_pushboolean(L, out);
+	return 3;
+}
 
-// skipping w_SliderFloat3 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderFloat3(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	float v[3];
+	v[0] = static_cast<float>(luaL_checknumber(L, 2));
+	v[1] = static_cast<float>(luaL_checknumber(L, 3));
+	v[2] = static_cast<float>(luaL_checknumber(L, 4));
+	auto v_min = luax_checkfloat(L, 5);
+	auto v_max = luax_checkfloat(L, 6);
+	auto format = luaL_optstring(L, 7, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 8, 0);
+	
+	bool out = ImGui::SliderFloat3(label, v, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v[0]);
+	lua_pushnumber(L, v[1]);
+	lua_pushnumber(L, v[2]);
+	lua_pushboolean(L, out);
+	return 4;
+}
 
-// skipping w_SliderFloat4 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderFloat4(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	float v[4];
+	v[0] = static_cast<float>(luaL_checknumber(L, 2));
+	v[1] = static_cast<float>(luaL_checknumber(L, 3));
+	v[2] = static_cast<float>(luaL_checknumber(L, 4));
+	v[3] = static_cast<float>(luaL_checknumber(L, 5));
+	auto v_min = luax_checkfloat(L, 6);
+	auto v_max = luax_checkfloat(L, 7);
+	auto format = luaL_optstring(L, 8, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 9, 0);
+	
+	bool out = ImGui::SliderFloat4(label, v, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v[0]);
+	lua_pushnumber(L, v[1]);
+	lua_pushnumber(L, v[2]);
+	lua_pushnumber(L, v[3]);
+	lua_pushboolean(L, out);
+	return 5;
+}
 
-// skipping w_SliderAngle due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderAngle(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	auto v_rad = static_cast<float>(luaL_checknumber(L, 2));
+	auto v_degrees_min = luax_optfloat(L, 3, -360.0f);
+	auto v_degrees_max = luax_optfloat(L, 4, +360.0f);
+	auto format = luaL_optstring(L, 5, "%.0f deg");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 6, 0);
+	
+	bool out = ImGui::SliderAngle(label, &v_rad, v_degrees_min, v_degrees_max, format, flags);
+	
+	lua_pushnumber(L, v_rad);
+	lua_pushboolean(L, out);
+	return 2;
+}
 
-// skipping w_SliderInt due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderInt(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v = luaL_checkint(L, 2);
+	auto v_min = luaL_checkint(L, 3);
+	auto v_max = luaL_checkint(L, 4);
+	auto format = luaL_optstring(L, 5, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 6, 0);
+	
+	bool out = ImGui::SliderInt(label, &v, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v);
+	lua_pushboolean(L, out);
+	return 2;
+}
 
-// skipping w_SliderInt2 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderInt2(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v[2];
+	v[0] = static_cast<int>(luaL_checkint(L, 2));
+	v[1] = static_cast<int>(luaL_checkint(L, 3));
+	auto v_min = luaL_checkint(L, 4);
+	auto v_max = luaL_checkint(L, 5);
+	auto format = luaL_optstring(L, 6, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 7, 0);
+	
+	bool out = ImGui::SliderInt2(label, v, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v[0]);
+	lua_pushinteger(L, v[1]);
+	lua_pushboolean(L, out);
+	return 3;
+}
 
-// skipping w_SliderInt3 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderInt3(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v[3];
+	v[0] = static_cast<int>(luaL_checkint(L, 2));
+	v[1] = static_cast<int>(luaL_checkint(L, 3));
+	v[2] = static_cast<int>(luaL_checkint(L, 4));
+	auto v_min = luaL_checkint(L, 5);
+	auto v_max = luaL_checkint(L, 6);
+	auto format = luaL_optstring(L, 7, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 8, 0);
+	
+	bool out = ImGui::SliderInt3(label, v, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v[0]);
+	lua_pushinteger(L, v[1]);
+	lua_pushinteger(L, v[2]);
+	lua_pushboolean(L, out);
+	return 4;
+}
 
-// skipping w_SliderInt4 due to unimplemented argument type: "ImGuiSliderFlags"
+int w_SliderInt4(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int v[4];
+	v[0] = static_cast<int>(luaL_checkint(L, 2));
+	v[1] = static_cast<int>(luaL_checkint(L, 3));
+	v[2] = static_cast<int>(luaL_checkint(L, 4));
+	v[3] = static_cast<int>(luaL_checkint(L, 5));
+	auto v_min = luaL_checkint(L, 6);
+	auto v_max = luaL_checkint(L, 7);
+	auto format = luaL_optstring(L, 8, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 9, 0);
+	
+	bool out = ImGui::SliderInt4(label, v, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v[0]);
+	lua_pushinteger(L, v[1]);
+	lua_pushinteger(L, v[2]);
+	lua_pushinteger(L, v[3]);
+	lua_pushboolean(L, out);
+	return 5;
+}
 
-// skipping w_VSliderFloat due to unimplemented argument type: "ImGuiSliderFlags"
+int w_VSliderFloat(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	ImVec2 size;
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
+	auto v = static_cast<float>(luaL_checknumber(L, 4));
+	auto v_min = luax_checkfloat(L, 5);
+	auto v_max = luax_checkfloat(L, 6);
+	auto format = luaL_optstring(L, 7, "%.3f");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 8, 0);
+	
+	bool out = ImGui::VSliderFloat(label, size, &v, v_min, v_max, format, flags);
+	
+	lua_pushnumber(L, v);
+	lua_pushboolean(L, out);
+	return 2;
+}
 
-// skipping w_VSliderInt due to unimplemented argument type: "ImGuiSliderFlags"
+int w_VSliderInt(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	ImVec2 size;
+	size.x = luax_checkfloat(L, 2);
+	size.y = luax_checkfloat(L, 3);
+	int v = luaL_checkint(L, 4);
+	auto v_min = luaL_checkint(L, 5);
+	auto v_max = luaL_checkint(L, 6);
+	auto format = luaL_optstring(L, 7, "%d");
+	auto flags = luax_optflags<ImGuiSliderFlags>(getImGuiSliderFlagsFromString, L, 8, 0);
+	
+	bool out = ImGui::VSliderInt(label, size, &v, v_min, v_max, format, flags);
+	
+	lua_pushinteger(L, v);
+	lua_pushboolean(L, out);
+	return 2;
+}
 
 // skipping w_InputText_Override1 due to unimplemented argument type: "(TODO) const buf*"
 
@@ -4197,9 +4589,27 @@ int w_EndPopup(lua_State *L)
 	return 0;
 }
 
-// skipping w_OpenPopup due to unimplemented argument type: "ImGuiPopupFlags"
+/*  call to mark popup as open (don't call every frame!). */
+int w_OpenPopup(lua_State *L)
+{
+	auto str_id = luaL_checkstring(L, 1);
+	auto popup_flags = luax_optflags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, L, 2, 0);
+	
+	ImGui::OpenPopup(str_id, popup_flags);
+	
+	return 0;
+}
 
-// skipping w_OpenPopupOnItemClick due to unimplemented argument type: "ImGuiPopupFlags"
+/*  helper to open popup when clicked on last item. return true when just opened. (note: actually triggers on the mouse _released_ event to be consistent with popup behaviors) */
+int w_OpenPopupOnItemClick(lua_State *L)
+{
+	auto str_id = luaL_optstring(L, 1, NULL);
+	auto popup_flags = luax_optflags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, L, 2, 1);
+	
+	ImGui::OpenPopupOnItemClick(str_id, popup_flags);
+	
+	return 0;
+}
 
 /*  manually close the popup we have begin-ed into. */
 int w_CloseCurrentPopup(lua_State *L)
@@ -4209,13 +4619,53 @@ int w_CloseCurrentPopup(lua_State *L)
 	return 0;
 }
 
-// skipping w_BeginPopupContextItem due to unimplemented argument type: "ImGuiPopupFlags"
+/*  open+begin popup when clicked on last item. if you can pass a NULL str_id only if the previous item had an id. If you want to use that on a non-interactive item such as Text() you need to pass in an explicit ID here. read comments in .cpp! */
+int w_BeginPopupContextItem(lua_State *L)
+{
+	auto str_id = luaL_optstring(L, 1, NULL);
+	auto popup_flags = luax_optflags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, L, 2, 1);
+	
+	bool out = ImGui::BeginPopupContextItem(str_id, popup_flags);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
-// skipping w_BeginPopupContextWindow due to unimplemented argument type: "ImGuiPopupFlags"
+/*  open+begin popup when clicked on current window. */
+int w_BeginPopupContextWindow(lua_State *L)
+{
+	auto str_id = luaL_optstring(L, 1, NULL);
+	auto popup_flags = luax_optflags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, L, 2, 1);
+	
+	bool out = ImGui::BeginPopupContextWindow(str_id, popup_flags);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
-// skipping w_BeginPopupContextVoid due to unimplemented argument type: "ImGuiPopupFlags"
+/*  open+begin popup when clicked in void (where there are no windows). */
+int w_BeginPopupContextVoid(lua_State *L)
+{
+	auto str_id = luaL_optstring(L, 1, NULL);
+	auto popup_flags = luax_optflags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, L, 2, 1);
+	
+	bool out = ImGui::BeginPopupContextVoid(str_id, popup_flags);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
-// skipping w_IsPopupOpen due to unimplemented argument type: "ImGuiPopupFlags"
+/*  return true if the popup is open. */
+int w_IsPopupOpen(lua_State *L)
+{
+	auto str_id = luaL_checkstring(L, 1);
+	auto flags = luax_optflags<ImGuiPopupFlags>(getImGuiPopupFlagsFromString, L, 2, 0);
+	
+	bool out = ImGui::IsPopupOpen(str_id, flags);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
 
 int w_Columns(lua_State *L)
 {
@@ -4559,7 +5009,7 @@ int w_SetKeyboardFocusHere(lua_State *L)
 /*  is the last item hovered? (and usable, aka not blocked by a popup, etc.). See ImGuiHoveredFlags for more options. */
 int w_IsItemHovered(lua_State *L)
 {
-	auto flags = luax_optflags<ImGuiFocusedFlags>(getImGuiFocusedFlagsFromString, L, 1, 0);
+	auto flags = luax_optflags<ImGuiHoveredFlags>(getImGuiHoveredFlagsFromString, L, 1, 0);
 	
 	bool out = ImGui::IsItemHovered(flags);
 	
@@ -5470,6 +5920,12 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "BeginMenuBar");
 	lua_pushcfunction(L, w_BeginPopup);
 	lua_setfield(L, -2, "BeginPopup");
+	lua_pushcfunction(L, w_BeginPopupContextItem);
+	lua_setfield(L, -2, "BeginPopupContextItem");
+	lua_pushcfunction(L, w_BeginPopupContextVoid);
+	lua_setfield(L, -2, "BeginPopupContextVoid");
+	lua_pushcfunction(L, w_BeginPopupContextWindow);
+	lua_setfield(L, -2, "BeginPopupContextWindow");
 	lua_pushcfunction(L, w_BeginPopupModal);
 	lua_setfield(L, -2, "BeginPopupModal");
 	lua_pushcfunction(L, w_BeginTabBar);
@@ -5528,6 +5984,26 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "DockSpace");
 	lua_pushcfunction(L, w_DockSpaceOverViewport);
 	lua_setfield(L, -2, "DockSpaceOverViewport");
+	lua_pushcfunction(L, w_DragFloat);
+	lua_setfield(L, -2, "DragFloat");
+	lua_pushcfunction(L, w_DragFloat2);
+	lua_setfield(L, -2, "DragFloat2");
+	lua_pushcfunction(L, w_DragFloat3);
+	lua_setfield(L, -2, "DragFloat3");
+	lua_pushcfunction(L, w_DragFloat4);
+	lua_setfield(L, -2, "DragFloat4");
+	lua_pushcfunction(L, w_DragFloatRange2);
+	lua_setfield(L, -2, "DragFloatRange2");
+	lua_pushcfunction(L, w_DragInt);
+	lua_setfield(L, -2, "DragInt");
+	lua_pushcfunction(L, w_DragInt2);
+	lua_setfield(L, -2, "DragInt2");
+	lua_pushcfunction(L, w_DragInt3);
+	lua_setfield(L, -2, "DragInt3");
+	lua_pushcfunction(L, w_DragInt4);
+	lua_setfield(L, -2, "DragInt4");
+	lua_pushcfunction(L, w_DragIntRange2);
+	lua_setfield(L, -2, "DragIntRange2");
 	lua_pushcfunction(L, w_Dummy);
 	lua_setfield(L, -2, "Dummy");
 	lua_pushcfunction(L, w_End);
@@ -5694,6 +6170,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "InputTextMultiline");
 	lua_pushcfunction(L, w_InputTextWithHint);
 	lua_setfield(L, -2, "InputTextWithHint");
+	lua_pushcfunction(L, w_InvisibleButton);
+	lua_setfield(L, -2, "InvisibleButton");
 	lua_pushcfunction(L, w_IsAnyItemActive);
 	lua_setfield(L, -2, "IsAnyItemActive");
 	lua_pushcfunction(L, w_IsAnyItemFocused);
@@ -5742,6 +6220,8 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "IsMousePosValid");
 	lua_pushcfunction(L, w_IsMouseReleased);
 	lua_setfield(L, -2, "IsMouseReleased");
+	lua_pushcfunction(L, w_IsPopupOpen);
+	lua_setfield(L, -2, "IsPopupOpen");
 	lua_pushcfunction(L, w_IsRectVisible);
 	lua_setfield(L, -2, "IsRectVisible");
 	lua_pushcfunction(L, w_IsWindowAppearing);
@@ -5784,6 +6264,10 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "NewLine");
 	lua_pushcfunction(L, w_NextColumn);
 	lua_setfield(L, -2, "NextColumn");
+	lua_pushcfunction(L, w_OpenPopup);
+	lua_setfield(L, -2, "OpenPopup");
+	lua_pushcfunction(L, w_OpenPopupOnItemClick);
+	lua_setfield(L, -2, "OpenPopupOnItemClick");
 	lua_pushcfunction(L, w_PopAllowKeyboardFocus);
 	lua_setfield(L, -2, "PopAllowKeyboardFocus");
 	lua_pushcfunction(L, w_PopButtonRepeat);
@@ -5920,6 +6404,24 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "ShowStyleSelector");
 	lua_pushcfunction(L, w_ShowUserGuide);
 	lua_setfield(L, -2, "ShowUserGuide");
+	lua_pushcfunction(L, w_SliderAngle);
+	lua_setfield(L, -2, "SliderAngle");
+	lua_pushcfunction(L, w_SliderFloat);
+	lua_setfield(L, -2, "SliderFloat");
+	lua_pushcfunction(L, w_SliderFloat2);
+	lua_setfield(L, -2, "SliderFloat2");
+	lua_pushcfunction(L, w_SliderFloat3);
+	lua_setfield(L, -2, "SliderFloat3");
+	lua_pushcfunction(L, w_SliderFloat4);
+	lua_setfield(L, -2, "SliderFloat4");
+	lua_pushcfunction(L, w_SliderInt);
+	lua_setfield(L, -2, "SliderInt");
+	lua_pushcfunction(L, w_SliderInt2);
+	lua_setfield(L, -2, "SliderInt2");
+	lua_pushcfunction(L, w_SliderInt3);
+	lua_setfield(L, -2, "SliderInt3");
+	lua_pushcfunction(L, w_SliderInt4);
+	lua_setfield(L, -2, "SliderInt4");
 	lua_pushcfunction(L, w_SmallButton);
 	lua_setfield(L, -2, "SmallButton");
 	lua_pushcfunction(L, w_Spacing);
@@ -5954,6 +6456,10 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "Unindent");
 	lua_pushcfunction(L, w_UpdatePlatformWindows);
 	lua_setfield(L, -2, "UpdatePlatformWindows");
+	lua_pushcfunction(L, w_VSliderFloat);
+	lua_setfield(L, -2, "VSliderFloat");
+	lua_pushcfunction(L, w_VSliderInt);
+	lua_setfield(L, -2, "VSliderInt");
 	lua_pushcfunction(L, w_Value);
 	lua_setfield(L, -2, "Value");
 
@@ -6036,7 +6542,7 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 
 void wrap_imgui::createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, 256); 
+	lua_createtable(L, 0, 284); 
 	addImguiWrappers(L);
 }
 

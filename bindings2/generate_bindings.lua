@@ -33,6 +33,8 @@ local function main()
 			"deps/libimgui/misc/cpp/imgui_stdlib.h"
 		}
 		local wrenHelpers = require 'bindings2.wren.generate'
+		local wrenTypes = require 'bindings2.wren.types'
+		wrenTypes.generateTypeCheckers(imgui)
 		imgui.output = "wren"
 		generateFile(
 			"src/wren-bindings/wrap_imgui_codegen.cpp",
@@ -56,6 +58,8 @@ local function main()
 		}
 		local luaHelpers = require 'bindings2.lua.generate'
 		local luaAutocompleteHelpers = require 'bindings2.lua.generate_autocomplete'
+		local luaTypes = require 'bindings2.lua.types'
+		luaTypes.generateTypeCheckers(imgui)
 		imgui.output = "lua"
 		generateFile(
 			"src/lua-bindings/wrap_imgui_codegen.cpp",

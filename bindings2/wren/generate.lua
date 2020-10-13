@@ -102,7 +102,7 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 		for _, arg in ipairs(fnData.arguments) do
 			lua_arg, stop = Types.check(buf, arg, lua_arg, outLines)
 			if stop then
-				helpers.addInvalidFunctions(fnElement, fnData.name)
+				helpers.addInvalidFunction(fnElement, fnData)
 				return string.format("// skipping %s due to unimplemented argument type: %q", cname, arg.type)
 			end
 			atLeastOneArgument = true
@@ -151,7 +151,7 @@ function helpers.genFunctionWrapper(fnElement, fnData)
 			local _
 			_, stop = Types.push(buf, name, ctype, 0)
 			if stop then
-				helpers.addInvalidFunctions(fnElement, fnData.name)
+				helpers.addInvalidFunction(fnElement, fnData)
 				return string.format("// skipping %s due to unimplemented return type: %q", cname, fnData.returnType)
 			end
 		end
@@ -184,11 +184,13 @@ end
 
 function helpers.generateDocSignature(fnData)
 	local args = {}
-	for i = 1, fnData.arity do
-		if fnData.arguments[i].default then
-			table.insert(args, string.format("%s = %s", fnData.docArgs[i], fnData.arguments[i].default))
-		else
-			table.insert(args, fnData.docArgs[i])
+	if fnData.arity then
+		for i = 1, fnData.arity do
+			if fnData.arguments[i].default then
+				table.insert(args, string.format("%s = %s", fnData.docArgs[i], fnData.arguments[i].default))
+			else
+				table.insert(args, fnData.docArgs[i])
+			end
 		end
 	end
 	args = table.concat(args,", ")
@@ -231,12 +233,10 @@ function helpers.addValidFunction(fnElement, fnData)
 	fnElement.invalidNames[fnData.name] = nil
 end
 
-function helpers.addInvalidFunctions(fnElement, ...)
-	for i = 1, select('#', ...) do
-		local name = select(i, ...)
-		if not fnElement.validNames[name] then
-			fnElement.invalidNames[name] = true
-		end
+function helpers.addInvalidFunction(fnElement, fnData)
+	local name = fnData.name
+	if not fnElement.validNames[name] then
+		fnElement.invalidNames[name] = fnData
 	end
 end
 

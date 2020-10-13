@@ -140,28 +140,6 @@ do
 			--buf:addf("if (!user_data) { %s = nullptr; }", name)
 		end,
 
-		["ImGuiDir"] = enum_arg("ImGuiDir", "getImGuiDirFromString"),
-		["ImGuiCol"] = enum_arg("ImGuiCol", "getImGuiColFromString"),
-		["ImGuiMouseCursor"] = enum_arg("ImGuiMouseCursor", "getImGuiMouseCursorFromString"),
-		["ImGuiMouseButton"] = enum_arg("ImGuiMouseButton", "getImGuiMouseButtonFromString"),
-		["ImGuiCond"] = enum_arg("ImGuiCond", "getImGuiCondFromString"),
-		["ImGuiStyleVar"] = enum_arg("ImGuiStyleVar", "getImGuiStyleVarFromString"),
-		["ImGuiKey"] = enum_arg("ImGuiKey", "getImGuiKeyFromString"),
-		["ImDrawCornerFlags"] = enum_arg("ImDrawCornerFlags", "getImDrawCornerFlagsFromString"),
-
-		["ImGuiWindowFlags"] = flags_arg("ImGuiWindowFlags", "getImGuiWindowFlagsFromString"),
-		["ImGuiFocusedFlags"] = flags_arg("ImGuiFocusedFlags", "getImGuiFocusedFlagsFromString"),
-		["ImGuiHoveredFlags"] = flags_arg("ImGuiFocusedFlags", "getImGuiFocusedFlagsFromString"),
-		["ImGuiComboFlags"] = flags_arg("ImGuiComboFlags", "getImGuiComboFlagsFromString"),
-		["ImGuiInputTextFlags"] = flags_arg("ImGuiInputTextFlags", "getImGuiInputTextFlagsFromString"),
-		["ImGuiColorEditFlags"] = flags_arg("ImGuiColorEditFlags", "getImGuiColorEditFlagsFromString"),
-		["ImGuiTreeNodeFlags"] = flags_arg("ImGuiTreeNodeFlags", "getImGuiTreeNodeFlagsFromString"),
-		["ImGuiSelectableFlags"] = flags_arg("ImGuiSelectableFlags", "getImGuiSelectableFlagsFromString"),
-		["ImGuiTabBarFlags"] = flags_arg("ImGuiTabBarFlags", "getImGuiTabBarFlagsFromString"),
-		["ImGuiTabItemFlags"] = flags_arg("ImGuiTabItemFlags", "getImGuiTabItemFlagsFromString"),
-		["ImGuiDragDropFlags"] = flags_arg("ImGuiDragDropFlags", "getImGuiDragDropFlagsFromString"),
-		["ImGuiDockNodeFlags"] = flags_arg("ImGuiDockNodeFlags", "getImGuiDockNodeFlagsFromString"),
-
 		-- TODO
 		["ImFontAtlas*"] = skip_arg(),
 		["ImGuiViewport*"] = skip_arg(),
@@ -198,6 +176,18 @@ do
 			unrecognizedCheckType[ctype] = true
 		end
 		return i, "stop"
+	end
+
+	function Types.generateTypeCheckers(imgui)
+		for _, enumData in ipairs(imgui.enums) do
+			local cleanName = enumData.name:gsub("%_+$", "")
+			local getter = ("get%sFromString"):format(cleanName)
+			if cleanName:match("Flags$") then
+				typeCheckers[cleanName] = flags_arg(cleanName, getter)
+			else
+				typeCheckers[cleanName] = enum_arg(cleanName, getter)
+			end
+		end
 	end
 end
 
