@@ -15,6 +15,15 @@ function helpers.genEnumFromString(_, enumData)
 		buf:add("return std::nullopt;")
 	end buf:unindent() buf:add("}")
 
+	if cleanName:match("Flags$") and not cleanName:match("ImGuiInputTextFlags") then
+		-- the ideal for this situation, I think, would be to return a lua
+		-- table instead, with every matching flag marked true.
+		-- we are passing through ImGuiInputTextFlags for now, but it would
+		-- definitely be preferable if it matched the above comment instead.
+		buf:addf("// skipping getStringFrom%s() converting flags TODO", cleanName)
+		return buf:done()
+	end
+
 	buf:addf("const char* getStringFrom%s(%s in)", cleanName, cleanName)
 	do buf:add("{") buf:indent()
 		buf:add("switch (in) {") buf:indent()

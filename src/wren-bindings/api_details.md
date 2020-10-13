@@ -5,7 +5,7 @@
 ### Unsupported methods (0)
 # ImGui
 
-### Supported methods (222)
+### Supported methods (207)
 * ImGui.AlignTextToFramePadding()
 * ImGui.ArrowButton(str_id, dir)
 * ImGui.Begin(name, p_open = NULL, flags = 0)
@@ -18,9 +18,6 @@
 * ImGui.BeginMenu(label, enabled = true)
 * ImGui.BeginMenuBar()
 * ImGui.BeginPopup(str_id, flags = 0)
-* ImGui.BeginPopupContextItem(str_id = NULL, mouse_button = 1)
-* ImGui.BeginPopupContextVoid(str_id = NULL, mouse_button = 1)
-* ImGui.BeginPopupContextWindow(str_id = NULL, mouse_button = 1, also_over_items = true)
 * ImGui.BeginPopupModal(name, p_open = NULL, flags = 0)
 * ImGui.BeginTabBar(str_id, flags = 0)
 * ImGui.BeginTabItem(label, p_open = NULL, flags = 0)
@@ -42,10 +39,6 @@
 * ImGui.DestroyPlatformWindows()
 * ImGui.DockSpace(id, size = ImVec2(0, 0), flags = 0, window_class = NULL)
 * ImGui.DockSpaceOverViewport(viewport = NULL, flags = 0, window_class = NULL)
-* ImGui.DragFloat(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", power = 1.0f)
-* ImGui.DragFloatRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", format_max = NULL, power = 1.0f)
-* ImGui.DragInt(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d")
-* ImGui.DragIntRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", format_max = NULL)
 * ImGui.Dummy(size)
 * ImGui.End()
 * ImGui.EndChild()
@@ -112,7 +105,6 @@
 * ImGui.InputDouble(label, v, step = 0.0, step_fast = 0.0, format = "%.6f", flags = 0)
 * ImGui.InputFloat(label, v, step = 0.0f, step_fast = 0.0f, format = "%.3f", flags = 0)
 * ImGui.InputInt(label, v, step = 1, step_fast = 100, flags = 0)
-* ImGui.InvisibleButton(str_id, size)
 * ImGui.IsAnyItemActive()
 * ImGui.IsAnyItemFocused()
 * ImGui.IsAnyItemHovered()
@@ -136,7 +128,6 @@
 * ImGui.IsMouseDragging(button, lock_threshold = -1.0f)
 * ImGui.IsMouseHoveringRect(r_min, r_max, clip = true)
 * ImGui.IsMouseReleased(button)
-* ImGui.IsPopupOpen(str_id)
 * ImGui.IsWindowAppearing()
 * ImGui.IsWindowCollapsed()
 * ImGui.IsWindowDocked()
@@ -154,8 +145,6 @@
 * ImGui.NewFrame()
 * ImGui.NewLine()
 * ImGui.NextColumn()
-* ImGui.OpenPopup(str_id)
-* ImGui.OpenPopupOnItemClick(str_id = NULL, mouse_button = 1)
 * ImGui.PopAllowKeyboardFocus()
 * ImGui.PopButtonRepeat()
 * ImGui.PopClipRect()
@@ -213,11 +202,9 @@
 * ImGui.ShowMetricsWindow(p_open = NULL)
 * ImGui.ShowStyleSelector(label)
 * ImGui.ShowUserGuide()
-* ImGui.SliderAngle(label, v_rad, v_degrees_min = -360.0f, v_degrees_max = +360.0f, format = "%.0f deg")
-* ImGui.SliderFloat(label, v, v_min, v_max, format = "%.3f", power = 1.0f)
-* ImGui.SliderInt(label, v, v_min, v_max, format = "%d")
 * ImGui.SmallButton(label)
 * ImGui.Spacing()
+* ImGui.TabItemButton(label, flags = 0)
 * ImGui.Text(fmt)
 * ImGui.TextColored(col, fmt)
 * ImGui.TextDisabled(fmt)
@@ -226,11 +213,12 @@
 * ImGui.TreePop()
 * ImGui.Unindent(indent_w = 0.0f)
 * ImGui.UpdatePlatformWindows()
-* ImGui.VSliderFloat(label, size, v, v_min, v_max, format = "%.3f", power = 1.0f)
-* ImGui.VSliderInt(label, size, v, v_min, v_max, format = "%d")
 
-### Unsupported methods (69)
+### Unsupported methods (85)
 * ImGui.AcceptDragDropPayload
+* ImGui.BeginPopupContextItem
+* ImGui.BeginPopupContextVoid
+* ImGui.BeginPopupContextWindow
 * ImGui.ColorEdit3
 * ImGui.ColorEdit4
 * ImGui.ColorPicker3
@@ -238,12 +226,16 @@
 * ImGui.Combo
 * ImGui.CreateContext
 * ImGui.DestroyContext
+* ImGui.DragFloat
 * ImGui.DragFloat2
 * ImGui.DragFloat3
 * ImGui.DragFloat4
+* ImGui.DragFloatRange2
+* ImGui.DragInt
 * ImGui.DragInt2
 * ImGui.DragInt3
 * ImGui.DragInt4
+* ImGui.DragIntRange2
 * ImGui.FindViewportByID
 * ImGui.FindViewportByPlatformHandle
 * ImGui.GetBackgroundDrawList
@@ -272,9 +264,13 @@
 * ImGui.InputText
 * ImGui.InputTextMultiline
 * ImGui.InputTextWithHint
+* ImGui.InvisibleButton
 * ImGui.IsMousePosValid
+* ImGui.IsPopupOpen
 * ImGui.ListBox
 * ImGui.LoadIniSettingsFromMemory
+* ImGui.OpenPopup
+* ImGui.OpenPopupOnItemClick
 * ImGui.PlotHistogram
 * ImGui.PlotLines
 * ImGui.PushFont
@@ -287,9 +283,12 @@
 * ImGui.SetNextWindowSizeConstraints
 * ImGui.SetStateStorage
 * ImGui.ShowStyleEditor
+* ImGui.SliderAngle
+* ImGui.SliderFloat
 * ImGui.SliderFloat2
 * ImGui.SliderFloat3
 * ImGui.SliderFloat4
+* ImGui.SliderInt
 * ImGui.SliderInt2
 * ImGui.SliderInt3
 * ImGui.SliderInt4
@@ -299,3 +298,5 @@
 * ImGui.TreeNode
 * ImGui.TreeNodeEx
 * ImGui.TreePush
+* ImGui.VSliderFloat
+* ImGui.VSliderInt

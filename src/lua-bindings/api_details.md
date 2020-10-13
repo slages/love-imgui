@@ -2,8 +2,8 @@
 
 ### Supported methods (37)
 * ImGui.AddBezierCurve(p1, p2, p3, p4, col, thickness, num_segments = 0)
-* ImGui.AddCircle(center, radius, col, num_segments = 12, thickness = 1.0f)
-* ImGui.AddCircleFilled(center, radius, col, num_segments = 12)
+* ImGui.AddCircle(center, radius, col, num_segments = 0, thickness = 1.0f)
+* ImGui.AddCircleFilled(center, radius, col, num_segments = 0)
 * ImGui.AddDrawCmd()
 * ImGui.AddImage(user_texture_id, p_min, p_max, uv_min = ImVec2(0, 0), uv_max = ImVec2(1, 1), col = IM_COL32_WHITE)
 * ImGui.AddImageQuad(user_texture_id, p1, p2, p3, p4, uv1 = ImVec2(0, 0), uv2 = ImVec2(1, 0), uv3 = ImVec2(1, 1), uv4 = ImVec2(0, 1), col = IM_COL32_WHITE)
@@ -45,7 +45,7 @@
 * ImGui.AddPolyline
 # ImGui
 
-### Supported methods (283)
+### Supported methods (256)
 * ImGui.AlignTextToFramePadding()
 * ImGui.ArrowButton(str_id, dir)
 * ImGui.Begin(name, p_open = NULL, flags = 0)
@@ -59,9 +59,6 @@
 * ImGui.BeginMenu(label, enabled = true)
 * ImGui.BeginMenuBar()
 * ImGui.BeginPopup(str_id, flags = 0)
-* ImGui.BeginPopupContextItem(str_id = NULL, mouse_button = 1)
-* ImGui.BeginPopupContextVoid(str_id = NULL, mouse_button = 1)
-* ImGui.BeginPopupContextWindow(str_id = NULL, mouse_button = 1, also_over_items = true)
 * ImGui.BeginPopupModal(name, p_open = NULL, flags = 0)
 * ImGui.BeginTabBar(str_id, flags = 0)
 * ImGui.BeginTabItem(label, p_open = NULL, flags = 0)
@@ -91,16 +88,6 @@
 * ImGui.DestroyPlatformWindows()
 * ImGui.DockSpace(id, size = ImVec2(0, 0), flags = 0, window_class = NULL)
 * ImGui.DockSpaceOverViewport(viewport = NULL, flags = 0, window_class = NULL)
-* ImGui.DragFloat(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", power = 1.0f)
-* ImGui.DragFloat2(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", power = 1.0f)
-* ImGui.DragFloat3(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", power = 1.0f)
-* ImGui.DragFloat4(label, v, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", power = 1.0f)
-* ImGui.DragFloatRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0.0f, v_max = 0.0f, format = "%.3f", format_max = NULL, power = 1.0f)
-* ImGui.DragInt(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d")
-* ImGui.DragInt2(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d")
-* ImGui.DragInt3(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d")
-* ImGui.DragInt4(label, v, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d")
-* ImGui.DragIntRange2(label, v_current_min, v_current_max, v_speed = 1.0f, v_min = 0, v_max = 0, format = "%d", format_max = NULL)
 * ImGui.Dummy(size)
 * ImGui.End()
 * ImGui.EndChild()
@@ -184,7 +171,6 @@
 * ImGui.InputText(label, str, flags = 0, callback = NULL, user_data = NULL)
 * ImGui.InputTextMultiline(label, str, size = ImVec2(0, 0), flags = 0, callback = NULL, user_data = NULL)
 * ImGui.InputTextWithHint(label, hint, str, flags = 0, callback = NULL, user_data = NULL)
-* ImGui.InvisibleButton(str_id, size)
 * ImGui.IsAnyItemActive()
 * ImGui.IsAnyItemFocused()
 * ImGui.IsAnyItemHovered()
@@ -209,7 +195,6 @@
 * ImGui.IsMouseHoveringRect(r_min, r_max, clip = true)
 * ImGui.IsMousePosValid(mouse_pos = NULL)
 * ImGui.IsMouseReleased(button)
-* ImGui.IsPopupOpen(str_id)
 * ImGui.IsRectVisible(rect_min, rect_max)
 * ImGui.IsWindowAppearing()
 * ImGui.IsWindowCollapsed()
@@ -231,8 +216,6 @@
 * ImGui.NewFrame()
 * ImGui.NewLine()
 * ImGui.NextColumn()
-* ImGui.OpenPopup(str_id)
-* ImGui.OpenPopupOnItemClick(str_id = NULL, mouse_button = 1)
 * ImGui.PopAllowKeyboardFocus()
 * ImGui.PopButtonRepeat()
 * ImGui.PopClipRect()
@@ -301,20 +284,12 @@
 * ImGui.ShowStyleEditor(ref = NULL)
 * ImGui.ShowStyleSelector(label)
 * ImGui.ShowUserGuide()
-* ImGui.SliderAngle(label, v_rad, v_degrees_min = -360.0f, v_degrees_max = +360.0f, format = "%.0f deg")
-* ImGui.SliderFloat(label, v, v_min, v_max, format = "%.3f", power = 1.0f)
-* ImGui.SliderFloat2(label, v, v_min, v_max, format = "%.3f", power = 1.0f)
-* ImGui.SliderFloat3(label, v, v_min, v_max, format = "%.3f", power = 1.0f)
-* ImGui.SliderFloat4(label, v, v_min, v_max, format = "%.3f", power = 1.0f)
-* ImGui.SliderInt(label, v, v_min, v_max, format = "%d")
-* ImGui.SliderInt2(label, v, v_min, v_max, format = "%d")
-* ImGui.SliderInt3(label, v, v_min, v_max, format = "%d")
-* ImGui.SliderInt4(label, v, v_min, v_max, format = "%d")
 * ImGui.SmallButton(label)
 * ImGui.Spacing()
 * ImGui.StyleColorsClassic(dst = NULL)
 * ImGui.StyleColorsDark(dst = NULL)
 * ImGui.StyleColorsLight(dst = NULL)
+* ImGui.TabItemButton(label, flags = 0)
 * ImGui.Text(fmt)
 * ImGui.TextColored(col, fmt)
 * ImGui.TextDisabled(fmt)
@@ -326,12 +301,23 @@
 * ImGui.TreePush(str_id)
 * ImGui.Unindent(indent_w = 0.0f)
 * ImGui.UpdatePlatformWindows()
-* ImGui.VSliderFloat(label, size, v, v_min, v_max, format = "%.3f", power = 1.0f)
-* ImGui.VSliderInt(label, size, v, v_min, v_max, format = "%d")
 * ImGui.Value(prefix, v, float_format = NULL)
 
-### Unsupported methods (23)
+### Unsupported methods (51)
 * ImGui.AcceptDragDropPayload
+* ImGui.BeginPopupContextItem
+* ImGui.BeginPopupContextVoid
+* ImGui.BeginPopupContextWindow
+* ImGui.DragFloat
+* ImGui.DragFloat2
+* ImGui.DragFloat3
+* ImGui.DragFloat4
+* ImGui.DragFloatRange2
+* ImGui.DragInt
+* ImGui.DragInt2
+* ImGui.DragInt3
+* ImGui.DragInt4
+* ImGui.DragIntRange2
 * ImGui.FindViewportByID
 * ImGui.FindViewportByPlatformHandle
 * ImGui.GetDragDropPayload
@@ -343,8 +329,12 @@
 * ImGui.GetPlatformIO
 * ImGui.GetStateStorage
 * ImGui.GetWindowViewport
+* ImGui.InvisibleButton
+* ImGui.IsPopupOpen
 * ImGui.ListBox
 * ImGui.LoadIniSettingsFromMemory
+* ImGui.OpenPopup
+* ImGui.OpenPopupOnItemClick
 * ImGui.PlotHistogram
 * ImGui.PlotLines
 * ImGui.PushFont
@@ -354,3 +344,14 @@
 * ImGui.SetNextWindowClass
 * ImGui.SetNextWindowSizeConstraints
 * ImGui.SetStateStorage
+* ImGui.SliderAngle
+* ImGui.SliderFloat
+* ImGui.SliderFloat2
+* ImGui.SliderFloat3
+* ImGui.SliderFloat4
+* ImGui.SliderInt
+* ImGui.SliderInt2
+* ImGui.SliderInt3
+* ImGui.SliderInt4
+* ImGui.VSliderFloat
+* ImGui.VSliderInt
