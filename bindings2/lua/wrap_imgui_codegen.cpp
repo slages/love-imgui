@@ -834,13 +834,13 @@ int w_ImDrawList_AddText(lua_State* L)
 
 void wrap_imgui::addImguiWrappers(lua_State* L)
 {
-<% for name in util.sortedPairs(imgui.functions.ImGui.validNames) do -%>
+<% for name in util.lineNumberPairs(imgui.functions.ImGui.validNames) do -%>
 	lua_pushcfunction(L, w_<%- name %>);
 	lua_setfield(L, -2, "<%- name %>");
 <% end -%>
 
 	luaL_newmetatable(L, "ImDrawList");
-<% for name in util.sortedPairs(imgui.functions.ImDrawList.validNames) do -%>
+<% for name in util.lineNumberPairs(imgui.functions.ImDrawList.validNames) do -%>
 	lua_pushcfunction(L, w_ImDrawList_<%- name %>);
 	lua_setfield(L, -2, "<%- name %>");
 <% end -%>

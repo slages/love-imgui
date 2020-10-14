@@ -254,8 +254,21 @@ local function parseImguiOverrideFunction(line)
 	}
 end
 
-local function findFunctions(source, data, class)
+local function addLineInfoToFunction(fnData, rawLine, linemap, lastLineIndex)
+	for lineIndex = lastLineIndex, #linemap do
+		local lineInfo = linemap[lineIndex]
+		if lineInfo.rawLine == rawLine then
+			fnData.sourceFilePath = lineInfo.filePath
+			fnData.sourceFileLine = lineInfo.lineNumber
+			return lineIndex
+		end
+	end
+	error("line not found")
+end
+
+local function findFunctions(source, linemap, data, class)
 	local functions = {}
+	local lastLineIndex = 1
 
 	-- step 1. find functions
 	local start, stop = source:find("[^\n]+")
@@ -266,6 +279,7 @@ local function findFunctions(source, data, class)
 			local methodClass = getClassFromRegions(regions)
 			if methodClass == class then
 				local fnData = parseImguiFunction(line, regions)
+				lastLineIndex = addLineInfoToFunction(fnData, line, linemap, lastLineIndex)
 				if not SKIP_FUNCTIONS[fnData.name] and not fnData.name:match("V$") then
 					table.insert(functions, fnData)
 				end
@@ -299,10 +313,27 @@ end
 local Parse = {}
 function Parse.parseHeaders(filenames)
 	local sources = {}
+	local linemap = {}
 	for _, fname in ipairs(filenames) do
 		util.logf("Parsing %s", fname)
 		local file = assert(io.open(fname, 'r'))
-		table.insert(sources, file:read('*a'))
+		local fileData = file:read('*a')
+		table.insert(sources, fileData)
+
+		local nextLineNumber = 1
+		local from = 1
+		local delim_from, delim_to = fileData:find("\n", from)
+		while delim_from do
+			local line = fileData:sub(from , delim_from-1)
+			table.insert(linemap, {rawLine = line, filePath = fname, lineNumber = nextLineNumber})
+			nextLineNumber = nextLineNumber + 1
+
+			from  = delim_to + 1
+			delim_from, delim_to = fileData:find("\n", from)
+		end
+		local line = fileData:sub(from)
+		table.insert(linemap, {rawLine = line, filePath = fname, lineNumber = nextLineNumber})
+
 		file:close()
 	end
 	local source = table.concat(sources, "\n")
@@ -318,8 +349,8 @@ function Parse.parseHeaders(filenames)
 	data.enums = findEnums(source)
 
 	data.functions = {}
-	data.functions["ImGui"] = findFunctions(source, data)
-	data.functions["ImDrawList"] = findFunctions(source, data, "ImDrawList")
+	data.functions["ImGui"] = findFunctions(source, linemap, data)
+	data.functions["ImDrawList"] = findFunctions(source, linemap, data, "ImDrawList")
 
 	return data
 end

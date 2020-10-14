@@ -1,6 +1,7 @@
 local Parse = require 'bindings2.parse'
 local Buffer = require 'bindings2.buffer'
 local Types = require 'bindings2.lua.types'
+local util = require 'bindings2.util'
 
 local helpers = {}
 
@@ -193,18 +194,6 @@ function helpers.addInvalidFunction(fnElement, fnData)
 	end
 end
 
-local function prettifyDefault(defaultStr)
-	if defaultStr == "NULL" then
-		return "nil"
-	else
-		local maybeFloat = defaultStr:match("(.+)f$")
-		if tonumber(maybeFloat) then
-			return maybeFloat
-		end
-	end
-	return defaultStr
-end
-
 function helpers.generateDocSignature(fnData)
 	if fnData.luaArgumentTypes and fnData.luaReturnTypes then
 		-- this is a valid function
@@ -213,6 +202,11 @@ function helpers.generateDocSignature(fnData)
 			qualifiedName = ("%s:%s"):format(fnData.class, fnData.name)
 		else
 			qualifiedName = ("ImGui.%s"):format(fnData.name)
+		end
+		-- make into a clickable link
+		if fnData.sourceFilePath then
+			qualifiedName = string.format("[%s](%s)", qualifiedName,
+				util.createGithubLink(fnData.sourceFilePath, fnData.sourceFileLine))
 		end
 
 		local args = {}
@@ -226,10 +220,11 @@ function helpers.generateDocSignature(fnData)
 				argstr = argstr .. ": " .. argData.type
 			end
 			if argData.default then
-				argstr = argstr .. " = " .. prettifyDefault(argData.default)
+				argstr = argstr .. " = " .. argData.default
 			end
 			table.insert(args, argstr)
 		end
+
 		if fnData.isVarargs then
 			table.insert(args, "...")
 		end
@@ -247,13 +242,18 @@ function helpers.generateDocSignature(fnData)
 			table.insert(rets, retstr)
 		end
 
+		local sig
 		if rets[1] then
-			return string.format("%s(%s) -> %s", qualifiedName, table.concat(args, ", "), table.concat(rets, ", "))
+			sig = string.format("%s(%s) -> %s", qualifiedName, table.concat(args, ", "), table.concat(rets, ", "))
 		else
-			return string.format("%s(%s)", qualifiedName, table.concat(args, ", "))
+			sig = string.format("%s(%s)", qualifiedName, table.concat(args, ", "))
 		end
+		if fnData.comment then
+			sig = sig .. "\n"..fnData.comment
+		end
+		return sig
 	else
-		--probably invalid
+		--probably invalid, we should revamp this
 		local args = {}
 		for _, arg in ipairs(fnData.arguments) do
 			if arg.default then

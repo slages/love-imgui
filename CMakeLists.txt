@@ -24,6 +24,7 @@ IF(EnableCodeGen)
 
 		bindings2/lua/types.lua
 		bindings2/lua/generate.lua
+		bindings2/lua/generate_autocomplete.lua
 		bindings2/lua/wrap_imgui_codegen.cpp
 		bindings2/lua/wrap_imgui_codegen.h
 		bindings2/lua/api_details.md

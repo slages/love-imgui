@@ -1,17 +1,21 @@
 local json = require 'bindings2.dkjson'
 local util = require 'bindings2.util'
 
+local function jsonObject(t)
+	return setmetatable(t or {}, {__jsontype = "object"})
+end
+
 local function createTableType()
-	return {type = 'table', fields = {}}
+	return { type = 'table', fields = jsonObject() }
 end
 
 local function createFunctionType()
-	return {type = 'function' }
+	return {type = 'function'}
 end
 
 local g_usedRefs = {}
 local function createDataRefType(name)
-	g_usedRefs[name] = { type = "table", fields = {} }
+	g_usedRefs[name] = createTableType()
 	return {type = 'ref', name = name}
 end
 
@@ -31,6 +35,7 @@ local function addFunctions(tableType, imguiFunctions)
 			table.insert(fn.args, arg)
 			table.insert(fn.argTypes, createDataRefType(fnData.class))
 		end
+
 		if fnData.luaArgumentTypes and fnData.luaArgumentTypes[1] then
 			for _, argData in ipairs(fnData.luaArgumentTypes) do
 				if argData.type == 'userdata' or argData.type == 'lightuserdata' then
@@ -62,6 +67,14 @@ local function addFunctions(tableType, imguiFunctions)
 					table.insert(fn.returnTypes, {type = returnData.type})
 				end
 			end
+		end
+
+		if fnData.comment then
+			fn.descriptionPlain = fnData.comment
+		end
+
+		if fnData.sourceFileLine then
+			fn.link = util.createGithubLink(fnData.sourceFilePath, fnData.sourceFileLine)
 		end
 
 		tableType.fields[name] = fn
@@ -97,10 +110,13 @@ function helpers.generateAutocomplete(imgui)
 		'namedTypes',
 		'type',
 		'description',
+		'descriptionPlain',
+		'link',
 		'fields',
 		'args',
+		'argTypes',
 		'returnTypes',
-		'link'
+		'variants',
 	}
 
 	local api = generate(imgui)

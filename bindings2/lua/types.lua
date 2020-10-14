@@ -3,16 +3,56 @@ local util = require 'bindings2.util'
 local Types = {}
 
 do
+	local function getImVecDefaults(defaultStr)
+		if defaultStr == "NULL" then
+			return "NULL", "NULL", "NULL", "NULL"
+		end
+		local o = {}
+		local args = defaultStr:match("(%b())"):sub(2, -2)
+		for s in args:gmatch("[^,%s]+") do
+			table.insert(o, s)
+		end
+		return unpack(o)
+	end
+
+	local function prettifyDefault(defaultStr)
+		if not defaultStr then
+			return nil
+		end
+		if defaultStr == "NULL" then
+			return "nil"
+		end
+		local maybeFloat = defaultStr:match("(.+)f$")
+		if maybeFloat and tonumber(maybeFloat) then
+			defaultStr = maybeFloat
+		end
+		if tonumber(defaultStr) then
+			return tostring(tonumber(defaultStr))
+		end
+		return defaultStr
+	end
+
+	local function addLuaArg(fnData, arg, luaType, argExtra)
+		local argType = { name = arg.name, type = luaType, default = arg.default }
+		if argExtra then
+			for k, v in pairs(argExtra) do
+				argType[k] = v
+			end
+		end
+		argType.default = prettifyDefault(argType.default)
+		table.insert(fnData.luaArgumentTypes, argType)
+		return argType
+	end
+
 	-- Check argument types
 	local function simple_arg(getter, defaultGetter, luaType)
 		return function(buf, fnData, arg, i)
 			if arg.default then
 				buf:addf("auto %s = %s(L, %d, %s);", arg.name, defaultGetter, i, arg.default)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType, default = arg.default})
 			else
 				buf:addf("auto %s = %s(L, %d);", arg.name, getter, i)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType})
 			end
+			addLuaArg(fnData, arg, luaType)
 			return i + 1
 		end
 	end
@@ -21,11 +61,10 @@ do
 		return function(buf, fnData, arg, i)
 			if arg.default then
 				buf:addf("auto %s = static_cast<%s>(%s(L, %d, %s));", arg.name, ctype, defaultGetter, i, arg.default)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType, default = arg.default})
 			else
 				buf:addf("auto %s = static_cast<%s>(%s(L, %d));", arg.name, ctype, getter, i)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType})
 			end
+			addLuaArg(fnData, arg, luaType)
 			return i + 1
 		end
 	end
@@ -34,11 +73,10 @@ do
 		return function(buf, fnData, arg, i)
 			if arg.default then
 				buf:addf("auto %s = luax_optenum<%s>(%s, L, %d, %s);", arg.name, ctype, fromstring, i, arg.default)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = "enum", enum = ctype, default = arg.default})
 			else
 				buf:addf("auto %s = luax_checkenum<%s>(%s, L, %d);", arg.name, ctype, fromstring, i)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = "enum", enum = ctype})
 			end
+			addLuaArg(fnData, arg, "enum", {enum = ctype})
 			return i + 1
 		end
 	end
@@ -47,11 +85,10 @@ do
 		return function(buf, fnData, arg, i)
 			if arg.default then
 				buf:addf("auto %s = luax_optflags<%s>(%s, L, %d, %s);", arg.name, ctype, fromstring, i, arg.default)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = "flags", enum = ctype, default = arg.default})
 			else
 				buf:addf("auto %s = luax_checkflags<%s>(%s, L, %d);", arg.name, ctype, fromstring, i)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = "flags", enum = ctype})
 			end
+			addLuaArg(fnData, arg, "flags", {enum = ctype})
 			return i + 1
 		end
 	end
@@ -72,13 +109,12 @@ do
 		return function(buf, fnData, arg, i, outParams)
 			if arg.default then
 				buf:addf("%s %s = %s(L, %d, %s);", ctype, arg.name, defaultGetter, i, arg.default)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType, default = arg.default})
 			else
 				buf:addf("%s %s = %s(L, %d);", ctype, arg.name, getter, i)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType})
 			end
 			arg.isOutParam = true
 			table.insert(outParams, {arg.name, ctype})
+			addLuaArg(fnData, arg, luaType)
 			return i + 1
 		end
 	end
@@ -87,13 +123,12 @@ do
 		return function(buf, fnData, arg, i, outParams)
 			if arg.default then
 				buf:addf("auto %s = static_cast<%s>(%s(L, %d, %s));", arg.name, ctype, defaultGetter, i, arg.default)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType, default = arg.default})
 			else
 				buf:addf("auto %s = static_cast<%s>(%s(L, %d));", arg.name, ctype, getter, i)
-				table.insert(fnData.luaArgumentTypes, {name = arg.name, type = luaType})
 			end
 			arg.isOutParam = true
 			table.insert(outParams, {arg.name, ctype})
+			addLuaArg(fnData, arg, luaType)
 			return i + 1
 		end
 	end
@@ -108,21 +143,9 @@ do
 				arg.isOutParam = true
 				table.insert(outParams, {element, ctype})
 			end
-			table.insert(fnData.luaArgumentTypes, {name = arg.name, type = "table"})
+			addLuaArg(fnData, arg, "table")
 			return i + size
 		end
-	end
-
-	local function getImVecDefaults(defaultStr)
-		if defaultStr == "NULL" then
-			return "NULL", "NULL", "NULL", "NULL"
-		end
-		local o = {}
-		local args = defaultStr:match("(%b())"):sub(2, -2)
-		for s in args:gmatch("[^,]+") do
-			table.insert(o, s)
-		end
-		return unpack(o)
 	end
 
 	local typeCheckers = {
@@ -154,8 +177,8 @@ do
 					buf:addf("%s_buf.x = luax_checkfloat(L, %d);", name, i)
 					buf:addf("%s_buf.y = luax_checkfloat(L, %d);", name, i+1)
 				buf:unindent() buf:add("}")
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = x})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = y})
+				addLuaArg(fnData, arg, "number", {name = name.."_x", default = x})
+				addLuaArg(fnData, arg, "number", {name = name.."_y", default = y})
 				return i + 2
 			else
 				return i, "stop"
@@ -168,14 +191,14 @@ do
 				buf:addf("auto %s = %s;", name, arg.default)
 				buf:addf("%s.x = luax_optfloat(L, %d, %s.x);", name, i, name)
 				buf:addf("%s.y = luax_optfloat(L, %d, %s.y);", name, i+1, name)
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = x})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = y})
+				addLuaArg(fnData, arg, "number", {name = name.."_x", default = x})
+				addLuaArg(fnData, arg, "number", {name = name.."_y", default = y})
 			else
 				buf:addf("ImVec2 %s;", name)
 				buf:addf("%s.x = luax_checkfloat(L, %d);", name, i)
 				buf:addf("%s.y = luax_checkfloat(L, %d);", name, i+1)
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number"})
+				addLuaArg(fnData, arg, "number", {name = name.."_x"})
+				addLuaArg(fnData, arg, "number", {name = name.."_y"})
 			end
 			return i+2
 		end,
@@ -188,20 +211,20 @@ do
 				buf:addf("%s.y = luax_optfloat(L, %d, %s.y);", name, i+1, name)
 				buf:addf("%s.z = luax_optfloat(L, %d, %s.z);", name, i+2, name)
 				buf:addf("%s.w = luax_optfloat(L, %d, %s.w);", name, i+3, name)
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number", default = x})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number", default = y})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_z", type = "number", default = z})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_w", type = "number", default = w})
+				addLuaArg(fnData, arg, "number", {name = name.."_x", default = x})
+				addLuaArg(fnData, arg, "number", {name = name.."_y", default = y})
+				addLuaArg(fnData, arg, "number", {name = name.."_z", default = z})
+				addLuaArg(fnData, arg, "number", {name = name.."_w", default = w})
 			else
 				buf:addf("ImVec4 %s;", name)
 				buf:addf("%s.x = luax_checkfloat(L, %d);", name, i)
 				buf:addf("%s.y = luax_checkfloat(L, %d);", name, i+1)
 				buf:addf("%s.z = luax_checkfloat(L, %d);", name, i+2)
 				buf:addf("%s.w = luax_checkfloat(L, %d);", name, i+3)
-				table.insert(fnData.luaArgumentTypes, {name = name.."_x", type = "number"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_y", type = "number"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_z", type = "number"})
-				table.insert(fnData.luaArgumentTypes, {name = name.."_w", type = "number"})
+				addLuaArg(fnData, arg, "number", {name = name.."_x"})
+				addLuaArg(fnData, arg, "number", {name = name.."_y"})
+				addLuaArg(fnData, arg, "number", {name = name.."_z"})
+				addLuaArg(fnData, arg, "number", {name = name.."_w"})
 			end
 			return i + 4
 		end,
@@ -212,7 +235,7 @@ do
 		end,
 		["const std::vector<float>&"] = function(buf, fnData, arg, i, _)
 			buf:addf("std::vector<float> %s = luax_checkfloatvector(L, %d);", arg.name, i)
-			table.insert(fnData.luaArgumentTypes, {name = arg.name, type = "table"})
+			addLuaArg(fnData, arg, "table")
 			return i+1
 		end,
 		["ImGuiInputTextCallback"] = function(buf, fnData, arg, i, _)
@@ -220,7 +243,7 @@ do
 			buf:addf("ImGuiInputTextCallback %s = callLuaInputTextCallback;", name)
 			buf:addf("void* user_data = luax_getImguiInputTextCallback(L, %d);", i)
 			buf:addf("if (!user_data) { %s = nullptr; }", name)
-			table.insert(fnData.luaArgumentTypes, {name = arg.name, type = "function"})
+			addLuaArg(fnData, arg, "function")
 		end,
 
 		-- TODO

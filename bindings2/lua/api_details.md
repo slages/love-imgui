@@ -3,7 +3,7 @@ This file was automatically generated on <%- os.date("!%c") %>, UTC
 # <%- elementName %>
 
 ### Supported methods (<%- util.count(fnElement.validNames) %>)
-<% for name, data in util.sortedPairs(fnElement.validNames) do -%>
+<% for name, data in util.lineNumberPairs(fnElement.validNames) do -%>
 * <%- helpers.generateDocSignature(data) %>
 <% end -%>
 
