@@ -249,7 +249,9 @@ function helpers.generateDocSignature(fnData)
 			sig = string.format("%s(%s)", qualifiedName, table.concat(args, ", "))
 		end
 		if fnData.comment then
-			sig = sig .. "\n"..fnData.comment
+			sig = sig .. "\n\n"..fnData.comment .."\n\n"
+		else
+			sig = sig .. "\n\nNo source comment. See imgui.h for more info.\n\n"
 		end
 		return sig
 	else
