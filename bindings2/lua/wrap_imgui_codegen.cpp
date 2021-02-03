@@ -827,6 +827,12 @@ int w_ImDrawList_AddText(lua_State* L)
 	return w_ImDrawList_AddText_Override1(L);
 }
 
+int w_CheckboxFlags(lua_State* L)
+{
+	return w_CheckboxFlags_Override1(L);
+}
+
+
 // End Function Overrides }}}
 }
 

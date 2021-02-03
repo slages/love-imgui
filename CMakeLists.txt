@@ -59,6 +59,7 @@ ADD_LIBRARY(imgui
 	deps/libimgui/imgui_demo.cpp
 	deps/libimgui/imgui_draw.cpp
 	deps/libimgui/imgui_internal.h
+	deps/libimgui/imgui_tables.cpp
 	deps/libimgui/imgui_widgets.cpp
 	deps/libimgui/imstb_rectpack.h
 	deps/libimgui/imstb_textedit.h
@@ -122,15 +123,15 @@ if(EnableWren)
 		src/wren-bindings/wrap_imgui_codegen.cpp
 		src/wren-bindings/wrap_imgui_codegen.h
 
-		deps/libimgui/examples/imgui_impl_sdl.cpp
-		deps/libimgui/examples/imgui_impl_vulkan.cpp
+		deps/libimgui/backends/imgui_impl_sdl.cpp
+		deps/libimgui/backends/imgui_impl_vulkan.cpp
 		src/wren-example-imgui/main.cpp
 	)
 
 	TARGET_INCLUDE_DIRECTORIES(wren-example-imgui
 		PUBLIC
 		src/wren-bindings
-		deps/libimgui/examples
+		deps/libimgui/backends
 		"${SDL2_INCLUDE_DIR}"
 		"${SDL2_INCLUDE_DIR}/SDL2"
 		"${Vulkan_INCLUDE_DIR}"

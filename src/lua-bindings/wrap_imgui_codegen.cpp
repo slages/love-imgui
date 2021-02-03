@@ -402,6 +402,106 @@ std::optional<ImGuiTabItemFlags_> getImGuiTabItemFlagsFromString(const char* in)
 }
 // skipping getStringFromImGuiTabItemFlags() converting flags TODO
 
+std::optional<ImGuiTableFlags_> getImGuiTableFlagsFromString(const char* in)
+{
+	if (strcmp(in, "NoClip") == 0) { return ImGuiTableFlags_NoClip; }
+	if (strcmp(in, "SizingFixedSame") == 0) { return ImGuiTableFlags_SizingFixedSame; }
+	if (strcmp(in, "BordersOuterV") == 0) { return ImGuiTableFlags_BordersOuterV; }
+	if (strcmp(in, "Borders") == 0) { return ImGuiTableFlags_Borders; }
+	if (strcmp(in, "BordersInnerV") == 0) { return ImGuiTableFlags_BordersInnerV; }
+	if (strcmp(in, "SizingStretchProp") == 0) { return ImGuiTableFlags_SizingStretchProp; }
+	if (strcmp(in, "SortMulti") == 0) { return ImGuiTableFlags_SortMulti; }
+	if (strcmp(in, "NoPadInnerX") == 0) { return ImGuiTableFlags_NoPadInnerX; }
+	if (strcmp(in, "ScrollY") == 0) { return ImGuiTableFlags_ScrollY; }
+	if (strcmp(in, "BordersInnerH") == 0) { return ImGuiTableFlags_BordersInnerH; }
+	if (strcmp(in, "NoPadOuterX") == 0) { return ImGuiTableFlags_NoPadOuterX; }
+	if (strcmp(in, "BordersH") == 0) { return ImGuiTableFlags_BordersH; }
+	if (strcmp(in, "NoHostExtendX") == 0) { return ImGuiTableFlags_NoHostExtendX; }
+	if (strcmp(in, "NoBordersInBodyUntilResize") == 0) { return ImGuiTableFlags_NoBordersInBodyUntilResize; }
+	if (strcmp(in, "SortTristate") == 0) { return ImGuiTableFlags_SortTristate; }
+	if (strcmp(in, "PreciseWidths") == 0) { return ImGuiTableFlags_PreciseWidths; }
+	if (strcmp(in, "None") == 0) { return ImGuiTableFlags_None; }
+	if (strcmp(in, "NoBordersInBody") == 0) { return ImGuiTableFlags_NoBordersInBody; }
+	if (strcmp(in, "ContextMenuInBody") == 0) { return ImGuiTableFlags_ContextMenuInBody; }
+	if (strcmp(in, "Sortable") == 0) { return ImGuiTableFlags_Sortable; }
+	if (strcmp(in, "BordersInner") == 0) { return ImGuiTableFlags_BordersInner; }
+	if (strcmp(in, "SizingMask_") == 0) { return ImGuiTableFlags_SizingMask_; }
+	if (strcmp(in, "NoSavedSettings") == 0) { return ImGuiTableFlags_NoSavedSettings; }
+	if (strcmp(in, "Resizable") == 0) { return ImGuiTableFlags_Resizable; }
+	if (strcmp(in, "BordersOuter") == 0) { return ImGuiTableFlags_BordersOuter; }
+	if (strcmp(in, "SizingStretchSame") == 0) { return ImGuiTableFlags_SizingStretchSame; }
+	if (strcmp(in, "NoHostExtendY") == 0) { return ImGuiTableFlags_NoHostExtendY; }
+	if (strcmp(in, "BordersV") == 0) { return ImGuiTableFlags_BordersV; }
+	if (strcmp(in, "Reorderable") == 0) { return ImGuiTableFlags_Reorderable; }
+	if (strcmp(in, "SizingFixedFit") == 0) { return ImGuiTableFlags_SizingFixedFit; }
+	if (strcmp(in, "BordersOuterH") == 0) { return ImGuiTableFlags_BordersOuterH; }
+	if (strcmp(in, "NoKeepColumnsVisible") == 0) { return ImGuiTableFlags_NoKeepColumnsVisible; }
+	if (strcmp(in, "ScrollX") == 0) { return ImGuiTableFlags_ScrollX; }
+	if (strcmp(in, "RowBg") == 0) { return ImGuiTableFlags_RowBg; }
+	if (strcmp(in, "Hideable") == 0) { return ImGuiTableFlags_Hideable; }
+	if (strcmp(in, "PadOuterX") == 0) { return ImGuiTableFlags_PadOuterX; }
+	return std::nullopt;
+}
+// skipping getStringFromImGuiTableFlags() converting flags TODO
+
+std::optional<ImGuiTableColumnFlags_> getImGuiTableColumnFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiTableColumnFlags_None; }
+	if (strcmp(in, "NoSort") == 0) { return ImGuiTableColumnFlags_NoSort; }
+	if (strcmp(in, "IndentMask_") == 0) { return ImGuiTableColumnFlags_IndentMask_; }
+	if (strcmp(in, "NoResize") == 0) { return ImGuiTableColumnFlags_NoResize; }
+	if (strcmp(in, "IndentEnable") == 0) { return ImGuiTableColumnFlags_IndentEnable; }
+	if (strcmp(in, "NoSortDescending") == 0) { return ImGuiTableColumnFlags_NoSortDescending; }
+	if (strcmp(in, "IndentDisable") == 0) { return ImGuiTableColumnFlags_IndentDisable; }
+	if (strcmp(in, "PreferSortDescending") == 0) { return ImGuiTableColumnFlags_PreferSortDescending; }
+	if (strcmp(in, "WidthMask_") == 0) { return ImGuiTableColumnFlags_WidthMask_; }
+	if (strcmp(in, "NoHide") == 0) { return ImGuiTableColumnFlags_NoHide; }
+	if (strcmp(in, "NoDirectResize_") == 0) { return ImGuiTableColumnFlags_NoDirectResize_; }
+	if (strcmp(in, "StatusMask_") == 0) { return ImGuiTableColumnFlags_StatusMask_; }
+	if (strcmp(in, "DefaultSort") == 0) { return ImGuiTableColumnFlags_DefaultSort; }
+	if (strcmp(in, "IsHovered") == 0) { return ImGuiTableColumnFlags_IsHovered; }
+	if (strcmp(in, "NoSortAscending") == 0) { return ImGuiTableColumnFlags_NoSortAscending; }
+	if (strcmp(in, "IsVisible") == 0) { return ImGuiTableColumnFlags_IsVisible; }
+	if (strcmp(in, "NoReorder") == 0) { return ImGuiTableColumnFlags_NoReorder; }
+	if (strcmp(in, "NoHeaderWidth") == 0) { return ImGuiTableColumnFlags_NoHeaderWidth; }
+	if (strcmp(in, "IsEnabled") == 0) { return ImGuiTableColumnFlags_IsEnabled; }
+	if (strcmp(in, "DefaultHide") == 0) { return ImGuiTableColumnFlags_DefaultHide; }
+	if (strcmp(in, "WidthFixed") == 0) { return ImGuiTableColumnFlags_WidthFixed; }
+	if (strcmp(in, "WidthStretch") == 0) { return ImGuiTableColumnFlags_WidthStretch; }
+	if (strcmp(in, "NoClip") == 0) { return ImGuiTableColumnFlags_NoClip; }
+	if (strcmp(in, "IsSorted") == 0) { return ImGuiTableColumnFlags_IsSorted; }
+	if (strcmp(in, "PreferSortAscending") == 0) { return ImGuiTableColumnFlags_PreferSortAscending; }
+	return std::nullopt;
+}
+// skipping getStringFromImGuiTableColumnFlags() converting flags TODO
+
+std::optional<ImGuiTableRowFlags_> getImGuiTableRowFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiTableRowFlags_None; }
+	if (strcmp(in, "Headers") == 0) { return ImGuiTableRowFlags_Headers; }
+	return std::nullopt;
+}
+// skipping getStringFromImGuiTableRowFlags() converting flags TODO
+
+std::optional<ImGuiTableBgTarget_> getImGuiTableBgTargetFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiTableBgTarget_None; }
+	if (strcmp(in, "CellBg") == 0) { return ImGuiTableBgTarget_CellBg; }
+	if (strcmp(in, "RowBg1") == 0) { return ImGuiTableBgTarget_RowBg1; }
+	if (strcmp(in, "RowBg0") == 0) { return ImGuiTableBgTarget_RowBg0; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiTableBgTarget(ImGuiTableBgTarget in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 3: return "CellBg";
+		case 2: return "RowBg1";
+		case 1: return "RowBg0";
+	}
+	return "";
+}
+
 std::optional<ImGuiFocusedFlags_> getImGuiFocusedFlagsFromString(const char* in)
 {
 	if (strcmp(in, "None") == 0) { return ImGuiFocusedFlags_None; }
@@ -507,6 +607,23 @@ const char* getStringFromImGuiDir(ImGuiDir in)
 		case 1: return "Right";
 		case 2: return "Up";
 		case 3: return "Down";
+	}
+	return "";
+}
+
+std::optional<ImGuiSortDirection_> getImGuiSortDirectionFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiSortDirection_None; }
+	if (strcmp(in, "Descending") == 0) { return ImGuiSortDirection_Descending; }
+	if (strcmp(in, "Ascending") == 0) { return ImGuiSortDirection_Ascending; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiSortDirection(ImGuiSortDirection in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 2: return "Descending";
+		case 1: return "Ascending";
 	}
 	return "";
 }
@@ -683,18 +800,23 @@ std::optional<ImGuiCol_> getImGuiColFromString(const char* in)
 	if (strcmp(in, "PlotHistogramHovered") == 0) { return ImGuiCol_PlotHistogramHovered; }
 	if (strcmp(in, "PlotLines") == 0) { return ImGuiCol_PlotLines; }
 	if (strcmp(in, "SliderGrab") == 0) { return ImGuiCol_SliderGrab; }
+	if (strcmp(in, "ButtonActive") == 0) { return ImGuiCol_ButtonActive; }
 	if (strcmp(in, "TextSelectedBg") == 0) { return ImGuiCol_TextSelectedBg; }
 	if (strcmp(in, "TabUnfocused") == 0) { return ImGuiCol_TabUnfocused; }
+	if (strcmp(in, "TableRowBg") == 0) { return ImGuiCol_TableRowBg; }
 	if (strcmp(in, "TitleBgCollapsed") == 0) { return ImGuiCol_TitleBgCollapsed; }
 	if (strcmp(in, "TitleBg") == 0) { return ImGuiCol_TitleBg; }
+	if (strcmp(in, "NavWindowingHighlight") == 0) { return ImGuiCol_NavWindowingHighlight; }
 	if (strcmp(in, "NavHighlight") == 0) { return ImGuiCol_NavHighlight; }
 	if (strcmp(in, "SeparatorHovered") == 0) { return ImGuiCol_SeparatorHovered; }
-	if (strcmp(in, "ResizeGrip") == 0) { return ImGuiCol_ResizeGrip; }
-	if (strcmp(in, "ButtonActive") == 0) { return ImGuiCol_ButtonActive; }
-	if (strcmp(in, "SeparatorActive") == 0) { return ImGuiCol_SeparatorActive; }
-	if (strcmp(in, "NavWindowingHighlight") == 0) { return ImGuiCol_NavWindowingHighlight; }
-	if (strcmp(in, "Border") == 0) { return ImGuiCol_Border; }
 	if (strcmp(in, "DragDropTarget") == 0) { return ImGuiCol_DragDropTarget; }
+	if (strcmp(in, "TableRowBgAlt") == 0) { return ImGuiCol_TableRowBgAlt; }
+	if (strcmp(in, "ResizeGrip") == 0) { return ImGuiCol_ResizeGrip; }
+	if (strcmp(in, "TableBorderLight") == 0) { return ImGuiCol_TableBorderLight; }
+	if (strcmp(in, "SeparatorActive") == 0) { return ImGuiCol_SeparatorActive; }
+	if (strcmp(in, "TableBorderStrong") == 0) { return ImGuiCol_TableBorderStrong; }
+	if (strcmp(in, "Border") == 0) { return ImGuiCol_Border; }
+	if (strcmp(in, "TableHeaderBg") == 0) { return ImGuiCol_TableHeaderBg; }
 	if (strcmp(in, "PlotLinesHovered") == 0) { return ImGuiCol_PlotLinesHovered; }
 	if (strcmp(in, "Separator") == 0) { return ImGuiCol_Separator; }
 	if (strcmp(in, "FrameBgHovered") == 0) { return ImGuiCol_FrameBgHovered; }
@@ -731,25 +853,30 @@ const char* getStringFromImGuiCol(ImGuiCol in)
 		case 42: return "PlotHistogram";
 		case 20: return "SliderGrabActive";
 		case 32: return "ResizeGripActive";
-		case 49: return "ModalWindowDimBg";
+		case 54: return "ModalWindowDimBg";
 		case 7: return "FrameBg";
 		case 1: return "TextDisabled";
 		case 31: return "ResizeGripHovered";
 		case 43: return "PlotHistogramHovered";
 		case 40: return "PlotLines";
 		case 19: return "SliderGrab";
-		case 44: return "TextSelectedBg";
+		case 23: return "ButtonActive";
+		case 49: return "TextSelectedBg";
 		case 36: return "TabUnfocused";
+		case 47: return "TableRowBg";
 		case 12: return "TitleBgCollapsed";
 		case 10: return "TitleBg";
-		case 46: return "NavHighlight";
+		case 52: return "NavWindowingHighlight";
+		case 51: return "NavHighlight";
 		case 28: return "SeparatorHovered";
+		case 50: return "DragDropTarget";
+		case 48: return "TableRowBgAlt";
 		case 30: return "ResizeGrip";
-		case 23: return "ButtonActive";
+		case 46: return "TableBorderLight";
 		case 29: return "SeparatorActive";
-		case 47: return "NavWindowingHighlight";
+		case 45: return "TableBorderStrong";
 		case 5: return "Border";
-		case 45: return "DragDropTarget";
+		case 44: return "TableHeaderBg";
 		case 41: return "PlotLinesHovered";
 		case 27: return "Separator";
 		case 8: return "FrameBgHovered";
@@ -763,7 +890,7 @@ const char* getStringFromImGuiCol(ImGuiCol in)
 		case 26: return "HeaderActive";
 		case 21: return "Button";
 		case 17: return "ScrollbarGrabActive";
-		case 48: return "NavWindowingDimBg";
+		case 53: return "NavWindowingDimBg";
 		case 4: return "PopupBg";
 		case 2: return "WindowBg";
 		case 13: return "MenuBarBg";
@@ -786,18 +913,19 @@ std::optional<ImGuiStyleVar_> getImGuiStyleVarFromString(const char* in)
 	if (strcmp(in, "IndentSpacing") == 0) { return ImGuiStyleVar_IndentSpacing; }
 	if (strcmp(in, "PopupBorderSize") == 0) { return ImGuiStyleVar_PopupBorderSize; }
 	if (strcmp(in, "WindowTitleAlign") == 0) { return ImGuiStyleVar_WindowTitleAlign; }
+	if (strcmp(in, "SelectableTextAlign") == 0) { return ImGuiStyleVar_SelectableTextAlign; }
 	if (strcmp(in, "ChildRounding") == 0) { return ImGuiStyleVar_ChildRounding; }
 	if (strcmp(in, "GrabRounding") == 0) { return ImGuiStyleVar_GrabRounding; }
 	if (strcmp(in, "WindowBorderSize") == 0) { return ImGuiStyleVar_WindowBorderSize; }
 	if (strcmp(in, "WindowMinSize") == 0) { return ImGuiStyleVar_WindowMinSize; }
 	if (strcmp(in, "ScrollbarSize") == 0) { return ImGuiStyleVar_ScrollbarSize; }
-	if (strcmp(in, "SelectableTextAlign") == 0) { return ImGuiStyleVar_SelectableTextAlign; }
 	if (strcmp(in, "ButtonTextAlign") == 0) { return ImGuiStyleVar_ButtonTextAlign; }
 	if (strcmp(in, "TabRounding") == 0) { return ImGuiStyleVar_TabRounding; }
+	if (strcmp(in, "GrabMinSize") == 0) { return ImGuiStyleVar_GrabMinSize; }
 	if (strcmp(in, "WindowPadding") == 0) { return ImGuiStyleVar_WindowPadding; }
 	if (strcmp(in, "ItemInnerSpacing") == 0) { return ImGuiStyleVar_ItemInnerSpacing; }
 	if (strcmp(in, "ScrollbarRounding") == 0) { return ImGuiStyleVar_ScrollbarRounding; }
-	if (strcmp(in, "GrabMinSize") == 0) { return ImGuiStyleVar_GrabMinSize; }
+	if (strcmp(in, "CellPadding") == 0) { return ImGuiStyleVar_CellPadding; }
 	if (strcmp(in, "PopupRounding") == 0) { return ImGuiStyleVar_PopupRounding; }
 	if (strcmp(in, "ItemSpacing") == 0) { return ImGuiStyleVar_ItemSpacing; }
 	if (strcmp(in, "WindowRounding") == 0) { return ImGuiStyleVar_WindowRounding; }
@@ -814,18 +942,19 @@ const char* getStringFromImGuiStyleVar(ImGuiStyleVar in)
 		case 15: return "IndentSpacing";
 		case 9: return "PopupBorderSize";
 		case 5: return "WindowTitleAlign";
+		case 23: return "SelectableTextAlign";
 		case 6: return "ChildRounding";
-		case 19: return "GrabRounding";
+		case 20: return "GrabRounding";
 		case 3: return "WindowBorderSize";
 		case 4: return "WindowMinSize";
-		case 16: return "ScrollbarSize";
-		case 22: return "SelectableTextAlign";
-		case 21: return "ButtonTextAlign";
-		case 20: return "TabRounding";
+		case 17: return "ScrollbarSize";
+		case 22: return "ButtonTextAlign";
+		case 21: return "TabRounding";
+		case 19: return "GrabMinSize";
 		case 1: return "WindowPadding";
 		case 14: return "ItemInnerSpacing";
-		case 17: return "ScrollbarRounding";
-		case 18: return "GrabMinSize";
+		case 18: return "ScrollbarRounding";
+		case 16: return "CellPadding";
 		case 8: return "PopupRounding";
 		case 13: return "ItemSpacing";
 		case 2: return "WindowRounding";
@@ -1767,7 +1896,8 @@ int w_ImDrawList_AddText_Override1(lua_State *L)
 
 // skipping w_ImDrawList_AddConvexPolyFilled due to unimplemented argument type: "const ImVec2*"
 
-int w_ImDrawList_AddBezierCurve(lua_State *L)
+/*  Cubic Bezier (4 control points) */
+int w_ImDrawList_AddBezierCubic(lua_State *L)
 {
 	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
 	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
@@ -1788,7 +1918,31 @@ int w_ImDrawList_AddBezierCurve(lua_State *L)
 	auto thickness = luax_checkfloat(L, 11);
 	auto num_segments = luaL_optint(L, 12, 0);
 	
-	self->AddBezierCurve(p1, p2, p3, p4, col, thickness, num_segments);
+	self->AddBezierCubic(p1, p2, p3, p4, col, thickness, num_segments);
+	
+	return 0;
+}
+
+/*  Quadratic Bezier (3 control points) */
+int w_ImDrawList_AddBezierQuadratic(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p1;
+	p1.x = luax_checkfloat(L, 2);
+	p1.y = luax_checkfloat(L, 3);
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 4);
+	p2.y = luax_checkfloat(L, 5);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 6);
+	p3.y = luax_checkfloat(L, 7);
+	auto col = static_cast<ImU32>(luaL_checklong(L, 8));
+	auto thickness = luax_checkfloat(L, 9);
+	auto num_segments = luaL_optint(L, 10, 0);
+	
+	self->AddBezierQuadratic(p1, p2, p3, col, thickness, num_segments);
 	
 	return 0;
 }
@@ -1918,7 +2072,8 @@ int w_ImDrawList_PathArcToFast(lua_State *L)
 	return 0;
 }
 
-int w_ImDrawList_PathBezierCurveTo(lua_State *L)
+/*  Cubic Bezier (4 control points) */
+int w_ImDrawList_PathBezierCubicCurveTo(lua_State *L)
 {
 	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
 	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
@@ -1934,7 +2089,26 @@ int w_ImDrawList_PathBezierCurveTo(lua_State *L)
 	p4.y = luax_checkfloat(L, 7);
 	auto num_segments = luaL_optint(L, 8, 0);
 	
-	self->PathBezierCurveTo(p2, p3, p4, num_segments);
+	self->PathBezierCubicCurveTo(p2, p3, p4, num_segments);
+	
+	return 0;
+}
+
+/*  Quadratic Bezier (3 control points) */
+int w_ImDrawList_PathBezierQuadraticCurveTo(lua_State *L)
+{
+	auto* self_udata = static_cast<WrapImDrawList*>(luaL_checkudata(L, 1, "ImDrawList"));
+	if (!self_udata->isValid()) { luaL_error(L, "Expired userdata"); }
+	auto* self = self_udata->value;
+	ImVec2 p2;
+	p2.x = luax_checkfloat(L, 2);
+	p2.y = luax_checkfloat(L, 3);
+	ImVec2 p3;
+	p3.x = luax_checkfloat(L, 4);
+	p3.y = luax_checkfloat(L, 5);
+	auto num_segments = luaL_optint(L, 6, 0);
+	
+	self->PathBezierQuadraticCurveTo(p2, p3, num_segments);
 	
 	return 0;
 }
@@ -2150,7 +2324,7 @@ int w_EndFrame(lua_State *L)
 	return 0;
 }
 
-/*  ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function (up to v1.60, this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.) */
+/*  ends the Dear ImGui frame, finalize the draw data. You can then get call GetDrawData(). */
 int w_Render(lua_State *L)
 {
 	ImGui::Render();
@@ -2160,12 +2334,23 @@ int w_Render(lua_State *L)
 
 // skipping w_GetDrawData due to unimplemented return type: "ImDrawData*"
 
-/*  create Demo window (previously called ShowTestWindow). demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application! */
+/*  create Demo window. demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application! */
 int w_ShowDemoWindow(lua_State *L)
 {
 	bool p_open = luax_optboolean(L, 1, NULL);
 	
 	ImGui::ShowDemoWindow(&p_open);
+	
+	lua_pushboolean(L, p_open);
+	return 1;
+}
+
+/*  create Metrics/Debugger window. display Dear ImGui internals: windows, draw commands, various internal state, etc. */
+int w_ShowMetricsWindow(lua_State *L)
+{
+	bool p_open = luax_optboolean(L, 1, NULL);
+	
+	ImGui::ShowMetricsWindow(&p_open);
 	
 	lua_pushboolean(L, p_open);
 	return 1;
@@ -2177,17 +2362,6 @@ int w_ShowAboutWindow(lua_State *L)
 	bool p_open = luax_optboolean(L, 1, NULL);
 	
 	ImGui::ShowAboutWindow(&p_open);
-	
-	lua_pushboolean(L, p_open);
-	return 1;
-}
-
-/*  create Debug/Metrics window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
-int w_ShowMetricsWindow(lua_State *L)
-{
-	bool p_open = luax_optboolean(L, 1, NULL);
-	
-	ImGui::ShowMetricsWindow(&p_open);
 	
 	lua_pushboolean(L, p_open);
 	return 1;
@@ -2232,7 +2406,7 @@ int w_ShowUserGuide(lua_State *L)
 	return 0;
 }
 
-/*  get the compiled version string e.g. "1.23" (essentially the compiled value for IMGUI_VERSION) */
+/*  get the compiled version string e.g. "1.80 WIP" (essentially the value for IMGUI_VERSION from the compiled version of imgui.cpp) */
 int w_GetVersion(lua_State *L)
 {
 	const char* out = ImGui::GetVersion();
@@ -2251,22 +2425,22 @@ int w_StyleColorsDark(lua_State *L)
 	return 0;
 }
 
-/*  classic imgui style */
-int w_StyleColorsClassic(lua_State *L)
-{
-	auto dst = static_cast<ImGuiStyle*>(luax_optlightuserdata(L, 1, NULL));
-	
-	ImGui::StyleColorsClassic(dst);
-	
-	return 0;
-}
-
 /*  best used with borders and a custom, thicker font */
 int w_StyleColorsLight(lua_State *L)
 {
 	auto dst = static_cast<ImGuiStyle*>(luax_optlightuserdata(L, 1, NULL));
 	
 	ImGui::StyleColorsLight(dst);
+	
+	return 0;
+}
+
+/*  classic imgui style */
+int w_StyleColorsClassic(lua_State *L)
+{
+	auto dst = static_cast<ImGuiStyle*>(luax_optlightuserdata(L, 1, NULL));
+	
+	ImGui::StyleColorsClassic(dst);
 	
 	return 0;
 }
@@ -2615,20 +2789,20 @@ int w_SetWindowFocus_Override2(lua_State *L)
 	return 0;
 }
 
-/*  current content boundaries (typically window boundaries including scrolling, or current column boundaries), in windows coordinates */
-int w_GetContentRegionMax(lua_State *L)
+/*  == GetContentRegionMax() - GetCursorPos() */
+int w_GetContentRegionAvail(lua_State *L)
 {
-	ImVec2 out = ImGui::GetContentRegionMax();
+	ImVec2 out = ImGui::GetContentRegionAvail();
 	
 	lua_pushnumber(L, out.x);
 	lua_pushnumber(L, out.y);
 	return 2;
 }
 
-/*  == GetContentRegionMax() - GetCursorPos() */
-int w_GetContentRegionAvail(lua_State *L)
+/*  current content boundaries (typically window boundaries including scrolling, or current column boundaries), in windows coordinates */
+int w_GetContentRegionMax(lua_State *L)
 {
-	ImVec2 out = ImGui::GetContentRegionAvail();
+	ImVec2 out = ImGui::GetContentRegionMax();
 	
 	lua_pushnumber(L, out.x);
 	lua_pushnumber(L, out.y);
@@ -2663,7 +2837,7 @@ int w_GetWindowContentRegionWidth(lua_State *L)
 	return 1;
 }
 
-/*  get scrolling amount [0..GetScrollMaxX()] */
+/*  get scrolling amount [0 .. GetScrollMaxX()] */
 int w_GetScrollX(lua_State *L)
 {
 	float out = ImGui::GetScrollX();
@@ -2672,7 +2846,7 @@ int w_GetScrollX(lua_State *L)
 	return 1;
 }
 
-/*  get scrolling amount [0..GetScrollMaxY()] */
+/*  get scrolling amount [0 .. GetScrollMaxY()] */
 int w_GetScrollY(lua_State *L)
 {
 	float out = ImGui::GetScrollY();
@@ -2681,25 +2855,7 @@ int w_GetScrollY(lua_State *L)
 	return 1;
 }
 
-/*  get maximum scrolling amount ~~ ContentSize.x - WindowSize.x */
-int w_GetScrollMaxX(lua_State *L)
-{
-	float out = ImGui::GetScrollMaxX();
-	
-	lua_pushnumber(L, out);
-	return 1;
-}
-
-/*  get maximum scrolling amount ~~ ContentSize.y - WindowSize.y */
-int w_GetScrollMaxY(lua_State *L)
-{
-	float out = ImGui::GetScrollMaxY();
-	
-	lua_pushnumber(L, out);
-	return 1;
-}
-
-/*  set scrolling amount [0..GetScrollMaxX()] */
+/*  set scrolling amount [0 .. GetScrollMaxX()] */
 int w_SetScrollX(lua_State *L)
 {
 	auto scroll_x = luax_checkfloat(L, 1);
@@ -2709,7 +2865,7 @@ int w_SetScrollX(lua_State *L)
 	return 0;
 }
 
-/*  set scrolling amount [0..GetScrollMaxY()] */
+/*  set scrolling amount [0 .. GetScrollMaxY()] */
 int w_SetScrollY(lua_State *L)
 {
 	auto scroll_y = luax_checkfloat(L, 1);
@@ -2717,6 +2873,24 @@ int w_SetScrollY(lua_State *L)
 	ImGui::SetScrollY(scroll_y);
 	
 	return 0;
+}
+
+/*  get maximum scrolling amount ~~ ContentSize.x - WindowSize.x - DecorationsSize.x */
+int w_GetScrollMaxX(lua_State *L)
+{
+	float out = ImGui::GetScrollMaxX();
+	
+	lua_pushnumber(L, out);
+	return 1;
+}
+
+/*  get maximum scrolling amount ~~ ContentSize.y - WindowSize.y - DecorationsSize.y */
+int w_GetScrollMaxY(lua_State *L)
+{
+	float out = ImGui::GetScrollMaxY();
+	
+	lua_pushnumber(L, out);
+	return 1;
 }
 
 /*  adjust scrolling amount to make current cursor position visible. center_x_ratio=0.0: left, 0.5: center, 1.0: right. When using to make a "default/current item" visible, consider using SetItemDefaultFocus() instead. */
@@ -2770,6 +2944,7 @@ int w_PopFont(lua_State *L)
 	return 0;
 }
 
+/*  modify a style color. always use this if you modify the style after NewFrame(). */
 int w_PushStyleColor_Override1(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
@@ -2803,6 +2978,7 @@ int w_PopStyleColor(lua_State *L)
 	return 0;
 }
 
+/*  modify a style float variable. always use this if you modify the style after NewFrame(). */
 int w_PushStyleVar_Override1(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
@@ -2813,6 +2989,7 @@ int w_PushStyleVar_Override1(lua_State *L)
 	return 0;
 }
 
+/*  modify a style ImVec2 variable. always use this if you modify the style after NewFrame(). */
 int w_PushStyleVar_Override2(lua_State *L)
 {
 	auto idx = luax_checkenum<ImGuiStyleVar>(getImGuiStyleVarFromString, L, 1);
@@ -2830,94 +3007,6 @@ int w_PopStyleVar(lua_State *L)
 	auto count = luaL_optint(L, 1, 1);
 	
 	ImGui::PopStyleVar(count);
-	
-	return 0;
-}
-
-/*  retrieve style color as stored in ImGuiStyle structure. use to feed back into PushStyleColor(), otherwise use GetColorU32() to get style color with style alpha baked in. */
-int w_GetStyleColorVec4(lua_State *L)
-{
-	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
-	
-	const ImVec4& out = ImGui::GetStyleColorVec4(idx);
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	lua_pushnumber(L, out.z);
-	lua_pushnumber(L, out.w);
-	return 4;
-}
-
-// skipping w_GetFont due to unimplemented return type: "ImFont*"
-
-/*  get current font size (= height in pixels) of current font with current scale applied */
-int w_GetFontSize(lua_State *L)
-{
-	float out = ImGui::GetFontSize();
-	
-	lua_pushnumber(L, out);
-	return 1;
-}
-
-/*  get UV coordinate for a while pixel, useful to draw custom shapes via the ImDrawList API */
-int w_GetFontTexUvWhitePixel(lua_State *L)
-{
-	ImVec2 out = ImGui::GetFontTexUvWhitePixel();
-	
-	lua_pushnumber(L, out.x);
-	lua_pushnumber(L, out.y);
-	return 2;
-}
-
-/*  push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
-int w_PushItemWidth(lua_State *L)
-{
-	auto item_width = luax_checkfloat(L, 1);
-	
-	ImGui::PushItemWidth(item_width);
-	
-	return 0;
-}
-
-int w_PopItemWidth(lua_State *L)
-{
-	ImGui::PopItemWidth();
-	
-	return 0;
-}
-
-/*  set width of the _next_ common large "item+label" widget. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side) */
-int w_SetNextItemWidth(lua_State *L)
-{
-	auto item_width = luax_checkfloat(L, 1);
-	
-	ImGui::SetNextItemWidth(item_width);
-	
-	return 0;
-}
-
-/*  width of item given pushed settings and current cursor position. NOT necessarily the width of last item unlike most 'Item' functions. */
-int w_CalcItemWidth(lua_State *L)
-{
-	float out = ImGui::CalcItemWidth();
-	
-	lua_pushnumber(L, out);
-	return 1;
-}
-
-/*  push word-wrapping position for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
-int w_PushTextWrapPos(lua_State *L)
-{
-	auto wrap_local_pos_x = luax_optfloat(L, 1, 0.0f);
-	
-	ImGui::PushTextWrapPos(wrap_local_pos_x);
-	
-	return 0;
-}
-
-int w_PopTextWrapPos(lua_State *L)
-{
-	ImGui::PopTextWrapPos();
 	
 	return 0;
 }
@@ -2954,6 +3043,94 @@ int w_PopButtonRepeat(lua_State *L)
 	ImGui::PopButtonRepeat();
 	
 	return 0;
+}
+
+/*  push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -FLT_MIN always align width to the right side). */
+int w_PushItemWidth(lua_State *L)
+{
+	auto item_width = luax_checkfloat(L, 1);
+	
+	ImGui::PushItemWidth(item_width);
+	
+	return 0;
+}
+
+int w_PopItemWidth(lua_State *L)
+{
+	ImGui::PopItemWidth();
+	
+	return 0;
+}
+
+/*  set width of the _next_ common large "item+label" widget. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -FLT_MIN always align width to the right side) */
+int w_SetNextItemWidth(lua_State *L)
+{
+	auto item_width = luax_checkfloat(L, 1);
+	
+	ImGui::SetNextItemWidth(item_width);
+	
+	return 0;
+}
+
+/*  width of item given pushed settings and current cursor position. NOT necessarily the width of last item unlike most 'Item' functions. */
+int w_CalcItemWidth(lua_State *L)
+{
+	float out = ImGui::CalcItemWidth();
+	
+	lua_pushnumber(L, out);
+	return 1;
+}
+
+/*  push word-wrapping position for Text*() commands. < 0.0f: no wrapping; 0.0f: wrap to end of window (or column); > 0.0f: wrap at 'wrap_pos_x' position in window local space */
+int w_PushTextWrapPos(lua_State *L)
+{
+	auto wrap_local_pos_x = luax_optfloat(L, 1, 0.0f);
+	
+	ImGui::PushTextWrapPos(wrap_local_pos_x);
+	
+	return 0;
+}
+
+int w_PopTextWrapPos(lua_State *L)
+{
+	ImGui::PopTextWrapPos();
+	
+	return 0;
+}
+
+// skipping w_GetFont due to unimplemented return type: "ImFont*"
+
+/*  get current font size (= height in pixels) of current font with current scale applied */
+int w_GetFontSize(lua_State *L)
+{
+	float out = ImGui::GetFontSize();
+	
+	lua_pushnumber(L, out);
+	return 1;
+}
+
+/*  get UV coordinate for a while pixel, useful to draw custom shapes via the ImDrawList API */
+int w_GetFontTexUvWhitePixel(lua_State *L)
+{
+	ImVec2 out = ImGui::GetFontTexUvWhitePixel();
+	
+	lua_pushnumber(L, out.x);
+	lua_pushnumber(L, out.y);
+	return 2;
+}
+
+/*  retrieve style color as stored in ImGuiStyle structure. use to feed back into PushStyleColor(), otherwise use GetColorU32() to get style color with style alpha baked in. */
+int w_GetStyleColorVec4(lua_State *L)
+{
+	auto idx = luax_checkenum<ImGuiCol>(getImGuiColFromString, L, 1);
+	
+	const ImVec4& out = ImGui::GetStyleColorVec4(idx);
+	
+	lua_pushnumber(L, out.x);
+	lua_pushnumber(L, out.y);
+	lua_pushnumber(L, out.z);
+	lua_pushnumber(L, out.w);
+	return 4;
 }
 
 /*  separator, generally horizontal. inside a menu bar or in horizontal layout mode, this becomes a vertical separator. */
@@ -3003,7 +3180,7 @@ int w_Dummy(lua_State *L)
 	return 0;
 }
 
-/*  move content position toward the right, by style.IndentSpacing or indent_w if != 0 */
+/*  move content position toward the right, by indent_w, or style.IndentSpacing if indent_w <= 0 */
 int w_Indent(lua_State *L)
 {
 	auto indent_w = luax_optfloat(L, 1, 0.0f);
@@ -3013,7 +3190,7 @@ int w_Indent(lua_State *L)
 	return 0;
 }
 
-/*  move content position back to the left, by style.IndentSpacing or indent_w if != 0 */
+/*  move content position back to the left, by indent_w, or style.IndentSpacing if indent_w <= 0 */
 int w_Unindent(lua_State *L)
 {
 	auto indent_w = luax_optfloat(L, 1, 0.0f);
@@ -3439,7 +3616,20 @@ int w_Checkbox(lua_State *L)
 	return 2;
 }
 
-int w_CheckboxFlags(lua_State *L)
+int w_CheckboxFlags_Override1(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	int flags = luaL_checkint(L, 2);
+	auto flags_value = luaL_checkint(L, 3);
+	
+	bool out = ImGui::CheckboxFlags(label, &flags, flags_value);
+	
+	lua_pushinteger(L, flags);
+	lua_pushboolean(L, out);
+	return 2;
+}
+
+int w_CheckboxFlags_Override2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
 	auto flags = static_cast<unsigned int>(luaL_checkint(L, 2));
@@ -3481,7 +3671,7 @@ int w_RadioButton_Override2(lua_State *L)
 int w_ProgressBar(lua_State *L)
 {
 	auto fraction = luax_checkfloat(L, 1);
-	auto size_arg = ImVec2(-1, 0);
+	auto size_arg = ImVec2(-FLT_MIN, 0);
 	size_arg.x = luax_optfloat(L, 2, size_arg.x);
 	size_arg.y = luax_optfloat(L, 3, size_arg.y);
 	auto overlay = luaL_optstring(L, 4, NULL);
@@ -4181,7 +4371,7 @@ int w_ColorPicker3(lua_State *L)
 
 // skipping w_ColorPicker4: already implemented
 
-/*  display a colored square/button, hover for details, return true when pressed. */
+/*  display a color square/button, hover for details, return true when pressed. */
 int w_ColorButton(lua_State *L)
 {
 	auto desc_id = luaL_checkstring(L, 1);
@@ -4301,16 +4491,16 @@ int w_CollapsingHeader_Override1(lua_State *L)
 	return 1;
 }
 
-/*  when 'p_open' isn't NULL, display an additional small close button on upper right of the header */
+/*  when 'p_visible != NULL': if '*p_visible==true' display an additional small close button on upper right of the header which will set the bool to false when clicked, if '*p_visible==false' don't display the header. */
 int w_CollapsingHeader_Override2(lua_State *L)
 {
 	auto label = luaL_checkstring(L, 1);
-	bool p_open = luax_checkboolean(L, 2);
+	bool p_visible = luax_checkboolean(L, 2);
 	auto flags = luax_optflags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, L, 3, 0);
 	
-	bool out = ImGui::CollapsingHeader(label, &p_open, flags);
+	bool out = ImGui::CollapsingHeader(label, &p_visible, flags);
 	
-	lua_pushboolean(L, p_open);
+	lua_pushboolean(L, p_visible);
 	lua_pushboolean(L, out);
 	return 2;
 }
@@ -4665,6 +4855,156 @@ int w_IsPopupOpen(lua_State *L)
 	
 	lua_pushboolean(L, out);
 	return 1;
+}
+
+int w_BeginTable(lua_State *L)
+{
+	auto str_id = luaL_checkstring(L, 1);
+	auto column = luaL_checkint(L, 2);
+	auto flags = luax_optflags<ImGuiTableFlags>(getImGuiTableFlagsFromString, L, 3, 0);
+	auto outer_size = ImVec2(0.0f, 0.0f);
+	outer_size.x = luax_optfloat(L, 4, outer_size.x);
+	outer_size.y = luax_optfloat(L, 5, outer_size.y);
+	auto inner_width = luax_optfloat(L, 6, 0.0f);
+	
+	bool out = ImGui::BeginTable(str_id, column, flags, outer_size, inner_width);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
+
+/*  only call EndTable() if BeginTable() returns true! */
+int w_EndTable(lua_State *L)
+{
+	ImGui::EndTable();
+	
+	return 0;
+}
+
+/*  append into the first cell of a new row. */
+int w_TableNextRow(lua_State *L)
+{
+	auto row_flags = luax_optflags<ImGuiTableRowFlags>(getImGuiTableRowFlagsFromString, L, 1, 0);
+	auto min_row_height = luax_optfloat(L, 2, 0.0f);
+	
+	ImGui::TableNextRow(row_flags, min_row_height);
+	
+	return 0;
+}
+
+/*  append into the next column (or first column of next row if currently in last column). Return true when column is visible. */
+int w_TableNextColumn(lua_State *L)
+{
+	bool out = ImGui::TableNextColumn();
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
+
+/*  append into the specified column. Return true when column is visible. */
+int w_TableSetColumnIndex(lua_State *L)
+{
+	auto column_n = luaL_checkint(L, 1);
+	
+	bool out = ImGui::TableSetColumnIndex(column_n);
+	
+	lua_pushboolean(L, out);
+	return 1;
+}
+
+int w_TableSetupColumn(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	auto flags = luax_optflags<ImGuiTableColumnFlags>(getImGuiTableColumnFlagsFromString, L, 2, 0);
+	auto init_width_or_weight = luax_optfloat(L, 3, 0.0f);
+	auto user_id = static_cast<ImU32>(luaL_optlong(L, 4, 0));
+	
+	ImGui::TableSetupColumn(label, flags, init_width_or_weight, user_id);
+	
+	return 0;
+}
+
+/*  lock columns/rows so they stay visible when scrolled. */
+int w_TableSetupScrollFreeze(lua_State *L)
+{
+	auto cols = luaL_checkint(L, 1);
+	auto rows = luaL_checkint(L, 2);
+	
+	ImGui::TableSetupScrollFreeze(cols, rows);
+	
+	return 0;
+}
+
+/*  submit all headers cells based on data provided to TableSetupColumn() + submit context menu */
+int w_TableHeadersRow(lua_State *L)
+{
+	ImGui::TableHeadersRow();
+	
+	return 0;
+}
+
+/*  submit one header cell manually (rarely used) */
+int w_TableHeader(lua_State *L)
+{
+	auto label = luaL_checkstring(L, 1);
+	
+	ImGui::TableHeader(label);
+	
+	return 0;
+}
+
+// skipping w_TableGetSortSpecs due to unimplemented return type: "ImGuiTableSortSpecs*"
+
+/*  return number of columns (value passed to BeginTable) */
+int w_TableGetColumnCount(lua_State *L)
+{
+	int out = ImGui::TableGetColumnCount();
+	
+	lua_pushinteger(L, out);
+	return 1;
+}
+
+/*  return current column index. */
+int w_TableGetColumnIndex(lua_State *L)
+{
+	int out = ImGui::TableGetColumnIndex();
+	
+	lua_pushinteger(L, out);
+	return 1;
+}
+
+/*  return current row index. */
+int w_TableGetRowIndex(lua_State *L)
+{
+	int out = ImGui::TableGetRowIndex();
+	
+	lua_pushinteger(L, out);
+	return 1;
+}
+
+/*  return "" if column didn't have a name declared by TableSetupColumn(). Pass -1 to use current column. */
+int w_TableGetColumnName(lua_State *L)
+{
+	auto column_n = luaL_optint(L, 1, -1);
+	
+	const char* out = ImGui::TableGetColumnName(column_n);
+	
+	lua_pushstring(L, out);
+	return 1;
+}
+
+// skipping w_TableGetColumnFlags due to unimplemented return type: "ImGuiTableColumnFlags"
+
+/*  change the color of a cell, row, or column. See ImGuiTableBgTarget_ flags for details. */
+int w_TableSetBgColor(lua_State *L)
+{
+	auto target = luax_checkenum<ImGuiTableBgTarget>(getImGuiTableBgTargetFromString, L, 1);
+	auto color = static_cast<ImU32>(luaL_checklong(L, 2));
+	auto column_n = luaL_optint(L, 3, -1);
+	
+	ImGui::TableSetBgColor(target, color, column_n);
+	
+	return 0;
 }
 
 int w_Columns(lua_State *L)
@@ -5617,7 +5957,7 @@ int w_UpdatePlatformWindows(lua_State *L)
 
 // skipping w_RenderPlatformWindowsDefault due to unimplemented argument type: "void*"
 
-/*  call DestroyWindow platform functions for all viewports. call from back-end Shutdown() if you need to close platform windows before imgui shutdown. otherwise will be called by DestroyContext(). */
+/*  call DestroyWindow platform functions for all viewports. call from backend Shutdown() if you need to close platform windows before imgui shutdown. otherwise will be called by DestroyContext(). */
 int w_DestroyPlatformWindows(lua_State *L)
 {
 	ImGui::DestroyPlatformWindows();
@@ -5887,6 +6227,12 @@ int w_ImDrawList_AddText(lua_State* L)
 	return w_ImDrawList_AddText_Override1(L);
 }
 
+int w_CheckboxFlags(lua_State* L)
+{
+	return w_CheckboxFlags_Override1(L);
+}
+
+
 // End Function Overrides }}}
 }
 
@@ -5910,10 +6256,10 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "Render");
 	lua_pushcfunction(L, w_ShowDemoWindow);
 	lua_setfield(L, -2, "ShowDemoWindow");
-	lua_pushcfunction(L, w_ShowAboutWindow);
-	lua_setfield(L, -2, "ShowAboutWindow");
 	lua_pushcfunction(L, w_ShowMetricsWindow);
 	lua_setfield(L, -2, "ShowMetricsWindow");
+	lua_pushcfunction(L, w_ShowAboutWindow);
+	lua_setfield(L, -2, "ShowAboutWindow");
 	lua_pushcfunction(L, w_ShowStyleEditor);
 	lua_setfield(L, -2, "ShowStyleEditor");
 	lua_pushcfunction(L, w_ShowStyleSelector);
@@ -5926,10 +6272,10 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "GetVersion");
 	lua_pushcfunction(L, w_StyleColorsDark);
 	lua_setfield(L, -2, "StyleColorsDark");
-	lua_pushcfunction(L, w_StyleColorsClassic);
-	lua_setfield(L, -2, "StyleColorsClassic");
 	lua_pushcfunction(L, w_StyleColorsLight);
 	lua_setfield(L, -2, "StyleColorsLight");
+	lua_pushcfunction(L, w_StyleColorsClassic);
+	lua_setfield(L, -2, "StyleColorsClassic");
 	lua_pushcfunction(L, w_Begin);
 	lua_setfield(L, -2, "Begin");
 	lua_pushcfunction(L, w_End);
@@ -5982,10 +6328,10 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "SetWindowCollapsed");
 	lua_pushcfunction(L, w_SetWindowFocus);
 	lua_setfield(L, -2, "SetWindowFocus");
-	lua_pushcfunction(L, w_GetContentRegionMax);
-	lua_setfield(L, -2, "GetContentRegionMax");
 	lua_pushcfunction(L, w_GetContentRegionAvail);
 	lua_setfield(L, -2, "GetContentRegionAvail");
+	lua_pushcfunction(L, w_GetContentRegionMax);
+	lua_setfield(L, -2, "GetContentRegionMax");
 	lua_pushcfunction(L, w_GetWindowContentRegionMin);
 	lua_setfield(L, -2, "GetWindowContentRegionMin");
 	lua_pushcfunction(L, w_GetWindowContentRegionMax);
@@ -5996,14 +6342,14 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "GetScrollX");
 	lua_pushcfunction(L, w_GetScrollY);
 	lua_setfield(L, -2, "GetScrollY");
-	lua_pushcfunction(L, w_GetScrollMaxX);
-	lua_setfield(L, -2, "GetScrollMaxX");
-	lua_pushcfunction(L, w_GetScrollMaxY);
-	lua_setfield(L, -2, "GetScrollMaxY");
 	lua_pushcfunction(L, w_SetScrollX);
 	lua_setfield(L, -2, "SetScrollX");
 	lua_pushcfunction(L, w_SetScrollY);
 	lua_setfield(L, -2, "SetScrollY");
+	lua_pushcfunction(L, w_GetScrollMaxX);
+	lua_setfield(L, -2, "GetScrollMaxX");
+	lua_pushcfunction(L, w_GetScrollMaxY);
+	lua_setfield(L, -2, "GetScrollMaxY");
 	lua_pushcfunction(L, w_SetScrollHereX);
 	lua_setfield(L, -2, "SetScrollHereX");
 	lua_pushcfunction(L, w_SetScrollHereY);
@@ -6022,12 +6368,14 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "PushStyleVar");
 	lua_pushcfunction(L, w_PopStyleVar);
 	lua_setfield(L, -2, "PopStyleVar");
-	lua_pushcfunction(L, w_GetStyleColorVec4);
-	lua_setfield(L, -2, "GetStyleColorVec4");
-	lua_pushcfunction(L, w_GetFontSize);
-	lua_setfield(L, -2, "GetFontSize");
-	lua_pushcfunction(L, w_GetFontTexUvWhitePixel);
-	lua_setfield(L, -2, "GetFontTexUvWhitePixel");
+	lua_pushcfunction(L, w_PushAllowKeyboardFocus);
+	lua_setfield(L, -2, "PushAllowKeyboardFocus");
+	lua_pushcfunction(L, w_PopAllowKeyboardFocus);
+	lua_setfield(L, -2, "PopAllowKeyboardFocus");
+	lua_pushcfunction(L, w_PushButtonRepeat);
+	lua_setfield(L, -2, "PushButtonRepeat");
+	lua_pushcfunction(L, w_PopButtonRepeat);
+	lua_setfield(L, -2, "PopButtonRepeat");
 	lua_pushcfunction(L, w_PushItemWidth);
 	lua_setfield(L, -2, "PushItemWidth");
 	lua_pushcfunction(L, w_PopItemWidth);
@@ -6040,14 +6388,12 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "PushTextWrapPos");
 	lua_pushcfunction(L, w_PopTextWrapPos);
 	lua_setfield(L, -2, "PopTextWrapPos");
-	lua_pushcfunction(L, w_PushAllowKeyboardFocus);
-	lua_setfield(L, -2, "PushAllowKeyboardFocus");
-	lua_pushcfunction(L, w_PopAllowKeyboardFocus);
-	lua_setfield(L, -2, "PopAllowKeyboardFocus");
-	lua_pushcfunction(L, w_PushButtonRepeat);
-	lua_setfield(L, -2, "PushButtonRepeat");
-	lua_pushcfunction(L, w_PopButtonRepeat);
-	lua_setfield(L, -2, "PopButtonRepeat");
+	lua_pushcfunction(L, w_GetFontSize);
+	lua_setfield(L, -2, "GetFontSize");
+	lua_pushcfunction(L, w_GetFontTexUvWhitePixel);
+	lua_setfield(L, -2, "GetFontTexUvWhitePixel");
+	lua_pushcfunction(L, w_GetStyleColorVec4);
+	lua_setfield(L, -2, "GetStyleColorVec4");
 	lua_pushcfunction(L, w_Separator);
 	lua_setfield(L, -2, "Separator");
 	lua_pushcfunction(L, w_SameLine);
@@ -6276,6 +6622,34 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "BeginPopupContextVoid");
 	lua_pushcfunction(L, w_IsPopupOpen);
 	lua_setfield(L, -2, "IsPopupOpen");
+	lua_pushcfunction(L, w_BeginTable);
+	lua_setfield(L, -2, "BeginTable");
+	lua_pushcfunction(L, w_EndTable);
+	lua_setfield(L, -2, "EndTable");
+	lua_pushcfunction(L, w_TableNextRow);
+	lua_setfield(L, -2, "TableNextRow");
+	lua_pushcfunction(L, w_TableNextColumn);
+	lua_setfield(L, -2, "TableNextColumn");
+	lua_pushcfunction(L, w_TableSetColumnIndex);
+	lua_setfield(L, -2, "TableSetColumnIndex");
+	lua_pushcfunction(L, w_TableSetupColumn);
+	lua_setfield(L, -2, "TableSetupColumn");
+	lua_pushcfunction(L, w_TableSetupScrollFreeze);
+	lua_setfield(L, -2, "TableSetupScrollFreeze");
+	lua_pushcfunction(L, w_TableHeadersRow);
+	lua_setfield(L, -2, "TableHeadersRow");
+	lua_pushcfunction(L, w_TableHeader);
+	lua_setfield(L, -2, "TableHeader");
+	lua_pushcfunction(L, w_TableGetColumnCount);
+	lua_setfield(L, -2, "TableGetColumnCount");
+	lua_pushcfunction(L, w_TableGetColumnIndex);
+	lua_setfield(L, -2, "TableGetColumnIndex");
+	lua_pushcfunction(L, w_TableGetRowIndex);
+	lua_setfield(L, -2, "TableGetRowIndex");
+	lua_pushcfunction(L, w_TableGetColumnName);
+	lua_setfield(L, -2, "TableGetColumnName");
+	lua_pushcfunction(L, w_TableSetBgColor);
+	lua_setfield(L, -2, "TableSetBgColor");
 	lua_pushcfunction(L, w_Columns);
 	lua_setfield(L, -2, "Columns");
 	lua_pushcfunction(L, w_NextColumn);
@@ -6500,8 +6874,10 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "AddNgonFilled");
 	lua_pushcfunction(L, w_ImDrawList_AddText);
 	lua_setfield(L, -2, "AddText");
-	lua_pushcfunction(L, w_ImDrawList_AddBezierCurve);
-	lua_setfield(L, -2, "AddBezierCurve");
+	lua_pushcfunction(L, w_ImDrawList_AddBezierCubic);
+	lua_setfield(L, -2, "AddBezierCubic");
+	lua_pushcfunction(L, w_ImDrawList_AddBezierQuadratic);
+	lua_setfield(L, -2, "AddBezierQuadratic");
 	lua_pushcfunction(L, w_ImDrawList_AddImage);
 	lua_setfield(L, -2, "AddImage");
 	lua_pushcfunction(L, w_ImDrawList_AddImageQuad);
@@ -6512,8 +6888,10 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 	lua_setfield(L, -2, "PathArcTo");
 	lua_pushcfunction(L, w_ImDrawList_PathArcToFast);
 	lua_setfield(L, -2, "PathArcToFast");
-	lua_pushcfunction(L, w_ImDrawList_PathBezierCurveTo);
-	lua_setfield(L, -2, "PathBezierCurveTo");
+	lua_pushcfunction(L, w_ImDrawList_PathBezierCubicCurveTo);
+	lua_setfield(L, -2, "PathBezierCubicCurveTo");
+	lua_pushcfunction(L, w_ImDrawList_PathBezierQuadraticCurveTo);
+	lua_setfield(L, -2, "PathBezierQuadraticCurveTo");
 	lua_pushcfunction(L, w_ImDrawList_PathRect);
 	lua_setfield(L, -2, "PathRect");
 	lua_pushcfunction(L, w_ImDrawList_AddDrawCmd);
@@ -6542,7 +6920,7 @@ void wrap_imgui::addImguiWrappers(lua_State* L)
 
 void wrap_imgui::createImguiTable(lua_State* L)
 {
-	lua_createtable(L, 0, 284); 
+	lua_createtable(L, 0, 298); 
 	addImguiWrappers(L);
 }
 

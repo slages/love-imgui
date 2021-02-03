@@ -38,12 +38,15 @@ class ImGuiTest {
 }
 )MODULE";
 
-char* loadModule(WrenVM* vm, const char* name)
+WrenLoadModuleResult loadModule(WrenVM* vm, const char* name)
 {
+	WrenLoadModuleResult result = {0};
 	if(strcmp(name, "imgui") == 0) {
-		return wrap_imgui::loadModule(vm);
+		result.source = wrap_imgui::loadModule(vm);
+	} else {
+		result.source = nullptr;
 	}
-	return nullptr;
+	return result;
 }
 
 WrenForeignClassMethods bindForeignClass(
@@ -497,8 +500,8 @@ int main(int, char**)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+    //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+    //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 

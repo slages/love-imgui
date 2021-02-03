@@ -211,6 +211,106 @@ std::optional<ImGuiTabItemFlags_> getImGuiTabItemFlagsFromString(const char* in)
 }
 // skipping getStringFromImGuiTabItemFlags() converting flags TODO
 
+std::optional<ImGuiTableFlags_> getImGuiTableFlagsFromString(const char* in)
+{
+	if (strcmp(in, "NoClip") == 0) { return ImGuiTableFlags_NoClip; }
+	if (strcmp(in, "SizingFixedSame") == 0) { return ImGuiTableFlags_SizingFixedSame; }
+	if (strcmp(in, "BordersOuterV") == 0) { return ImGuiTableFlags_BordersOuterV; }
+	if (strcmp(in, "Borders") == 0) { return ImGuiTableFlags_Borders; }
+	if (strcmp(in, "BordersInnerV") == 0) { return ImGuiTableFlags_BordersInnerV; }
+	if (strcmp(in, "SizingStretchProp") == 0) { return ImGuiTableFlags_SizingStretchProp; }
+	if (strcmp(in, "SortMulti") == 0) { return ImGuiTableFlags_SortMulti; }
+	if (strcmp(in, "NoPadInnerX") == 0) { return ImGuiTableFlags_NoPadInnerX; }
+	if (strcmp(in, "ScrollY") == 0) { return ImGuiTableFlags_ScrollY; }
+	if (strcmp(in, "BordersInnerH") == 0) { return ImGuiTableFlags_BordersInnerH; }
+	if (strcmp(in, "NoPadOuterX") == 0) { return ImGuiTableFlags_NoPadOuterX; }
+	if (strcmp(in, "BordersH") == 0) { return ImGuiTableFlags_BordersH; }
+	if (strcmp(in, "NoHostExtendX") == 0) { return ImGuiTableFlags_NoHostExtendX; }
+	if (strcmp(in, "NoBordersInBodyUntilResize") == 0) { return ImGuiTableFlags_NoBordersInBodyUntilResize; }
+	if (strcmp(in, "SortTristate") == 0) { return ImGuiTableFlags_SortTristate; }
+	if (strcmp(in, "PreciseWidths") == 0) { return ImGuiTableFlags_PreciseWidths; }
+	if (strcmp(in, "None") == 0) { return ImGuiTableFlags_None; }
+	if (strcmp(in, "NoBordersInBody") == 0) { return ImGuiTableFlags_NoBordersInBody; }
+	if (strcmp(in, "ContextMenuInBody") == 0) { return ImGuiTableFlags_ContextMenuInBody; }
+	if (strcmp(in, "Sortable") == 0) { return ImGuiTableFlags_Sortable; }
+	if (strcmp(in, "BordersInner") == 0) { return ImGuiTableFlags_BordersInner; }
+	if (strcmp(in, "SizingMask_") == 0) { return ImGuiTableFlags_SizingMask_; }
+	if (strcmp(in, "NoSavedSettings") == 0) { return ImGuiTableFlags_NoSavedSettings; }
+	if (strcmp(in, "Resizable") == 0) { return ImGuiTableFlags_Resizable; }
+	if (strcmp(in, "BordersOuter") == 0) { return ImGuiTableFlags_BordersOuter; }
+	if (strcmp(in, "SizingStretchSame") == 0) { return ImGuiTableFlags_SizingStretchSame; }
+	if (strcmp(in, "NoHostExtendY") == 0) { return ImGuiTableFlags_NoHostExtendY; }
+	if (strcmp(in, "BordersV") == 0) { return ImGuiTableFlags_BordersV; }
+	if (strcmp(in, "Reorderable") == 0) { return ImGuiTableFlags_Reorderable; }
+	if (strcmp(in, "SizingFixedFit") == 0) { return ImGuiTableFlags_SizingFixedFit; }
+	if (strcmp(in, "BordersOuterH") == 0) { return ImGuiTableFlags_BordersOuterH; }
+	if (strcmp(in, "NoKeepColumnsVisible") == 0) { return ImGuiTableFlags_NoKeepColumnsVisible; }
+	if (strcmp(in, "ScrollX") == 0) { return ImGuiTableFlags_ScrollX; }
+	if (strcmp(in, "RowBg") == 0) { return ImGuiTableFlags_RowBg; }
+	if (strcmp(in, "Hideable") == 0) { return ImGuiTableFlags_Hideable; }
+	if (strcmp(in, "PadOuterX") == 0) { return ImGuiTableFlags_PadOuterX; }
+	return std::nullopt;
+}
+// skipping getStringFromImGuiTableFlags() converting flags TODO
+
+std::optional<ImGuiTableColumnFlags_> getImGuiTableColumnFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiTableColumnFlags_None; }
+	if (strcmp(in, "NoSort") == 0) { return ImGuiTableColumnFlags_NoSort; }
+	if (strcmp(in, "IndentMask_") == 0) { return ImGuiTableColumnFlags_IndentMask_; }
+	if (strcmp(in, "NoResize") == 0) { return ImGuiTableColumnFlags_NoResize; }
+	if (strcmp(in, "IndentEnable") == 0) { return ImGuiTableColumnFlags_IndentEnable; }
+	if (strcmp(in, "NoSortDescending") == 0) { return ImGuiTableColumnFlags_NoSortDescending; }
+	if (strcmp(in, "IndentDisable") == 0) { return ImGuiTableColumnFlags_IndentDisable; }
+	if (strcmp(in, "PreferSortDescending") == 0) { return ImGuiTableColumnFlags_PreferSortDescending; }
+	if (strcmp(in, "WidthMask_") == 0) { return ImGuiTableColumnFlags_WidthMask_; }
+	if (strcmp(in, "NoHide") == 0) { return ImGuiTableColumnFlags_NoHide; }
+	if (strcmp(in, "NoDirectResize_") == 0) { return ImGuiTableColumnFlags_NoDirectResize_; }
+	if (strcmp(in, "StatusMask_") == 0) { return ImGuiTableColumnFlags_StatusMask_; }
+	if (strcmp(in, "DefaultSort") == 0) { return ImGuiTableColumnFlags_DefaultSort; }
+	if (strcmp(in, "IsHovered") == 0) { return ImGuiTableColumnFlags_IsHovered; }
+	if (strcmp(in, "NoSortAscending") == 0) { return ImGuiTableColumnFlags_NoSortAscending; }
+	if (strcmp(in, "IsVisible") == 0) { return ImGuiTableColumnFlags_IsVisible; }
+	if (strcmp(in, "NoReorder") == 0) { return ImGuiTableColumnFlags_NoReorder; }
+	if (strcmp(in, "NoHeaderWidth") == 0) { return ImGuiTableColumnFlags_NoHeaderWidth; }
+	if (strcmp(in, "IsEnabled") == 0) { return ImGuiTableColumnFlags_IsEnabled; }
+	if (strcmp(in, "DefaultHide") == 0) { return ImGuiTableColumnFlags_DefaultHide; }
+	if (strcmp(in, "WidthFixed") == 0) { return ImGuiTableColumnFlags_WidthFixed; }
+	if (strcmp(in, "WidthStretch") == 0) { return ImGuiTableColumnFlags_WidthStretch; }
+	if (strcmp(in, "NoClip") == 0) { return ImGuiTableColumnFlags_NoClip; }
+	if (strcmp(in, "IsSorted") == 0) { return ImGuiTableColumnFlags_IsSorted; }
+	if (strcmp(in, "PreferSortAscending") == 0) { return ImGuiTableColumnFlags_PreferSortAscending; }
+	return std::nullopt;
+}
+// skipping getStringFromImGuiTableColumnFlags() converting flags TODO
+
+std::optional<ImGuiTableRowFlags_> getImGuiTableRowFlagsFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiTableRowFlags_None; }
+	if (strcmp(in, "Headers") == 0) { return ImGuiTableRowFlags_Headers; }
+	return std::nullopt;
+}
+// skipping getStringFromImGuiTableRowFlags() converting flags TODO
+
+std::optional<ImGuiTableBgTarget_> getImGuiTableBgTargetFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiTableBgTarget_None; }
+	if (strcmp(in, "CellBg") == 0) { return ImGuiTableBgTarget_CellBg; }
+	if (strcmp(in, "RowBg1") == 0) { return ImGuiTableBgTarget_RowBg1; }
+	if (strcmp(in, "RowBg0") == 0) { return ImGuiTableBgTarget_RowBg0; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiTableBgTarget(ImGuiTableBgTarget in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 3: return "CellBg";
+		case 2: return "RowBg1";
+		case 1: return "RowBg0";
+	}
+	return "";
+}
+
 std::optional<ImGuiFocusedFlags_> getImGuiFocusedFlagsFromString(const char* in)
 {
 	if (strcmp(in, "None") == 0) { return ImGuiFocusedFlags_None; }
@@ -316,6 +416,23 @@ const char* getStringFromImGuiDir(ImGuiDir in)
 		case 1: return "Right";
 		case 2: return "Up";
 		case 3: return "Down";
+	}
+	return "";
+}
+
+std::optional<ImGuiSortDirection_> getImGuiSortDirectionFromString(const char* in)
+{
+	if (strcmp(in, "None") == 0) { return ImGuiSortDirection_None; }
+	if (strcmp(in, "Descending") == 0) { return ImGuiSortDirection_Descending; }
+	if (strcmp(in, "Ascending") == 0) { return ImGuiSortDirection_Ascending; }
+	return std::nullopt;
+}
+const char* getStringFromImGuiSortDirection(ImGuiSortDirection in)
+{
+	switch (in) {
+		case 0: return "None";
+		case 2: return "Descending";
+		case 1: return "Ascending";
 	}
 	return "";
 }
@@ -492,18 +609,23 @@ std::optional<ImGuiCol_> getImGuiColFromString(const char* in)
 	if (strcmp(in, "PlotHistogramHovered") == 0) { return ImGuiCol_PlotHistogramHovered; }
 	if (strcmp(in, "PlotLines") == 0) { return ImGuiCol_PlotLines; }
 	if (strcmp(in, "SliderGrab") == 0) { return ImGuiCol_SliderGrab; }
+	if (strcmp(in, "ButtonActive") == 0) { return ImGuiCol_ButtonActive; }
 	if (strcmp(in, "TextSelectedBg") == 0) { return ImGuiCol_TextSelectedBg; }
 	if (strcmp(in, "TabUnfocused") == 0) { return ImGuiCol_TabUnfocused; }
+	if (strcmp(in, "TableRowBg") == 0) { return ImGuiCol_TableRowBg; }
 	if (strcmp(in, "TitleBgCollapsed") == 0) { return ImGuiCol_TitleBgCollapsed; }
 	if (strcmp(in, "TitleBg") == 0) { return ImGuiCol_TitleBg; }
+	if (strcmp(in, "NavWindowingHighlight") == 0) { return ImGuiCol_NavWindowingHighlight; }
 	if (strcmp(in, "NavHighlight") == 0) { return ImGuiCol_NavHighlight; }
 	if (strcmp(in, "SeparatorHovered") == 0) { return ImGuiCol_SeparatorHovered; }
-	if (strcmp(in, "ResizeGrip") == 0) { return ImGuiCol_ResizeGrip; }
-	if (strcmp(in, "ButtonActive") == 0) { return ImGuiCol_ButtonActive; }
-	if (strcmp(in, "SeparatorActive") == 0) { return ImGuiCol_SeparatorActive; }
-	if (strcmp(in, "NavWindowingHighlight") == 0) { return ImGuiCol_NavWindowingHighlight; }
-	if (strcmp(in, "Border") == 0) { return ImGuiCol_Border; }
 	if (strcmp(in, "DragDropTarget") == 0) { return ImGuiCol_DragDropTarget; }
+	if (strcmp(in, "TableRowBgAlt") == 0) { return ImGuiCol_TableRowBgAlt; }
+	if (strcmp(in, "ResizeGrip") == 0) { return ImGuiCol_ResizeGrip; }
+	if (strcmp(in, "TableBorderLight") == 0) { return ImGuiCol_TableBorderLight; }
+	if (strcmp(in, "SeparatorActive") == 0) { return ImGuiCol_SeparatorActive; }
+	if (strcmp(in, "TableBorderStrong") == 0) { return ImGuiCol_TableBorderStrong; }
+	if (strcmp(in, "Border") == 0) { return ImGuiCol_Border; }
+	if (strcmp(in, "TableHeaderBg") == 0) { return ImGuiCol_TableHeaderBg; }
 	if (strcmp(in, "PlotLinesHovered") == 0) { return ImGuiCol_PlotLinesHovered; }
 	if (strcmp(in, "Separator") == 0) { return ImGuiCol_Separator; }
 	if (strcmp(in, "FrameBgHovered") == 0) { return ImGuiCol_FrameBgHovered; }
@@ -540,25 +662,30 @@ const char* getStringFromImGuiCol(ImGuiCol in)
 		case 42: return "PlotHistogram";
 		case 20: return "SliderGrabActive";
 		case 32: return "ResizeGripActive";
-		case 49: return "ModalWindowDimBg";
+		case 54: return "ModalWindowDimBg";
 		case 7: return "FrameBg";
 		case 1: return "TextDisabled";
 		case 31: return "ResizeGripHovered";
 		case 43: return "PlotHistogramHovered";
 		case 40: return "PlotLines";
 		case 19: return "SliderGrab";
-		case 44: return "TextSelectedBg";
+		case 23: return "ButtonActive";
+		case 49: return "TextSelectedBg";
 		case 36: return "TabUnfocused";
+		case 47: return "TableRowBg";
 		case 12: return "TitleBgCollapsed";
 		case 10: return "TitleBg";
-		case 46: return "NavHighlight";
+		case 52: return "NavWindowingHighlight";
+		case 51: return "NavHighlight";
 		case 28: return "SeparatorHovered";
+		case 50: return "DragDropTarget";
+		case 48: return "TableRowBgAlt";
 		case 30: return "ResizeGrip";
-		case 23: return "ButtonActive";
+		case 46: return "TableBorderLight";
 		case 29: return "SeparatorActive";
-		case 47: return "NavWindowingHighlight";
+		case 45: return "TableBorderStrong";
 		case 5: return "Border";
-		case 45: return "DragDropTarget";
+		case 44: return "TableHeaderBg";
 		case 41: return "PlotLinesHovered";
 		case 27: return "Separator";
 		case 8: return "FrameBgHovered";
@@ -572,7 +699,7 @@ const char* getStringFromImGuiCol(ImGuiCol in)
 		case 26: return "HeaderActive";
 		case 21: return "Button";
 		case 17: return "ScrollbarGrabActive";
-		case 48: return "NavWindowingDimBg";
+		case 53: return "NavWindowingDimBg";
 		case 4: return "PopupBg";
 		case 2: return "WindowBg";
 		case 13: return "MenuBarBg";
@@ -595,18 +722,19 @@ std::optional<ImGuiStyleVar_> getImGuiStyleVarFromString(const char* in)
 	if (strcmp(in, "IndentSpacing") == 0) { return ImGuiStyleVar_IndentSpacing; }
 	if (strcmp(in, "PopupBorderSize") == 0) { return ImGuiStyleVar_PopupBorderSize; }
 	if (strcmp(in, "WindowTitleAlign") == 0) { return ImGuiStyleVar_WindowTitleAlign; }
+	if (strcmp(in, "SelectableTextAlign") == 0) { return ImGuiStyleVar_SelectableTextAlign; }
 	if (strcmp(in, "ChildRounding") == 0) { return ImGuiStyleVar_ChildRounding; }
 	if (strcmp(in, "GrabRounding") == 0) { return ImGuiStyleVar_GrabRounding; }
 	if (strcmp(in, "WindowBorderSize") == 0) { return ImGuiStyleVar_WindowBorderSize; }
 	if (strcmp(in, "WindowMinSize") == 0) { return ImGuiStyleVar_WindowMinSize; }
 	if (strcmp(in, "ScrollbarSize") == 0) { return ImGuiStyleVar_ScrollbarSize; }
-	if (strcmp(in, "SelectableTextAlign") == 0) { return ImGuiStyleVar_SelectableTextAlign; }
 	if (strcmp(in, "ButtonTextAlign") == 0) { return ImGuiStyleVar_ButtonTextAlign; }
 	if (strcmp(in, "TabRounding") == 0) { return ImGuiStyleVar_TabRounding; }
+	if (strcmp(in, "GrabMinSize") == 0) { return ImGuiStyleVar_GrabMinSize; }
 	if (strcmp(in, "WindowPadding") == 0) { return ImGuiStyleVar_WindowPadding; }
 	if (strcmp(in, "ItemInnerSpacing") == 0) { return ImGuiStyleVar_ItemInnerSpacing; }
 	if (strcmp(in, "ScrollbarRounding") == 0) { return ImGuiStyleVar_ScrollbarRounding; }
-	if (strcmp(in, "GrabMinSize") == 0) { return ImGuiStyleVar_GrabMinSize; }
+	if (strcmp(in, "CellPadding") == 0) { return ImGuiStyleVar_CellPadding; }
 	if (strcmp(in, "PopupRounding") == 0) { return ImGuiStyleVar_PopupRounding; }
 	if (strcmp(in, "ItemSpacing") == 0) { return ImGuiStyleVar_ItemSpacing; }
 	if (strcmp(in, "WindowRounding") == 0) { return ImGuiStyleVar_WindowRounding; }
@@ -623,18 +751,19 @@ const char* getStringFromImGuiStyleVar(ImGuiStyleVar in)
 		case 15: return "IndentSpacing";
 		case 9: return "PopupBorderSize";
 		case 5: return "WindowTitleAlign";
+		case 23: return "SelectableTextAlign";
 		case 6: return "ChildRounding";
-		case 19: return "GrabRounding";
+		case 20: return "GrabRounding";
 		case 3: return "WindowBorderSize";
 		case 4: return "WindowMinSize";
-		case 16: return "ScrollbarSize";
-		case 22: return "SelectableTextAlign";
-		case 21: return "ButtonTextAlign";
-		case 20: return "TabRounding";
+		case 17: return "ScrollbarSize";
+		case 22: return "ButtonTextAlign";
+		case 21: return "TabRounding";
+		case 19: return "GrabMinSize";
 		case 1: return "WindowPadding";
 		case 14: return "ItemInnerSpacing";
-		case 17: return "ScrollbarRounding";
-		case 18: return "GrabMinSize";
+		case 18: return "ScrollbarRounding";
+		case 16: return "CellPadding";
 		case 8: return "PopupRounding";
 		case 13: return "ItemSpacing";
 		case 2: return "WindowRounding";
@@ -1260,7 +1389,7 @@ void w_EndFrame(WrenVM *vm)
 	
 }
 
-/*  ends the Dear ImGui frame, finalize the draw data. You can get call GetDrawData() to obtain it and run your rendering function (up to v1.60, this used to call io.RenderDrawListsFn(). Nowadays, we allow and prefer calling your render function yourself.) */
+/*  ends the Dear ImGui frame, finalize the draw data. You can then get call GetDrawData(). */
 void w_Render(WrenVM *vm)
 {
 	ImGui::Render();
@@ -1269,7 +1398,7 @@ void w_Render(WrenVM *vm)
 
 // skipping w_GetDrawData due to unimplemented return type: "ImDrawData*"
 
-/*  create Demo window (previously called ShowTestWindow). demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application! */
+/*  create Demo window. demonstrate most ImGui features. call this to learn about the library! try to make it always available in your application! */
 void w_ShowDemoWindow(WrenVM *vm)
 {
 	bool* p_open = NULL;
@@ -1280,6 +1409,21 @@ void w_ShowDemoWindow(WrenVM *vm)
 	}
 	
 	ImGui::ShowDemoWindow(p_open);
+	
+	if(p_open) { Box::setCPP<bool>(vm, 1, *p_open); }
+}
+
+/*  create Metrics/Debugger window. display Dear ImGui internals: windows, draw commands, various internal state, etc. */
+void w_ShowMetricsWindow(WrenVM *vm)
+{
+	bool* p_open = NULL;
+	bool p_open_box;
+	if(!wrenExIsSlotDefault(vm, 1)) {
+		p_open_box = Box::getCPP<bool>(vm, 1);
+		p_open = &p_open_box;
+	}
+	
+	ImGui::ShowMetricsWindow(p_open);
 	
 	if(p_open) { Box::setCPP<bool>(vm, 1, *p_open); }
 }
@@ -1295,21 +1439,6 @@ void w_ShowAboutWindow(WrenVM *vm)
 	}
 	
 	ImGui::ShowAboutWindow(p_open);
-	
-	if(p_open) { Box::setCPP<bool>(vm, 1, *p_open); }
-}
-
-/*  create Debug/Metrics window. display Dear ImGui internals: draw commands (with individual draw calls and vertices), window list, basic internal state, etc. */
-void w_ShowMetricsWindow(WrenVM *vm)
-{
-	bool* p_open = NULL;
-	bool p_open_box;
-	if(!wrenExIsSlotDefault(vm, 1)) {
-		p_open_box = Box::getCPP<bool>(vm, 1);
-		p_open = &p_open_box;
-	}
-	
-	ImGui::ShowMetricsWindow(p_open);
 	
 	if(p_open) { Box::setCPP<bool>(vm, 1, *p_open); }
 }
@@ -1342,7 +1471,7 @@ void w_ShowUserGuide(WrenVM *vm)
 	
 }
 
-/*  get the compiled version string e.g. "1.23" (essentially the compiled value for IMGUI_VERSION) */
+/*  get the compiled version string e.g. "1.80 WIP" (essentially the value for IMGUI_VERSION from the compiled version of imgui.cpp) */
 void w_GetVersion(WrenVM *vm)
 {
 	const char* out = ImGui::GetVersion();
@@ -1352,9 +1481,9 @@ void w_GetVersion(WrenVM *vm)
 
 // skipping w_StyleColorsDark due to unimplemented argument type: "ImGuiStyle*"
 
-// skipping w_StyleColorsClassic due to unimplemented argument type: "ImGuiStyle*"
-
 // skipping w_StyleColorsLight due to unimplemented argument type: "ImGuiStyle*"
+
+// skipping w_StyleColorsClassic due to unimplemented argument type: "ImGuiStyle*"
 
 void w_Begin(WrenVM *vm)
 {
@@ -1642,18 +1771,18 @@ void w_SetWindowFocus_Override2(WrenVM *vm)
 	
 }
 
-/*  current content boundaries (typically window boundaries including scrolling, or current column boundaries), in windows coordinates */
-void w_GetContentRegionMax(WrenVM *vm)
-{
-	ImVec2 out = ImGui::GetContentRegionMax();
-	WrapImVec2::setSlot(vm, 0, out);
-	
-}
-
 /*  == GetContentRegionMax() - GetCursorPos() */
 void w_GetContentRegionAvail(WrenVM *vm)
 {
 	ImVec2 out = ImGui::GetContentRegionAvail();
+	WrapImVec2::setSlot(vm, 0, out);
+	
+}
+
+/*  current content boundaries (typically window boundaries including scrolling, or current column boundaries), in windows coordinates */
+void w_GetContentRegionMax(WrenVM *vm)
+{
+	ImVec2 out = ImGui::GetContentRegionMax();
 	WrapImVec2::setSlot(vm, 0, out);
 	
 }
@@ -1681,7 +1810,7 @@ void w_GetWindowContentRegionWidth(WrenVM *vm)
 	
 }
 
-/*  get scrolling amount [0..GetScrollMaxX()] */
+/*  get scrolling amount [0 .. GetScrollMaxX()] */
 void w_GetScrollX(WrenVM *vm)
 {
 	float out = ImGui::GetScrollX();
@@ -1689,7 +1818,7 @@ void w_GetScrollX(WrenVM *vm)
 	
 }
 
-/*  get scrolling amount [0..GetScrollMaxY()] */
+/*  get scrolling amount [0 .. GetScrollMaxY()] */
 void w_GetScrollY(WrenVM *vm)
 {
 	float out = ImGui::GetScrollY();
@@ -1697,23 +1826,7 @@ void w_GetScrollY(WrenVM *vm)
 	
 }
 
-/*  get maximum scrolling amount ~~ ContentSize.x - WindowSize.x */
-void w_GetScrollMaxX(WrenVM *vm)
-{
-	float out = ImGui::GetScrollMaxX();
-	wrenSetSlotDouble(vm, 0, out);
-	
-}
-
-/*  get maximum scrolling amount ~~ ContentSize.y - WindowSize.y */
-void w_GetScrollMaxY(WrenVM *vm)
-{
-	float out = ImGui::GetScrollMaxY();
-	wrenSetSlotDouble(vm, 0, out);
-	
-}
-
-/*  set scrolling amount [0..GetScrollMaxX()] */
+/*  set scrolling amount [0 .. GetScrollMaxX()] */
 void w_SetScrollX(WrenVM *vm)
 {
 	auto scroll_x = wrenExGetSlot<float>(vm, 1);
@@ -1722,12 +1835,28 @@ void w_SetScrollX(WrenVM *vm)
 	
 }
 
-/*  set scrolling amount [0..GetScrollMaxY()] */
+/*  set scrolling amount [0 .. GetScrollMaxY()] */
 void w_SetScrollY(WrenVM *vm)
 {
 	auto scroll_y = wrenExGetSlot<float>(vm, 1);
 	
 	ImGui::SetScrollY(scroll_y);
+	
+}
+
+/*  get maximum scrolling amount ~~ ContentSize.x - WindowSize.x - DecorationsSize.x */
+void w_GetScrollMaxX(WrenVM *vm)
+{
+	float out = ImGui::GetScrollMaxX();
+	wrenSetSlotDouble(vm, 0, out);
+	
+}
+
+/*  get maximum scrolling amount ~~ ContentSize.y - WindowSize.y - DecorationsSize.y */
+void w_GetScrollMaxY(WrenVM *vm)
+{
+	float out = ImGui::GetScrollMaxY();
+	wrenSetSlotDouble(vm, 0, out);
 	
 }
 
@@ -1777,6 +1906,7 @@ void w_PopFont(WrenVM *vm)
 	
 }
 
+/*  modify a style color. always use this if you modify the style after NewFrame(). */
 void w_PushStyleColor_Override1(WrenVM *vm)
 {
 	auto idx = wrenExGetSlotEnum<ImGuiCol>(getImGuiColFromString, vm, 1);
@@ -1803,6 +1933,7 @@ void w_PopStyleColor(WrenVM *vm)
 	
 }
 
+/*  modify a style float variable. always use this if you modify the style after NewFrame(). */
 void w_PushStyleVar_Override1(WrenVM *vm)
 {
 	auto idx = wrenExGetSlotEnum<ImGuiStyleVar>(getImGuiStyleVarFromString, vm, 1);
@@ -1812,6 +1943,7 @@ void w_PushStyleVar_Override1(WrenVM *vm)
 	
 }
 
+/*  modify a style ImVec2 variable. always use this if you modify the style after NewFrame(). */
 void w_PushStyleVar_Override2(WrenVM *vm)
 {
 	auto idx = wrenExGetSlotEnum<ImGuiStyleVar>(getImGuiStyleVarFromString, vm, 1);
@@ -1829,35 +1961,37 @@ void w_PopStyleVar(WrenVM *vm)
 	
 }
 
-/*  retrieve style color as stored in ImGuiStyle structure. use to feed back into PushStyleColor(), otherwise use GetColorU32() to get style color with style alpha baked in. */
-void w_GetStyleColorVec4(WrenVM *vm)
+/*  allow focusing using TAB/Shift-TAB, enabled by default but you can disable it for certain widgets */
+void w_PushAllowKeyboardFocus(WrenVM *vm)
 {
-	auto idx = wrenExGetSlotEnum<ImGuiCol>(getImGuiColFromString, vm, 1);
+	auto allow_keyboard_focus = wrenExGetSlot<bool>(vm, 1);
 	
-	const ImVec4& out = ImGui::GetStyleColorVec4(idx);
-	WrapImVec4::setSlot(vm, 0, out);
+	ImGui::PushAllowKeyboardFocus(allow_keyboard_focus);
 	
 }
 
-// skipping w_GetFont due to unimplemented return type: "ImFont*"
-
-/*  get current font size (= height in pixels) of current font with current scale applied */
-void w_GetFontSize(WrenVM *vm)
+void w_PopAllowKeyboardFocus(WrenVM *vm)
 {
-	float out = ImGui::GetFontSize();
-	wrenSetSlotDouble(vm, 0, out);
+	ImGui::PopAllowKeyboardFocus();
 	
 }
 
-/*  get UV coordinate for a while pixel, useful to draw custom shapes via the ImDrawList API */
-void w_GetFontTexUvWhitePixel(WrenVM *vm)
+/*  in 'repeat' mode, Button*() functions return repeated true in a typematic manner (using io.KeyRepeatDelay/io.KeyRepeatRate setting). Note that you can call IsItemActive() after any Button() to tell if the button is held in the current frame. */
+void w_PushButtonRepeat(WrenVM *vm)
 {
-	ImVec2 out = ImGui::GetFontTexUvWhitePixel();
-	WrapImVec2::setSlot(vm, 0, out);
+	auto repeat = wrenExGetSlot<bool>(vm, 1);
+	
+	ImGui::PushButtonRepeat(repeat);
 	
 }
 
-/*  push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side). 0.0f = default to ~2/3 of windows width, */
+void w_PopButtonRepeat(WrenVM *vm)
+{
+	ImGui::PopButtonRepeat();
+	
+}
+
+/*  push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -FLT_MIN always align width to the right side). */
 void w_PushItemWidth(WrenVM *vm)
 {
 	auto item_width = wrenExGetSlot<float>(vm, 1);
@@ -1872,7 +2006,7 @@ void w_PopItemWidth(WrenVM *vm)
 	
 }
 
-/*  set width of the _next_ common large "item+label" widget. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -1.0f always align width to the right side) */
+/*  set width of the _next_ common large "item+label" widget. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -FLT_MIN always align width to the right side) */
 void w_SetNextItemWidth(WrenVM *vm)
 {
 	auto item_width = wrenExGetSlot<float>(vm, 1);
@@ -1904,33 +2038,31 @@ void w_PopTextWrapPos(WrenVM *vm)
 	
 }
 
-/*  allow focusing using TAB/Shift-TAB, enabled by default but you can disable it for certain widgets */
-void w_PushAllowKeyboardFocus(WrenVM *vm)
+// skipping w_GetFont due to unimplemented return type: "ImFont*"
+
+/*  get current font size (= height in pixels) of current font with current scale applied */
+void w_GetFontSize(WrenVM *vm)
 {
-	auto allow_keyboard_focus = wrenExGetSlot<bool>(vm, 1);
-	
-	ImGui::PushAllowKeyboardFocus(allow_keyboard_focus);
+	float out = ImGui::GetFontSize();
+	wrenSetSlotDouble(vm, 0, out);
 	
 }
 
-void w_PopAllowKeyboardFocus(WrenVM *vm)
+/*  get UV coordinate for a while pixel, useful to draw custom shapes via the ImDrawList API */
+void w_GetFontTexUvWhitePixel(WrenVM *vm)
 {
-	ImGui::PopAllowKeyboardFocus();
+	ImVec2 out = ImGui::GetFontTexUvWhitePixel();
+	WrapImVec2::setSlot(vm, 0, out);
 	
 }
 
-/*  in 'repeat' mode, Button*() functions return repeated true in a typematic manner (using io.KeyRepeatDelay/io.KeyRepeatRate setting). Note that you can call IsItemActive() after any Button() to tell if the button is held in the current frame. */
-void w_PushButtonRepeat(WrenVM *vm)
+/*  retrieve style color as stored in ImGuiStyle structure. use to feed back into PushStyleColor(), otherwise use GetColorU32() to get style color with style alpha baked in. */
+void w_GetStyleColorVec4(WrenVM *vm)
 {
-	auto repeat = wrenExGetSlot<bool>(vm, 1);
+	auto idx = wrenExGetSlotEnum<ImGuiCol>(getImGuiColFromString, vm, 1);
 	
-	ImGui::PushButtonRepeat(repeat);
-	
-}
-
-void w_PopButtonRepeat(WrenVM *vm)
-{
-	ImGui::PopButtonRepeat();
+	const ImVec4& out = ImGui::GetStyleColorVec4(idx);
+	WrapImVec4::setSlot(vm, 0, out);
 	
 }
 
@@ -1974,7 +2106,7 @@ void w_Dummy(WrenVM *vm)
 	
 }
 
-/*  move content position toward the right, by style.IndentSpacing or indent_w if != 0 */
+/*  move content position toward the right, by indent_w, or style.IndentSpacing if indent_w <= 0 */
 void w_Indent(WrenVM *vm)
 {
 	auto indent_w = wrenExIsSlotDefault(vm, 1) ? 0.0f : wrenExGetSlot<float>(vm, 1);
@@ -1983,7 +2115,7 @@ void w_Indent(WrenVM *vm)
 	
 }
 
-/*  move content position back to the left, by style.IndentSpacing or indent_w if != 0 */
+/*  move content position back to the left, by indent_w, or style.IndentSpacing if indent_w <= 0 */
 void w_Unindent(WrenVM *vm)
 {
 	auto indent_w = wrenExIsSlotDefault(vm, 1) ? 0.0f : wrenExGetSlot<float>(vm, 1);
@@ -2305,7 +2437,20 @@ void w_Checkbox(WrenVM *vm)
 	Box::setCPP<bool>(vm, 2, *v);
 }
 
-void w_CheckboxFlags(WrenVM *vm)
+void w_CheckboxFlags_Override1(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto flags_box = static_cast<int>(Box::getCPP<double>(vm, 2));
+	int* flags = &flags_box;
+	auto flags_value = wrenExGetSlot<int>(vm, 3);
+	
+	bool out = ImGui::CheckboxFlags(label, flags, flags_value);
+	wrenSetSlotBool(vm, 0, out);
+	
+	Box::setCPP<double>(vm, 2, *flags);
+}
+
+void w_CheckboxFlags_Override2(WrenVM *vm)
 {
 	auto label = wrenExGetSlot<const char*>(vm, 1);
 	auto flags_box = static_cast<unsigned int>(Box::getCPP<double>(vm, 2));
@@ -2346,7 +2491,7 @@ void w_RadioButton_Override2(WrenVM *vm)
 void w_ProgressBar(WrenVM *vm)
 {
 	auto fraction = wrenExGetSlot<float>(vm, 1);
-	auto size_arg = wrenExIsSlotDefault(vm, 2) ? ImVec2(-1, 0) : WrapImVec2::getSlot(vm, 2);
+	auto size_arg = wrenExIsSlotDefault(vm, 2) ? ImVec2(-FLT_MIN, 0) : WrapImVec2::getSlot(vm, 2);
 	auto overlay = wrenExIsSlotDefault(vm, 3) ? NULL : wrenExGetSlot<const char*>(vm, 3);
 	
 	ImGui::ProgressBar(fraction, size_arg, overlay);
@@ -2655,7 +2800,7 @@ void w_InputDouble(WrenVM *vm)
 
 // skipping w_ColorPicker4 due to unimplemented argument type: "float[4]"
 
-/*  display a colored square/button, hover for details, return true when pressed. */
+/*  display a color square/button, hover for details, return true when pressed. */
 void w_ColorButton(WrenVM *vm)
 {
 	auto desc_id = wrenExGetSlot<const char*>(vm, 1);
@@ -2759,18 +2904,18 @@ void w_CollapsingHeader_Override1(WrenVM *vm)
 	
 }
 
-/*  when 'p_open' isn't NULL, display an additional small close button on upper right of the header */
+/*  when 'p_visible != NULL': if '*p_visible==true' display an additional small close button on upper right of the header which will set the bool to false when clicked, if '*p_visible==false' don't display the header. */
 void w_CollapsingHeader_Override2(WrenVM *vm)
 {
 	auto label = wrenExGetSlot<const char*>(vm, 1);
-	auto p_open_box = Box::getCPP<bool>(vm, 2);
-	bool* p_open = &p_open_box;
+	auto p_visible_box = Box::getCPP<bool>(vm, 2);
+	bool* p_visible = &p_visible_box;
 	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiTreeNodeFlags>(getImGuiTreeNodeFlagsFromString, vm, 3);
 	
-	bool out = ImGui::CollapsingHeader(label, p_open, flags);
+	bool out = ImGui::CollapsingHeader(label, p_visible, flags);
 	wrenSetSlotBool(vm, 0, out);
 	
-	Box::setCPP<bool>(vm, 2, *p_open);
+	Box::setCPP<bool>(vm, 2, *p_visible);
 }
 
 /*  set next TreeNode/CollapsingHeader open state. */
@@ -3092,6 +3237,140 @@ void w_IsPopupOpen(WrenVM *vm)
 	
 	bool out = ImGui::IsPopupOpen(str_id, flags);
 	wrenSetSlotBool(vm, 0, out);
+	
+}
+
+void w_BeginTable(WrenVM *vm)
+{
+	auto str_id = wrenExGetSlot<const char*>(vm, 1);
+	auto column = wrenExGetSlot<int>(vm, 2);
+	auto flags = wrenExIsSlotDefault(vm, 3) ? 0 : wrenExGetSlotFlags<ImGuiTableFlags>(getImGuiTableFlagsFromString, vm, 3);
+	auto outer_size = wrenExIsSlotDefault(vm, 4) ? ImVec2(0.0f, 0.0f) : WrapImVec2::getSlot(vm, 4);
+	auto inner_width = wrenExIsSlotDefault(vm, 5) ? 0.0f : wrenExGetSlot<float>(vm, 5);
+	
+	bool out = ImGui::BeginTable(str_id, column, flags, outer_size, inner_width);
+	wrenSetSlotBool(vm, 0, out);
+	
+}
+
+/*  only call EndTable() if BeginTable() returns true! */
+void w_EndTable(WrenVM *vm)
+{
+	ImGui::EndTable();
+	
+}
+
+/*  append into the first cell of a new row. */
+void w_TableNextRow(WrenVM *vm)
+{
+	auto row_flags = wrenExIsSlotDefault(vm, 1) ? 0 : wrenExGetSlotFlags<ImGuiTableRowFlags>(getImGuiTableRowFlagsFromString, vm, 1);
+	auto min_row_height = wrenExIsSlotDefault(vm, 2) ? 0.0f : wrenExGetSlot<float>(vm, 2);
+	
+	ImGui::TableNextRow(row_flags, min_row_height);
+	
+}
+
+/*  append into the next column (or first column of next row if currently in last column). Return true when column is visible. */
+void w_TableNextColumn(WrenVM *vm)
+{
+	bool out = ImGui::TableNextColumn();
+	wrenSetSlotBool(vm, 0, out);
+	
+}
+
+/*  append into the specified column. Return true when column is visible. */
+void w_TableSetColumnIndex(WrenVM *vm)
+{
+	auto column_n = wrenExGetSlot<int>(vm, 1);
+	
+	bool out = ImGui::TableSetColumnIndex(column_n);
+	wrenSetSlotBool(vm, 0, out);
+	
+}
+
+void w_TableSetupColumn(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	auto flags = wrenExIsSlotDefault(vm, 2) ? 0 : wrenExGetSlotFlags<ImGuiTableColumnFlags>(getImGuiTableColumnFlagsFromString, vm, 2);
+	auto init_width_or_weight = wrenExIsSlotDefault(vm, 3) ? 0.0f : wrenExGetSlot<float>(vm, 3);
+	auto user_id = static_cast<ImU32>(wrenExIsSlotDefault(vm, 4) ? 0 : wrenExGetSlot<unsigned int>(vm, 4));
+	
+	ImGui::TableSetupColumn(label, flags, init_width_or_weight, user_id);
+	
+}
+
+/*  lock columns/rows so they stay visible when scrolled. */
+void w_TableSetupScrollFreeze(WrenVM *vm)
+{
+	auto cols = wrenExGetSlot<int>(vm, 1);
+	auto rows = wrenExGetSlot<int>(vm, 2);
+	
+	ImGui::TableSetupScrollFreeze(cols, rows);
+	
+}
+
+/*  submit all headers cells based on data provided to TableSetupColumn() + submit context menu */
+void w_TableHeadersRow(WrenVM *vm)
+{
+	ImGui::TableHeadersRow();
+	
+}
+
+/*  submit one header cell manually (rarely used) */
+void w_TableHeader(WrenVM *vm)
+{
+	auto label = wrenExGetSlot<const char*>(vm, 1);
+	
+	ImGui::TableHeader(label);
+	
+}
+
+// skipping w_TableGetSortSpecs due to unimplemented return type: "ImGuiTableSortSpecs*"
+
+/*  return number of columns (value passed to BeginTable) */
+void w_TableGetColumnCount(WrenVM *vm)
+{
+	int out = ImGui::TableGetColumnCount();
+	wrenSetSlotDouble(vm, 0, out);
+	
+}
+
+/*  return current column index. */
+void w_TableGetColumnIndex(WrenVM *vm)
+{
+	int out = ImGui::TableGetColumnIndex();
+	wrenSetSlotDouble(vm, 0, out);
+	
+}
+
+/*  return current row index. */
+void w_TableGetRowIndex(WrenVM *vm)
+{
+	int out = ImGui::TableGetRowIndex();
+	wrenSetSlotDouble(vm, 0, out);
+	
+}
+
+/*  return "" if column didn't have a name declared by TableSetupColumn(). Pass -1 to use current column. */
+void w_TableGetColumnName(WrenVM *vm)
+{
+	auto column_n = wrenExIsSlotDefault(vm, 1) ? -1 : wrenExGetSlot<int>(vm, 1);
+	
+	const char* out = ImGui::TableGetColumnName(column_n);
+	wrenSetSlotString(vm, 0, out);
+	
+}
+
+// skipping w_TableGetColumnFlags due to unimplemented return type: "ImGuiTableColumnFlags"
+
+/*  change the color of a cell, row, or column. See ImGuiTableBgTarget_ flags for details. */
+void w_TableSetBgColor(WrenVM *vm)
+{
+	auto target = wrenExGetSlotEnum<ImGuiTableBgTarget>(getImGuiTableBgTargetFromString, vm, 1);
+	auto color = static_cast<ImU32>(wrenExGetSlot<unsigned int>(vm, 2));
+	auto column_n = wrenExIsSlotDefault(vm, 3) ? -1 : wrenExGetSlot<int>(vm, 3);
+	
+	ImGui::TableSetBgColor(target, color, column_n);
 	
 }
 
@@ -3903,7 +4182,7 @@ void w_UpdatePlatformWindows(WrenVM *vm)
 
 // skipping w_RenderPlatformWindowsDefault due to unimplemented argument type: "void*"
 
-/*  call DestroyWindow platform functions for all viewports. call from back-end Shutdown() if you need to close platform windows before imgui shutdown. otherwise will be called by DestroyContext(). */
+/*  call DestroyWindow platform functions for all viewports. call from backend Shutdown() if you need to close platform windows before imgui shutdown. otherwise will be called by DestroyContext(). */
 void w_DestroyPlatformWindows(WrenVM *vm)
 {
 	ImGui::DestroyPlatformWindows();
@@ -4003,7 +4282,9 @@ void w_InputTextWithHint_Override2(WrenVM *vm)
 
 // skipping w_ImDrawList_AddConvexPolyFilled due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_AddBezierCurve due to unimplemented foreign class type: "ImDrawList"
+// skipping w_ImDrawList_AddBezierCubic due to unimplemented foreign class type: "ImDrawList"
+
+// skipping w_ImDrawList_AddBezierQuadratic due to unimplemented foreign class type: "ImDrawList"
 
 // skipping w_ImDrawList_AddImage due to unimplemented foreign class type: "ImDrawList"
 
@@ -4015,7 +4296,9 @@ void w_InputTextWithHint_Override2(WrenVM *vm)
 
 // skipping w_ImDrawList_PathArcToFast due to unimplemented foreign class type: "ImDrawList"
 
-// skipping w_ImDrawList_PathBezierCurveTo due to unimplemented foreign class type: "ImDrawList"
+// skipping w_ImDrawList_PathBezierCubicCurveTo due to unimplemented foreign class type: "ImDrawList"
+
+// skipping w_ImDrawList_PathBezierQuadraticCurveTo due to unimplemented foreign class type: "ImDrawList"
 
 // skipping w_ImDrawList_PathRect due to unimplemented foreign class type: "ImDrawList"
 
@@ -4111,6 +4394,10 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::BeginTabItem(_)", w_BeginTabItem},
 {"ImGui::BeginTabItem(_,_)", w_BeginTabItem},
 {"ImGui::BeginTabItem(_,_,_)", w_BeginTabItem},
+{"ImGui::BeginTable(_,_)", w_BeginTable},
+{"ImGui::BeginTable(_,_,_)", w_BeginTable},
+{"ImGui::BeginTable(_,_,_,_)", w_BeginTable},
+{"ImGui::BeginTable(_,_,_,_,_)", w_BeginTable},
 {"ImGui::BeginTooltip()", w_BeginTooltip},
 {"ImGui::Bullet()", w_Bullet},
 {"ImGui::BulletText(_)", w_BulletText},
@@ -4127,7 +4414,6 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::CaptureMouseFromApp()", w_CaptureMouseFromApp},
 {"ImGui::CaptureMouseFromApp(_)", w_CaptureMouseFromApp},
 {"ImGui::Checkbox(_,_)", w_Checkbox},
-{"ImGui::CheckboxFlags(_,_,_)", w_CheckboxFlags},
 {"ImGui::CloseCurrentPopup()", w_CloseCurrentPopup},
 {"ImGui::ColorButton(_,_)", w_ColorButton},
 {"ImGui::ColorButton(_,_,_)", w_ColorButton},
@@ -4187,6 +4473,7 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::EndPopup()", w_EndPopup},
 {"ImGui::EndTabBar()", w_EndTabBar},
 {"ImGui::EndTabItem()", w_EndTabItem},
+{"ImGui::EndTable()", w_EndTable},
 {"ImGui::EndTooltip()", w_EndTooltip},
 {"ImGui::GetClipboardText()", w_GetClipboardText},
 {"ImGui::GetColumnIndex()", w_GetColumnIndex},
@@ -4409,6 +4696,25 @@ const std::unordered_map<std::string, WrenForeignMethodFn> foreignMethods = {
 {"ImGui::Spacing()", w_Spacing},
 {"ImGui::TabItemButton(_)", w_TabItemButton},
 {"ImGui::TabItemButton(_,_)", w_TabItemButton},
+{"ImGui::TableGetColumnCount()", w_TableGetColumnCount},
+{"ImGui::TableGetColumnIndex()", w_TableGetColumnIndex},
+{"ImGui::TableGetColumnName()", w_TableGetColumnName},
+{"ImGui::TableGetColumnName(_)", w_TableGetColumnName},
+{"ImGui::TableGetRowIndex()", w_TableGetRowIndex},
+{"ImGui::TableHeader(_)", w_TableHeader},
+{"ImGui::TableHeadersRow()", w_TableHeadersRow},
+{"ImGui::TableNextColumn()", w_TableNextColumn},
+{"ImGui::TableNextRow()", w_TableNextRow},
+{"ImGui::TableNextRow(_)", w_TableNextRow},
+{"ImGui::TableNextRow(_,_)", w_TableNextRow},
+{"ImGui::TableSetBgColor(_,_)", w_TableSetBgColor},
+{"ImGui::TableSetBgColor(_,_,_)", w_TableSetBgColor},
+{"ImGui::TableSetColumnIndex(_)", w_TableSetColumnIndex},
+{"ImGui::TableSetupColumn(_)", w_TableSetupColumn},
+{"ImGui::TableSetupColumn(_,_)", w_TableSetupColumn},
+{"ImGui::TableSetupColumn(_,_,_)", w_TableSetupColumn},
+{"ImGui::TableSetupColumn(_,_,_,_)", w_TableSetupColumn},
+{"ImGui::TableSetupScrollFreeze(_,_)", w_TableSetupScrollFreeze},
 {"ImGui::Text(_)", w_Text},
 {"ImGui::TextColored(_,_)", w_TextColored},
 {"ImGui::TextDisabled(_)", w_TextDisabled},
@@ -4495,22 +4801,28 @@ foreign class ImVec4 {
 }
 
 class ImGui {
-	foreign static SetColumnOffset(column_index, offset_x)
+	foreign static TableSetupColumn(label)
+	foreign static TableSetupColumn(label, flags)
+	foreign static TableSetupColumn(label, flags, init_width_or_weight)
+	foreign static TableSetupColumn(label, flags, init_width_or_weight, user_id)
 	foreign static IsItemDeactivatedAfterEdit()
+	foreign static TableSetupScrollFreeze(cols, rows)
 	foreign static IsMouseDoubleClicked(button)
 	foreign static GetTreeNodeToLabelSpacing()
 	foreign static SetNextItemOpen(is_open)
 	foreign static SetNextItemOpen(is_open, cond)
 	foreign static PopTextWrapPos()
 	foreign static EndDragDropSource()
+	foreign static TableGetColumnCount()
 	foreign static GetWindowWidth()
 	foreign static SetNextWindowCollapsed(collapsed)
 	foreign static SetNextWindowCollapsed(collapsed, cond)
 	foreign static TextWrapped(fmt)
+	foreign static TableGetColumnName()
+	foreign static TableGetColumnName(column_n)
 	foreign static GetStyleColorName(idx)
-	foreign static ColorButton(desc_id, col)
-	foreign static ColorButton(desc_id, col, flags)
-	foreign static ColorButton(desc_id, col, flags, size)
+	foreign static BeginCombo(label, preview_value)
+	foreign static BeginCombo(label, preview_value, flags)
 	foreign static SmallButton(label)
 	foreign static IsMouseClicked(button)
 	foreign static IsMouseClicked(button, repeat)
@@ -4524,6 +4836,7 @@ class ImGui {
 	foreign static InputFloat(label, v, step, step_fast, format)
 	foreign static InputFloat(label, v, step, step_fast, format, flags)
 	foreign static IsMouseDown(button)
+	foreign static TableSetColumnIndex(column_n)
 	foreign static VSliderInt(label, size, v, v_min, v_max)
 	foreign static VSliderInt(label, size, v, v_min, v_max, format)
 	foreign static VSliderInt(label, size, v, v_min, v_max, format, flags)
@@ -4550,34 +4863,41 @@ class ImGui {
 	foreign static DockSpace(id, size)
 	foreign static DockSpace(id, size, flags)
 	foreign static DockSpace(id, size, flags, window_class)
+	foreign static TableNextColumn()
 	foreign static IsKeyPressed(user_key_index)
 	foreign static IsKeyPressed(user_key_index, repeat)
 	foreign static GetFontSize()
+	foreign static GetMousePosOnOpeningCurrentPopup()
+	foreign static GetContentRegionAvail()
+	foreign static LoadIniSettingsFromDisk(ini_filename)
 	foreign static SameLine()
 	foreign static SameLine(offset_from_start_x)
 	foreign static SameLine(offset_from_start_x, spacing)
 	foreign static Begin(name)
 	foreign static Begin(name, p_open)
 	foreign static Begin(name, p_open, flags)
+	foreign static SetClipboardText(text)
 	foreign static BeginTooltip()
 	foreign static BeginMenu(label)
 	foreign static BeginMenu(label, enabled)
 	foreign static ShowUserGuide()
-	foreign static DragFloat(label, v)
-	foreign static DragFloat(label, v, v_speed)
-	foreign static DragFloat(label, v, v_speed, v_min)
-	foreign static DragFloat(label, v, v_speed, v_min, v_max)
-	foreign static DragFloat(label, v, v_speed, v_min, v_max, format)
-	foreign static DragFloat(label, v, v_speed, v_min, v_max, format, flags)
+	foreign static GetKeyIndex(imgui_key)
+	foreign static SetTooltip(fmt)
 	foreign static BeginChildFrame(id, size)
 	foreign static BeginChildFrame(id, size, flags)
+	foreign static TableGetColumnIndex()
+	foreign static Button(label)
+	foreign static Button(label, size)
 	foreign static InputDouble(label, v)
 	foreign static InputDouble(label, v, step)
 	foreign static InputDouble(label, v, step, step_fast)
 	foreign static InputDouble(label, v, step, step_fast, format)
 	foreign static InputDouble(label, v, step, step_fast, format, flags)
-	foreign static SetColumnWidth(column_index, width)
-	foreign static EndPopup()
+	foreign static SetCursorPos(local_pos)
+	foreign static EndTabBar()
+	foreign static GetMouseDragDelta()
+	foreign static GetMouseDragDelta(button)
+	foreign static GetMouseDragDelta(button, lock_threshold)
 	foreign static UpdatePlatformWindows()
 	foreign static IsWindowHovered()
 	foreign static IsWindowHovered(flags)
@@ -4588,30 +4908,31 @@ class ImGui {
 	foreign static GetTextLineHeightWithSpacing()
 	foreign static BeginTabBar(str_id)
 	foreign static BeginTabBar(str_id, flags)
-	foreign static LoadIniSettingsFromDisk(ini_filename)
-	foreign static SetClipboardText(text)
+	foreign static GetMousePos()
+	foreign static IsAnyMouseDown()
 	foreign static EndGroup()
-	foreign static GetMouseDragDelta()
-	foreign static GetMouseDragDelta(button)
-	foreign static GetMouseDragDelta(button, lock_threshold)
-	foreign static EndTabBar()
-	foreign static Button(label)
-	foreign static Button(label, size)
-	foreign static SetCursorPos(local_pos)
+	foreign static IsMouseHoveringRect(r_min, r_max)
+	foreign static IsMouseHoveringRect(r_min, r_max, clip)
+	foreign static GetColumnsCount()
+	foreign static SetKeyboardFocusHere()
+	foreign static SetKeyboardFocusHere(offset)
+	foreign static GetKeyPressedAmount(key_index, repeat_delay, rate)
 	foreign static BeginTabItem(label)
 	foreign static BeginTabItem(label, p_open)
 	foreign static BeginTabItem(label, p_open, flags)
 	foreign static IsItemEdited()
-	foreign static IsItemHovered()
-	foreign static IsItemHovered(flags)
+	foreign static IsKeyReleased(user_key_index)
 	foreign static GetClipboardText()
-	foreign static GetMousePosOnOpeningCurrentPopup()
-	foreign static GetMousePos()
-	foreign static IsAnyMouseDown()
-	foreign static IsMouseHoveringRect(r_min, r_max)
-	foreign static IsMouseHoveringRect(r_min, r_max, clip)
+	foreign static ColorConvertU32ToFloat4(input)
+	foreign static SetNextItemWidth(item_width)
+	foreign static EndChildFrame()
+	foreign static OpenPopupOnItemClick()
+	foreign static OpenPopupOnItemClick(str_id)
+	foreign static OpenPopupOnItemClick(str_id, popup_flags)
 	foreign static ListBoxFooter()
-	foreign static LogButtons()
+	foreign static BeginPopupModal(name)
+	foreign static BeginPopupModal(name, p_open)
+	foreign static BeginPopupModal(name, p_open, flags)
 	foreign static DragFloatRange2(label, v_current_min, v_current_max)
 	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed)
 	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min)
@@ -4620,17 +4941,17 @@ class ImGui {
 	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
 	foreign static DragFloatRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags)
 	foreign static GetVersion()
-	foreign static IsAnyItemHovered()
+	foreign static GetTime()
 	foreign static BeginMainMenuBar()
-	foreign static GetKeyPressedAmount(key_index, repeat_delay, rate)
-	foreign static IsKeyReleased(user_key_index)
-	foreign static GetKeyIndex(imgui_key)
+	foreign static SetItemAllowOverlap()
+	foreign static GetItemRectSize()
+	foreign static GetItemRectMax()
 	foreign static EndMenuBar()
-	foreign static ColorConvertU32ToFloat4(input)
-	foreign static CheckboxFlags(label, flags, flags_value)
+	foreign static GetItemRectMin()
+	foreign static IsAnyItemFocused()
 	foreign static ShowAboutWindow()
 	foreign static ShowAboutWindow(p_open)
-	foreign static EndChildFrame()
+	foreign static IsAnyItemActive()
 	foreign static GetFrameHeight()
 	foreign static SetNextWindowFocus()
 	foreign static GetWindowPos()
@@ -4641,107 +4962,112 @@ class ImGui {
 	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format)
 	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max)
 	foreign static DragIntRange2(label, v_current_min, v_current_max, v_speed, v_min, v_max, format, format_max, flags)
-	foreign static GetWindowContentRegionMin()
+	foreign static IsAnyItemHovered()
 	foreign static GetScrollY()
-	foreign static OpenPopupOnItemClick()
-	foreign static OpenPopupOnItemClick(str_id)
-	foreign static OpenPopupOnItemClick(str_id, popup_flags)
-	foreign static GetTime()
-	foreign static SetItemAllowOverlap()
+	foreign static EndFrame()
+	foreign static IsItemDeactivated()
+	foreign static IsItemActivated()
 	foreign static BeginMenuBar()
-	foreign static IsWindowDocked()
+	foreign static TableHeader(label)
 	foreign static GetFrameHeightWithSpacing()
 	foreign static LogToTTY()
 	foreign static LogToTTY(auto_open_depth)
-	foreign static NextColumn()
+	foreign static TableSetBgColor(target, color)
+	foreign static TableSetBgColor(target, color, column_n)
 	foreign static GetWindowSize()
-	foreign static GetItemRectSize()
+	foreign static IsItemVisible()
 	foreign static GetWindowHeight()
 	foreign static IsWindowAppearing()
 	foreign static EndCombo()
-	foreign static GetItemRectMax()
+	foreign static IsItemClicked()
+	foreign static IsItemClicked(mouse_button)
 	foreign static SetNextWindowSize(size)
 	foreign static SetNextWindowSize(size, cond)
-	foreign static GetItemRectMin()
+	foreign static TextUnformatted(text)
+	foreign static TextUnformatted(text, text_end)
 	foreign static AlignTextToFramePadding()
 	foreign static CloseCurrentPopup()
 	foreign static LogToFile()
 	foreign static LogToFile(auto_open_depth)
 	foreign static LogToFile(auto_open_depth, filename)
-	foreign static IsAnyItemFocused()
-	foreign static IsAnyItemActive()
+	foreign static SetColumnWidth(column_index, width)
+	foreign static IsItemHovered()
+	foreign static IsItemHovered(flags)
 	foreign static CaptureKeyboardFromApp()
 	foreign static CaptureKeyboardFromApp(want_capture_keyboard_value)
-	foreign static EndFrame()
-	foreign static IsItemDeactivated()
+	foreign static SetTabItemClosed(tab_or_docked_window_label)
+	foreign static PopClipRect()
 	foreign static BeginDragDropSource()
 	foreign static BeginDragDropSource(flags)
 	foreign static GetCursorPosY()
-	foreign static IsItemActivated()
+	foreign static GetStyleColorVec4(idx)
 	foreign static SetCursorPosX(local_x)
 	foreign static EndMenu()
 	foreign static TextDisabled(fmt)
-	foreign static IsItemVisible()
+	foreign static SetNextWindowContentSize(size)
 	foreign static Unindent()
 	foreign static Unindent(indent_w)
-	foreign static IsItemClicked()
-	foreign static IsItemClicked(mouse_button)
+	foreign static BeginDragDropTarget()
 	foreign static SetScrollX(scroll_x)
 	foreign static IsItemFocused()
 	foreign static PopButtonRepeat()
-	foreign static SetNextWindowDockID(dock_id)
-	foreign static SetNextWindowDockID(dock_id, cond)
+	foreign static LogButtons()
 	foreign static PopAllowKeyboardFocus()
 	foreign static SetScrollFromPosX(local_x)
 	foreign static SetScrollFromPosX(local_x, center_x_ratio)
 	foreign static ResetMouseDragDelta()
 	foreign static ResetMouseDragDelta(button)
 	foreign static SetWindowFontScale(scale)
-	foreign static SetKeyboardFocusHere()
-	foreign static SetKeyboardFocusHere(offset)
+	foreign static IsWindowDocked()
 	foreign static SetNextWindowBgAlpha(alpha)
-	foreign static ShowStyleSelector(label)
-	foreign static PushItemWidth(item_width)
-	foreign static PopClipRect()
-	foreign static TextUnformatted(text)
-	foreign static TextUnformatted(text, text_end)
+	foreign static SetScrollY(scroll_y)
+	foreign static IsWindowFocused()
+	foreign static IsWindowFocused(flags)
+	foreign static SetNextWindowDockID(dock_id)
+	foreign static SetNextWindowDockID(dock_id, cond)
+	foreign static DockSpaceOverViewport()
+	foreign static DockSpaceOverViewport(viewport)
+	foreign static DockSpaceOverViewport(viewport, flags)
+	foreign static DockSpaceOverViewport(viewport, flags, window_class)
 	foreign static SetItemDefaultFocus()
-	foreign static BeginDragDropTarget()
+	foreign static TabItemButton(label)
+	foreign static TabItemButton(label, flags)
 	foreign static PushClipRect(clip_rect_min, clip_rect_max, intersect_with_current_clip_rect)
 	foreign static LogToClipboard()
 	foreign static LogToClipboard(auto_open_depth)
 	foreign static IsWindowCollapsed()
 	foreign static IsMouseReleased(button)
-	foreign static IsWindowFocused()
-	foreign static IsWindowFocused(flags)
+	foreign static SetColumnOffset(column_index, offset_x)
 	foreign static IsItemActive()
 	foreign static Spacing()
-	foreign static DockSpaceOverViewport()
-	foreign static DockSpaceOverViewport(viewport)
-	foreign static DockSpaceOverViewport(viewport, flags)
-	foreign static DockSpaceOverViewport(viewport, flags, window_class)
+	foreign static SetNextWindowPos(pos)
+	foreign static SetNextWindowPos(pos, cond)
+	foreign static SetNextWindowPos(pos, cond, pivot)
 	foreign static NewLine()
-	foreign static SetTabItemClosed(tab_or_docked_window_label)
-	foreign static TabItemButton(label)
-	foreign static TabItemButton(label, flags)
+	foreign static NextColumn()
+	foreign static Columns()
+	foreign static Columns(count)
+	foreign static Columns(count, id)
+	foreign static Columns(count, id, border)
 	foreign static PushButtonRepeat(repeat)
-	foreign static GetStyleColorVec4(idx)
+	foreign static TableGetRowIndex()
 	foreign static CalcItemWidth()
 	foreign static SetCursorScreenPos(pos)
 	foreign static EndChild()
 	foreign static CaptureMouseFromApp()
 	foreign static CaptureMouseFromApp(want_capture_mouse_value)
-	foreign static GetColumnsCount()
+	foreign static TableHeadersRow()
 	foreign static DestroyPlatformWindows()
-	foreign static BeginPopup(str_id)
-	foreign static BeginPopup(str_id, flags)
-	foreign static Columns()
-	foreign static Columns(count)
-	foreign static Columns(count, id)
-	foreign static Columns(count, id, border)
-	foreign static IsPopupOpen(str_id)
-	foreign static IsPopupOpen(str_id, flags)
-	foreign static Bullet()
+	foreign static TableNextRow()
+	foreign static TableNextRow(row_flags)
+	foreign static TableNextRow(row_flags, min_row_height)
+	foreign static EndTable()
+	foreign static BeginTable(str_id, column)
+	foreign static BeginTable(str_id, column, flags)
+	foreign static BeginTable(str_id, column, flags, outer_size)
+	foreign static BeginTable(str_id, column, flags, outer_size, inner_width)
+	foreign static ShowDemoWindow()
+	foreign static ShowDemoWindow(p_open)
 	foreign static EndTooltip()
 	foreign static InputInt(label, v)
 	foreign static InputInt(label, v, step)
@@ -4752,9 +5078,8 @@ class ImGui {
 	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max)
 	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format)
 	foreign static SliderAngle(label, v_rad, v_degrees_min, v_degrees_max, format, flags)
-	foreign static SetNextWindowPos(pos)
-	foreign static SetNextWindowPos(pos, cond)
-	foreign static SetNextWindowPos(pos, cond, pivot)
+	foreign static IsPopupOpen(str_id)
+	foreign static IsPopupOpen(str_id, flags)
 	foreign static SetScrollFromPosY(local_y)
 	foreign static SetScrollFromPosY(local_y, center_y_ratio)
 	foreign static GetColumnWidth()
@@ -4768,23 +5093,24 @@ class ImGui {
 	foreign static GetCursorScreenPos()
 	foreign static EndMainMenuBar()
 	foreign static SaveIniSettingsToDisk(ini_filename)
-	foreign static BeginPopupModal(name)
-	foreign static BeginPopupModal(name, p_open)
-	foreign static BeginPopupModal(name, p_open, flags)
+	foreign static EndPopup()
 	foreign static BeginPopupContextItem()
 	foreign static BeginPopupContextItem(str_id)
 	foreign static BeginPopupContextItem(str_id, popup_flags)
 	foreign static GetCursorStartPos()
-	foreign static SetTooltip(fmt)
-	foreign static GetScrollMaxX()
+	foreign static BeginPopup(str_id)
+	foreign static BeginPopup(str_id, flags)
+	foreign static GetWindowContentRegionMin()
 	foreign static IsItemToggledOpen()
-	foreign static GetCursorPosX()
-	foreign static PopItemWidth()
-	foreign static SetNextWindowContentSize(size)
+	foreign static ColorButton(desc_id, col)
+	foreign static ColorButton(desc_id, col, flags)
+	foreign static ColorButton(desc_id, col, flags, size)
+	foreign static PushItemWidth(item_width)
+	foreign static ShowStyleSelector(label)
 	foreign static LogText(fmt)
-	foreign static SetScrollY(scroll_y)
+	foreign static GetScrollMaxX()
 	foreign static End()
-	foreign static SetNextItemWidth(item_width)
+	foreign static PopItemWidth()
 	foreign static TreePop()
 	foreign static GetWindowContentRegionWidth()
 	foreign static GetFontTexUvWhitePixel()
@@ -4832,15 +5158,18 @@ class ImGui {
 	foreign static SliderFloat(label, v, v_min, v_max)
 	foreign static SliderFloat(label, v, v_min, v_max, format)
 	foreign static SliderFloat(label, v, v_min, v_max, format, flags)
-	foreign static GetContentRegionAvail()
-	foreign static BeginCombo(label, preview_value)
-	foreign static BeginCombo(label, preview_value, flags)
+	foreign static Bullet()
+	foreign static DragFloat(label, v)
+	foreign static DragFloat(label, v, v_speed)
+	foreign static DragFloat(label, v, v_speed, v_min)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max, format)
+	foreign static DragFloat(label, v, v_speed, v_min, v_max, format, flags)
 	foreign static GetCursorPos()
 	foreign static SetNextWindowViewport(viewport_id)
 	foreign static Render()
 	foreign static TextColored(col, fmt)
-	foreign static ShowDemoWindow()
-	foreign static ShowDemoWindow(p_open)
+	foreign static GetCursorPosX()
 	foreign static InvisibleButton(str_id, size)
 	foreign static InvisibleButton(str_id, size, flags)
 	foreign static EndDragDropTarget()
