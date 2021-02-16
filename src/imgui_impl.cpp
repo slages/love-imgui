@@ -35,6 +35,10 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 		const ImDrawList* cmd_list = draw_data->CmdLists[n];
 
 		lua_newtable(g_L);
+
+        //TODO если возможно, то переписать с целью ускорения обработки
+        // imgui.renderMesh:setVertexMap(), передавать сырой указатель 
+        // &cmd_list->IdxBuffer[0] через ByteData
 		for (int i = 1; i <= cmd_list->IdxBuffer.size(); i++)
 		{
 			lua_pushnumber(g_L, i);
@@ -48,9 +52,22 @@ void ImGui_Impl_RenderDrawLists(ImDrawData* draw_data)
 		lua_pushnumber(g_L, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
 		lua_setfield(g_L, -2, "verticesSize");
 
-		luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, 'rgba8', imgui.verticesData), \"triangles\")\
-						    imgui.renderMesh:setTexture(imgui.textureObject)\
-							imgui.renderMesh:setVertexMap(imgui.idx)");
+        /*
+         TODO
+           local mesh = love.graphics.newMesh(imgui.vertexformat, BIG_SIZE_MUCH)
+
+            renderMesh:setVertices(love.image.newImageData(imgui.verticesSize / 4, 1, 'rgba8', imgui.verticesData), 0, imgui.verticesSize / 4)
+
+
+         */
+        luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, 'rgba8', imgui.verticesData), \"triangles\", \"dynamic\")\
+                            imgui.renderMesh:setTexture(imgui.textureObject)\
+                            imgui.renderMesh:setVertexMap(imgui.idx)");
+        /*
+         *luaL_dostring(g_L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, 'rgba8', imgui.verticesData), \"triangles\", \"dynamic\")\
+         *                    imgui.renderMesh:setTexture(imgui.textureObject)\
+         *                    imgui.renderMesh:setVertexMap(imgui.idx)");
+         */
 
 		int position = 1;
 		for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
@@ -128,6 +145,9 @@ bool Init(lua_State *L)
 	unsigned char* pixels;
 	int width, height;
 	io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+
+    // TODO через love.graphics.newImageData():encode() записать pixels в файл
+    //luaL_dostring(L, "imgui.textureObject = love.graphics.newImage(love.image.");
 	
 	lua_getglobal(L, "imgui");
 	lua_pushnumber(L, width);
@@ -191,6 +211,10 @@ bool Init(lua_State *L)
 	const char *path = luaL_checkstring(L, 1);
 	g_iniPath = std::string(path) + std::string("/imgui.ini");
 	io.IniFilename = g_iniPath.c_str();
+
+    luaL_dostring(L, "imgui.renderMesh = love.graphics.newMesh(imgui.vertexformat, love.image.newImageData(imgui.verticesSize / 4, 1, 'rgba8', imgui.verticesData), \"triangles\", \"dynamic\")\
+                            imgui.renderMesh:setTexture(imgui.textureObject)\
+                            imgui.renderMesh:setVertexMap(imgui.idx)");
 	return true;
 }
 
