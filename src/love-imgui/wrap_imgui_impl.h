@@ -32,4 +32,5 @@ extern "C" {
 #	define LOVE_IMGUI_EXPORT
 #endif
 
-extern "C" LOVE_IMGUI_EXPORT int loveopen_imgui(lua_State *L);
+//extern "C" LOVE_IMGUI_EXPORT int loveopen_imgui(lua_State *L);
+extern "C" LOVE_IMGUI_EXPORT int luaopen_imgui(lua_State *L);

@@ -1,0 +1,25 @@
+local type ImGui = record
+    ShutDown: function
+    NewFrame: function
+    Render: function
+    MouseMoved: function(x: number, y: number)
+    MousePressed: function(button: number)
+    MouseReleased: function(button: number)
+    WheelMoved: function(y: number)
+    KeyPressed: function(key: string)
+    KeyReleased: function(key: string)
+    TextInput: function(text: string)
+    GetWantCaptureMouse: function(): boolean
+    GetWantCaptureKeyboard: function(): boolean
+    GetWantTextInput: function(): boolean
+    SetGlobalFontFromFileTTF: function(path: string, size_pixels: number,
+        spacing_x: number, spacing_y: number, oversample_x: number,
+        oversample_y: number)
+    ----- GENERATED PART ----- 
+<% for i = 1, 10 do -%>
+    blah():<%- i .. "\n" -%>
+<% end %>
+    ----- END OF GENERATED PART ----- 
+end
+
+return ImGui
