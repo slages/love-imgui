@@ -385,5 +385,6 @@ void SetGlobalFontFromFileTTF(const char *path, float size_pixels, float spacing
     conf.OversampleV = oversample_y;
     conf.GlyphExtraSpacing.x = spacing_x;
     conf.GlyphExtraSpacing.y = spacing_y;
+    // TODO здесь должна быть загрузка из архива, из памяти, не только из файла
     io.Fonts->AddFontFromFileTTF(path, size_pixels, &conf);
 }
